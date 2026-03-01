@@ -48,6 +48,16 @@
     // Seconds after death before the revive token respawns the player
     "ReviveTokenRespawnDelay": 1.5,
 
+    // ── Tryder ────────────────────────────────────────────────────────────
+    // Health set on the player when Tryder is purchased
+    "TryderHealth": 1000,
+    // Armor set on the player when Tryder is purchased (can exceed 100)
+    "TryderArmor": 500,
+    // Glow color applied to the Tryder player (R, G, B channels 0–255)
+    "TryderGlowR": 0,
+    "TryderGlowG": 127,
+    "TryderGlowB": 255,
+
     // ── Ammo Packs ───────────────────────────────────────────────────────
     // Ammo packs given to a player on connect
     "StartingAmmoPacks": 0,
@@ -208,6 +218,31 @@
         "Key": "buy_sniper",
         "Name": "Become Sniper",
         "Price": 15,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        // Grants the human bonus health, bonus armor, infinite clip, and a blue glow.
+        // Stats are configurable via TryderHealth / TryderArmor / TryderGlow* above.
+        "Key": "tryder",
+        "Name": "Tryder (bonus HP + armor + infinite clip)",
+        "Price": 15,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        // Grants the human infinite clip for all weapons for the rest of the round.
+        "Key": "unlimited_clip",
+        "Name": "Unlimited Clip (infinite magazine)",
+        "Price": 8,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        // Removes weapon recoil for the human for the rest of the round.
+        "Key": "no_recoil",
+        "Name": "No Recoil (zero weapon spread)",
+        "Price": 6,
         "Enable": true,
         "Team": "Human"
       }
