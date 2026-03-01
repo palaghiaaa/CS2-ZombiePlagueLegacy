@@ -747,32 +747,48 @@ public class ZOMineService
 
         CBaseModelEntity? modelRelay = _core.EntitySystem.CreateEntity<CBaseModelEntity>();
         CBaseModelEntity? modelGlow  = _core.EntitySystem.CreateEntity<CBaseModelEntity>();
-        if (modelRelay == null || modelGlow == null)
+        if (modelRelay == null || !modelRelay.IsValidEntity || !modelRelay.IsValid ||
+            modelGlow  == null || !modelGlow.IsValidEntity  || !modelGlow.IsValid)
         {
             if (modelRelay != null && modelRelay.IsValid) modelRelay.AcceptInput("Kill", 0);
             if (modelGlow  != null && modelGlow.IsValid)  modelGlow.AcceptInput("Kill", 0);
             return;
         }
 
-        try { modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2)); } catch { }
-        modelRelay.SetModel(modelName);
-        modelRelay.Spawnflags  = 256u;
-        modelRelay.RenderMode  = RenderMode_t.kRenderNone;
-        modelRelay.DispatchSpawn();
+        var modelRelayHandle = _core.EntitySystem.GetRefEHandle(modelRelay);
+        var modelGlowHandle  = _core.EntitySystem.GetRefEHandle(modelGlow);
+        if (!modelRelayHandle.IsValid || !modelGlowHandle.IsValid)
+        {
+            if (modelRelay.IsValid) modelRelay.AcceptInput("Kill", 0);
+            if (modelGlow.IsValid)  modelGlow.AcceptInput("Kill", 0);
+            return;
+        }
 
-        try { modelGlow.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2)); } catch { }
-        modelGlow.SetModel(modelName);
-        modelGlow.Spawnflags = 256u;
-        modelGlow.DispatchSpawn();
+        _core.Scheduler.NextWorldUpdate(() =>
+        {
+            if (entity == null || !entity.IsValid) return;
 
-        modelGlow.Glow.GlowColorOverride = parsedColor;
-        modelGlow.Glow.GlowRange         = 5000;
-        modelGlow.Glow.GlowTeam          = glowTeam;
-        modelGlow.Glow.GlowType          = 3;
-        modelGlow.Glow.GlowRangeMin      = 100;
+            try { modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2)); } catch { }
+            modelRelay.SetModel(modelName);
+            modelRelay.Spawnflags = 256u;
+            modelRelay.Render     = new SwiftlyS2.Shared.Natives.Color(1, 1, 1, 1);
+            modelRelay.RenderMode = RenderMode_t.kRenderNone;
+            modelRelay.DispatchSpawn();
 
-        modelRelay.AcceptInput("FollowEntity", "!activator", entity,     modelRelay);
-        modelGlow.AcceptInput( "FollowEntity", "!activator", modelRelay, modelGlow);
+            try { modelGlow.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2)); } catch { }
+            modelGlow.SetModel(modelName);
+            modelGlow.Spawnflags = 256u;
+            modelGlow.DispatchSpawn();
+
+            modelGlow.Glow.GlowColorOverride = parsedColor;
+            modelGlow.Glow.GlowRange         = 5000;
+            modelGlow.Glow.GlowTeam          = glowTeam;
+            modelGlow.Glow.GlowType          = 3;
+            modelGlow.Glow.GlowRangeMin      = 100;
+
+            modelRelay.AcceptInput("FollowEntity", "!activator", entity,     modelRelay);
+            modelGlow.AcceptInput( "FollowEntity", "!activator", modelRelay, modelGlow);
+        });
     }
 
     private static bool TryParseColor(string colorStr, out SwiftlyS2.Shared.Natives.Color color)
