@@ -322,23 +322,6 @@ public partial class ZOServices
 
     }
 
-    /// <summary>
-    /// Returns the HP to assign to a special class.
-    /// When <paramref name="staticHp"/> is &gt; 0, it is used directly.
-    /// Otherwise FinalHP = <paramref name="baseHp"/> × number of currently alive players (minimum 1).
-    /// </summary>
-    private int ComputeSpecialHealth(int staticHp, int baseHp)
-    {
-        if (staticHp > 0)
-            return staticHp;
-
-        if (baseHp <= 0)
-            return 0; // 0 means "do not override" — caller decides
-
-        int alivePlayers = Math.Max(1, _core.PlayerManager.GetAlive().Count());
-        return baseHp * alivePlayers;
-    }
-
     public void SetupSurvivor(IPlayer player)
     {
         if (!player.IsValid)
@@ -479,18 +462,16 @@ public partial class ZOServices
             };
             posszombie(player, zombieClass, true);
 
-            // Apply dynamic / static HP from main config (overrides special class stats).
-            // ComputeSpecialHealth returns 0 when neither value is configured — skip override.
+            // Apply configured HP from main config (overrides the special-class default).
             var nemCfg = _mainCFG.CurrentValue.Nemesis;
-            var pawn = player.PlayerPawn;
-            if (pawn != null && pawn.IsValid)
+            if (nemCfg.NemesisHealth > 0)
             {
-                int finalHp = ComputeSpecialHealth(nemCfg.NemesisHealth, nemCfg.NemesisBaseHealth);
-                if (finalHp > 0)
+                var pawn = player.PlayerPawn;
+                if (pawn != null && pawn.IsValid)
                 {
-                    pawn.MaxHealth = finalHp;
+                    pawn.MaxHealth = nemCfg.NemesisHealth;
                     pawn.MaxHealthUpdated();
-                    pawn.Health = finalHp;
+                    pawn.Health = nemCfg.NemesisHealth;
                     pawn.HealthUpdated();
                 }
             }
@@ -563,26 +544,17 @@ public partial class ZOServices
             };
             posszombie(player, zombieClass, true);
 
-            // Apply dynamic / static HP and speed from main config.
-            // ComputeSpecialHealth returns 0 when neither value is configured — skip override.
-            // AssassinDamage is stored for reference and future use; actual weapon damage is
-            // handled by CS2's engine and the ZombieClass.Stats.Damage multiplier.
+            // Apply configured HP from main config (overrides the special-class default).
             var assCfg = _mainCFG.CurrentValue.Assassin;
-            var pawn = player.PlayerPawn;
-            if (pawn != null && pawn.IsValid)
+            if (assCfg.AssassinHealth > 0)
             {
-                int finalHp = ComputeSpecialHealth(assCfg.AssassinHealth, assCfg.AssassinBaseHealth);
-                if (finalHp > 0)
+                var pawn = player.PlayerPawn;
+                if (pawn != null && pawn.IsValid)
                 {
-                    pawn.MaxHealth = finalHp;
+                    pawn.MaxHealth = assCfg.AssassinHealth;
                     pawn.MaxHealthUpdated();
-                    pawn.Health = finalHp;
+                    pawn.Health = assCfg.AssassinHealth;
                     pawn.HealthUpdated();
-                }
-                if (assCfg.AssassinSpeed > 0f)
-                {
-                    pawn.VelocityModifier = assCfg.AssassinSpeed;
-                    pawn.VelocityModifierUpdated();
                 }
             }
 
@@ -782,9 +754,7 @@ public partial class ZOServices
             _helpers.SetGlow(player, 0, 0, 255, 255);
         });
 
-        int Health = isSurvivor
-            ? ComputeSpecialHealth(config.Survivor.SurvivorHealth, config.Survivor.SurvivorBaseHealth)
-            : ComputeSpecialHealth(config.Sniper.SniperHealth, config.Sniper.SniperBaseHealth);
+        int Health = isSurvivor ? config.Survivor.SurvivorHealth : config.Sniper.SniperHealth;
         if (Health > 0)
         {
             pawn.MaxHealth = Health;
