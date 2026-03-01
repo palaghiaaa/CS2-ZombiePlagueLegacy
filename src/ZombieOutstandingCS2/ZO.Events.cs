@@ -1472,6 +1472,15 @@ public partial class ZOEvents
         if(_helpers.CheckIsGrenade(activeWeapon))
             return HookResult.Continue;
 
+        // Knife blink: trigger on knife fire instead of console command
+        if (activeWeapon.DesignerName == "weapon_knife")
+        {
+            _globals.KnifeBlinkCharges.TryGetValue(Id, out int charges);
+            if (charges > 0)
+                _extraItemsMenu.TryExecuteKnifeBlink(player);
+            return HookResult.Continue;
+        }
+
         if (CFG.EnableInfiniteReserveAmmo && activeWeapon.ReserveAmmo[0] < 1000)
         {
             activeWeapon.ReserveAmmo[0] = 1000;

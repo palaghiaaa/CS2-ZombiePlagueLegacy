@@ -185,7 +185,6 @@ public class ZOMainCFG
     public string MainMenuCommand { get; set; } = "sw_zmenu";
     public string ExtraItemsCommand { get; set; } = "sw_zextra";
     public string BuyWeaponsCommand { get; set; } = "sw_buyweapons";
-    public string KnifeBlinkCommand { get; set; } = "sw_blink";
     public string MineMenuCommand { get; set; } = "sw_mine";
     public string AdminMenuPermission { get; set; } = "";
     public string AmbSound { get; set; } = string.Empty;

@@ -67,9 +67,6 @@ public class ZOCommands
         _core.Command.RegisterCommand(CFG.ExtraItemsCommand, OpenExtraItemsMenu, true);
         _logger.LogInformation("[ZO] Registered extra items command: {Cmd}", CFG.ExtraItemsCommand);
 
-        _core.Command.RegisterCommand(CFG.KnifeBlinkCommand, KnifeBlink, true);
-        _logger.LogInformation("[ZO] Registered knife blink command: {Cmd}", CFG.KnifeBlinkCommand);
-
         _core.Command.RegisterCommand(CFG.MineMenuCommand, OpenMineMenu, true);
         _logger.LogInformation("[ZO] Registered mine menu command: {Cmd}", CFG.MineMenuCommand);
     }
@@ -121,13 +118,6 @@ public class ZOCommands
         var player = context.Sender;
         if (player == null || !player.IsValid) return;
         _extraItemsMenu.OpenExtraItemsMenu(player);
-    }
-
-    public void KnifeBlink(ICommandContext context)
-    {
-        var player = context.Sender;
-        if (player == null || !player.IsValid) return;
-        _extraItemsMenu.TryExecuteKnifeBlink(player);
     }
 
     public void OpenMineMenu(ICommandContext context)
