@@ -1,0 +1,180 @@
+{
+  // ════════════════════════════════════════════════════════════════════════════
+  // ZOMBIE OUTSTANDING — EXTRA ITEMS CONFIGURATION
+  // ════════════════════════════════════════════════════════════════════════════
+
+  "ZOExtraItemsCFG": {
+    // ── Armor ──────────────────────────────────────────────────────────────
+    // Armor points given when the Armor item is purchased (0-100)
+    "ArmorAmount": 100,
+
+    // ── Multijump ─────────────────────────────────────────────────────────
+    // Extra jumps added per Multijump purchase
+    "MultijumpIncrement": 1,
+    // Maximum total extra jumps a player can accumulate this round
+    "MultijumpMax": 3,
+
+    // ── Zombie Madness ────────────────────────────────────────────────────
+    // Duration in seconds of the invulnerability granted by Zombie Madness
+    "MadnessDuration": 10.0,
+
+    // ── Knife Blink ───────────────────────────────────────────────────────
+    // Charges added per Knife Blink purchase
+    "KnifeBlinkCharges": 3,
+    // Forward distance of each blink (engine units)
+    "KnifeBlinkDistance": 300.0,
+    // Cooldown in seconds between consecutive blinks
+    "KnifeBlinkCooldown": 2.0,
+
+    // ── Jetpack ───────────────────────────────────────────────────────────
+    // Maximum fuel capacity (depletes while flying; refilled at round start)
+    "JetpackMaxFuel": 250.0,
+    // Upward thrust velocity while CTRL+SPACE is held (units/s)
+    "JetpackThrustForce": 350.0,
+    // Fuel consumed per second while flying
+    "JetpackFuelConsumeRate": 30.0,
+    // Base damage of a jetpack rocket at point-blank range
+    "JetpackRocketDamage": 500,
+    // Explosion radius of the jetpack rocket (units)
+    "JetpackRocketRadius": 300.0,
+    // Maximum forward range of a rocket (units)
+    "JetpackRocketRange": 750.0,
+    // Simulated rocket flight time before detonation (seconds)
+    "JetpackRocketFlightTime": 0.3,
+    // Minimum seconds between rocket shots (right-click cooldown)
+    "JetpackRocketCooldown": 2.0,
+
+    // ── Revive Token ──────────────────────────────────────────────────────
+    // Seconds after death before the revive token respawns the player
+    "ReviveTokenRespawnDelay": 1.5,
+
+    // ── Ammo Packs ───────────────────────────────────────────────────────
+    // Ammo packs given to a player on connect
+    "StartingAmmoPacks": 0,
+    // Ammo packs rewarded to a human that survives to round end
+    "RoundSurviveReward": 3,
+    // Ammo packs rewarded to a zombie per human kill/infection
+    "ZombieKillReward": 2,
+    // Cumulative damage a human must deal to zombies to earn one Ammo Pack.
+    // Resets to 0 after each award (can award multiple packs in one hit if
+    // multiple thresholds are crossed).
+    "HumanDamageRewardThreshold": 600,
+    // Ammo packs awarded each time the damage threshold is crossed.
+    "HumanDamageReward": 1,
+
+    // ── Item Definitions ─────────────────────────────────────────────────
+    // Key      – internal identifier used in code (do not translate)
+    // Name     – display text shown in the menu
+    // Price    – cost in ammo packs
+    // Enable   – set false to hide this item without removing it
+    // Team     – "Human", "Zombie", or "Both"
+    "Items": [
+      {
+        "Key": "armor",
+        "Name": "Armor (100 AP)",
+        "Price": 3,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "he_grenade",
+        "Name": "HE Grenade",
+        "Price": 2,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "flash_grenade",
+        "Name": "Flash Grenade",
+        "Price": 2,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "smoke_grenade",
+        "Name": "Smoke Grenade",
+        "Price": 2,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "antidote",
+        "Name": "Antidote (cure to human)",
+        "Price": 8,
+        "Enable": true,
+        "Team": "Zombie"
+      },
+      {
+        "Key": "zombie_madness",
+        "Name": "Zombie Madness (10s invulnerability)",
+        "Price": 6,
+        "Enable": true,
+        "Team": "Zombie"
+      },
+      {
+        "Key": "multijump",
+        "Name": "Multi-Jump (+1 jump)",
+        "Price": 4,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "knife_blink",
+        "Name": "Knife Blink (3 charges)",
+        "Price": 5,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "jetpack",
+        "Name": "Jetpack (CTRL+SPACE fly / RClick rocket)",
+        "Price": 10,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        // Opens the laser mine selection menu (sw_mine). Mine types and limits are configured in ZombieOutstandingCFG.jsonc.
+        "Key": "laser_mine",
+        "Name": "Laser Mine (opens mine menu to place a mine)",
+        "Price": 6,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "revive_token",
+        "Name": "Revive Token (respawn once on death)",
+        "Price": 8,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "t_virus_grenade",
+        "Name": "T-Virus Grenade (infects humans in range)",
+        "Price": 6,
+        "Enable": true,
+        "Team": "Zombie"
+      },
+      {
+        "Key": "inc_grenade",
+        "Name": "Incendiary Bomb (CT-only fire grenade)",
+        "Price": 4,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "teleport_grenade",
+        "Name": "Teleport Grenade (decoy teleporter)",
+        "Price": 3,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        "Key": "scba_suit",
+        "Name": "SCBA Suit (resist one zombie attack)",
+        "Price": 5,
+        "Enable": true,
+        "Team": "Human"
+      }
+    ]
+  }
+}

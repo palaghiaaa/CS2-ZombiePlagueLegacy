@@ -1,0 +1,599 @@
+{
+  // ════════════════════════════════════════════════════════════════════════════
+  // ZOMBIE OUTSTANDING — MAIN CONFIGURATION
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── Core / game-play settings ────────────────────────────────────────────
+  "ZOMainCFG": {
+
+	// ── Round timing ─────────────────────────────────────────────────────────
+	// Seconds players have to prepare before infection starts.
+	"RoundReadyTime": "22.0",
+	// Round duration in minutes.
+	"RoundTime": "4.0",
+
+	// ── Game modes ───────────────────────────────────────────────────────────
+	// Weight controls how often a mode is randomly chosen (higher = more frequent).
+	"NormalInfection":
+	{
+		"Enable": true,
+		"Name": "Infection Mode",
+		"MotherZombieNames": "Mother Zombie",
+		"MotherZombieCount": 1,
+		"Weight": 50,
+		"EnableInfiniteClipMode": false,
+		"ZombieCanReborn": false
+	},
+	"MultiInfection":
+	{
+		"Enable": true,
+		"Name": "Multi Infection Mode",
+		"MotherZombieNames": "Mother Zombie",
+		"MotherZombieCount": 5,
+		"Weight": 50,
+		"EnableInfiniteClipMode": true,
+		"ZombieCanReborn": true
+	},
+	"Nemesis":
+	{
+		"Enable": true,
+		"Name": "Nemesis Mode",
+		"NemesisNames": "Nemesis",
+		"Weight": 50,
+		"EnableInfiniteClipMode": true,
+		"ZombieCanReborn": true
+	},
+	"Survivor":
+	{
+		"Enable": true,
+		"Name": "Survivor Mode",
+		"Weight": 50,
+		"SurvivorNames": "Survivor",
+		"SurvivorHealth": 8000,
+		"SurvivorSpeed": 0.92,
+		"SurvivorGravity": 1.25,
+		"SurvivorDamage": 5.0,
+		"SurvivorWeapon": "weapon_xm1014",
+		"CustomWeaponName": "Survivor XM1014",
+		"ModelsPath": "characters/models/tm_phoenix_heavy/tm_phoenix_heavy.vmdl",
+		"EnableInfiniteClipMode": false,
+		"ZombieCanReborn": false
+	},
+	"Swarm":
+	{
+		"Enable": true,
+		"Name": "Swarm Mode",
+		"Weight": 50,
+		"EnableInfiniteClipMode": true,
+		"ZombieCanReborn": false
+	},
+	"Plague":
+	{
+		"Enable": true,
+		"Name": "Plague Mode",
+		"Weight": 50,
+		"NemesisNames": "Nemesis",
+		"SurvivorNames": "Survivor",
+		"EnableInfiniteClipMode": true,
+		"ZombieCanReborn": true
+	},
+	"Assassin":
+	{
+		"Enable": true,
+		"Name": "Assassin Mode",
+		"Weight": 50,
+		"AssassinNames": "Assassin",
+		// Distance (units) within which the assassin becomes visible.
+		"InvisibilityDist": 200.0,
+		"EnableInfiniteClipMode": false,
+		"ZombieCanReborn": true
+	},
+	"Sniper":
+	{
+		"Enable": true,
+		"Name": "Sniper Mode",
+		"Weight": 50,
+		"SniperNames": "Sniper",
+		"SniperHealth": 5000,
+		"SniperSpeed": 0.92,
+		"SniperGravity": 0.75,
+		"SniperDamage": 35.0,
+		"SniperWeapon": "weapon_awp",
+		"CustomWeaponName": "Sniper AWP",
+		"ModelsPath": "characters/models/tm_professional/tm_professional_varf4.vmdl",
+		"EnableInfiniteClipMode": false,
+		"ZombieCanReborn": true
+	},
+	"AVS":
+	{
+		"Enable": true,
+		"Name": "Assassin vs Sniper",
+		"Weight": 50,
+		"AssassinNames": "Assassin",
+		"SniperNames": "Sniper",
+		"EnableInfiniteClipMode": true,
+		"ZombieCanReborn": true
+	},
+	"Hero":
+	{
+		"Enable": true,
+		"Name": "Hero Mode",
+		"Weight": 50,
+		"HeroCount": 3,
+		"HeroNames": "Hero",
+		"HeroHealth": 1500,
+		"HeroSpeed": 3.0,
+		"HeroGravity": 0.4,
+		"HeroDamage": 50.0,
+		"ModelsPath": "characters/models/ctm_heavy/ctm_heavy.vmdl",
+		"EnableInfiniteClipMode": false,
+		"ZombieCanReborn": true
+	},
+
+	// ── Round scheduling ─────────────────────────────────────────────────────
+	// Minimum consecutive Normal-Infection rounds required before a special
+	// game mode (Nemesis, Survivor, etc.) can be randomly chosen.
+	// Set to 0 to disable the restriction (pure weight-based selection).
+	// Example: 2 = at least 2 normal rounds must pass between special rounds.
+	"NormalRoundsInterval": 0,
+
+	// ── Human settings ───────────────────────────────────────────────────────
+	"HumandefaultModel": "characters/models/ctm_st6/ctm_st6_variante.vmdl",
+	"HumanMaxHealth": 150,
+	// Show a damage HUD indicator when a human damages a zombie.
+	"EnableDamageHud": true,
+	"HumanInitialSpeed": 1.0,
+	"HumanInitialGravity": 1.0,
+
+	// ── Knockback multipliers ────────────────────────────────────────────────
+	// Multipliers applied to bullet knockback force depending on hit location / state.
+	"HumanKnockBackHeadMultiply": 2.0,
+	"HumanKnockBackBodyMultiply": 1.0,
+	"HumanKnockBackGroundMultiply": 1.0,
+	"HumanKnockBackAirMultiply": 0.5,
+	// Extra multiplier applied when a Hero shoots a zombie.
+	"HumanHeroKnockBackMultiply": 1.0,
+
+	// ── Weapon settings ──────────────────────────────────────────────────────
+	"EnableInfiniteReserveAmmo": true,
+	"EnableWeaponNoRecoil": true,
+
+	// ── Spawn points ─────────────────────────────────────────────────────────
+	// Comma-separated spawn-point types to use. Valid values: CT, T, DM.
+	"HumanSpawnPoints": "CT,T,DM",
+	"ZombieSpawnPoints": "CT,T,DM",
+
+	// ── Zombie physics ───────────────────────────────────────────────────────
+	// Base knockback force (units/s) applied to a zombie when shot.
+	"KnockZombieForce": 250.0,
+	// Duration (seconds) a zombie is stunned / slowed after a knockback hit.
+	"StunZombieTime": 0.1,
+
+	// ── T-Virus / Vaccine ────────────────────────────────────────────────────
+	"TVaccineSound": "HealthShot.Pickup",
+	// Radius (units) of the T-Virus grenade infection cloud.
+	"TVirusGrenadeRange": 300.0,
+	// Whether the T-Virus grenade can infect Hero-class players.
+	"TVirusCanInfectHero": true,
+	"TVirusGrenadeSound": "han.zombieplague.grenadedote",
+	// Sound played when a player receives bonus health (e.g. from an item).
+	"AddHealthSound": "HealthShot.Pickup",
+
+	// ── Fire grenade ─────────────────────────────────────────────────────────
+	"FireGrenade": true,
+	// Give humans a fire (HE) grenade on spawn.
+	"SpawnGiveFireGrenade": true,
+	// Give humans an incendiary grenade on spawn (in addition to the fire grenade).
+	"SpawnGiveIncGrenade": false,
+	"FireGrenadeRange": 300.0,
+	"FireGrenadeDmg": 500.0,
+	// Damage per tick while a zombie is burning.
+	"FireDmg": 10.0,
+	"FireGrenadeDuration": 5.0,
+	"FireGrenadeSound": "han.zombieplague.grenadedote",
+
+	// ── Light grenade ────────────────────────────────────────────────────────
+	"LightGrenade": true,
+	// Give humans a flashbang (light grenade) on spawn.
+	"SpawnGiveLightGrenade": true,
+	// Illumination radius (units).
+	"LightGrenadeRange": 1000.0,
+	// Duration (seconds) the light stays active.
+	"LightGrenadeDuration": 30.0,
+	"LightGrenadeSound": "C4.ExplodeTriggerTrip",
+
+	// ── Freeze grenade ───────────────────────────────────────────────────────
+	"FreezeGrenade": true,
+	// Give humans a smoke (freeze grenade) on spawn.
+	"SpawnGiveFreezeGrenade": true,
+	"FreezeGrenadeRange": 300.0,
+	// Duration (seconds) a zombie remains frozen.
+	"FreezeGrenadeDuration": 10.0,
+	"FreezeGrenadeSound": "han.zombieplague.grenadedote",
+
+	// ── Teleport grenade ─────────────────────────────────────────────────────
+	"TelportGrenade": true,
+	// Give humans a teleport grenade on spawn.
+	"SpawnGiveTelportGrenade": false,
+
+	// ── SCBA Suit ────────────────────────────────────────────────────────────
+	"CanUseScbaSuit": true,
+	"ScbaSuitGetSound": "Player.PickupPistol",
+	"ScbaSuitBrokenSound": "Breakable.Flesh",
+
+	// ── Commands ─────────────────────────────────────────────────────────────
+	// Client commands registered by the plugin (can be changed freely).
+	"ZombieClassCommand": "sw_zclass",
+	"AdminMenuItemCommand": "sw_zadmin",
+	"MainMenuCommand": "sw_zmenu",
+	"ExtraItemsCommand": "sw_zextra",
+	"BuyWeaponsCommand": "sw_buyweapons",
+	"KnifeBlinkCommand": "sw_blink",
+	// Command to open the mine selection menu (must start with sw_)
+	"MineMenuCommand": "sw_mine",
+	// Leave empty ("") to allow everyone to open the admin menu.
+	// Use comma-separated Swiftly permission strings to restrict access.
+	"AdminMenuPermission": "hzp.adminmenu",
+
+	// ── Ambient sound ────────────────────────────────────────────────────────
+	// Comma-separated sound events played in rotation during the round.
+	"AmbSound": "han.zombie.amb.zriot,han.zombie.amb.classicA,han.zombie.amb.classicB,han.zombie.amb.classicC,han.zombie.amb.classicD",
+	// Interval in seconds between ambient sound plays.
+	"AmbSoundLoopTime": "60.0",
+	"AmbSoundVolume": "0.8",
+	// Comma-separated .vsndevts files to precache for ambient sounds.
+	"PrecacheAmbSound": "soundevents/hanzbambience.vsndevts,soundevents/hanzombiepanicplayer.vsndevts",
+
+	// ── Chat / debug settings ────────────────────────────────────────────────
+	// Prefix prepended to all plugin chat messages.
+	"ChatPrefix": "[red][INFO][default]",
+	// Log command invocations to the server console.
+	"EnableCommandDebugLogs": false,
+	// Send a chat reply to the invoking player on each command invocation.
+	"EnableCommandDebugChatReply": false,
+
+	// ── Economy (Ammo Packs) ─────────────────────────────────────────────────
+	// Wallet kind name registered in the Economy plugin.
+	// Must match a wallet kind configured in Economy's config.
+	"EconomyWalletKind": "ammo"
+  },
+
+  // ── Vox / round sound groups ─────────────────────────────────────────────
+  "ZOVoxCFG": {
+    "VoxList": [
+		{
+			"Name": "CSOL男性播报",
+			"Enable": true,
+			"RoundMusicVox": "han.zombie.round.class_start,han.zombie.round.class_startB",
+			"SecRemainVox": "han.zombie.round.20secremain",
+			"CoundDownVox": "han.zombie.round.mancdone,han.zombie.round.mancdtwo,han.zombie.round.mancdthree,han.zombie.round.mancdfour,han.zombie.round.mancdfive,han.zombie.round.mancdsix,han.zombie.round.mancdseven,han.zombie.round.mancdeight,han.zombie.round.mancdnine,han.zombie.round.mancdten",
+			"ZombieSpawnVox": "han.zombie.round.manzbcome",
+			"NormalInfectionVox": "han.zombieplague.end.horror",
+			"MultiInfectionVox": "han.zombieplague.end.horror",
+			"NemesisVox": "han.zombieplague.type.nemesis",
+			"SurvivorVox": "han.zombieplague.type.survivor",
+			"SwarmVox": "han.zombieplague.end.horror",
+			"PlagueVox": "han.zombieplague.end.plague",
+			"AssassinVox": "han.zombieplague.type.nemesis",
+			"SniperVox": "han.zombieplague.type.survivor",
+			"AVSVox": "han.zombieplague.type.nemesis",
+			"HeroVox": "han.zombieplague.type.survivor",
+			"HumanWinVox": "han.zombie.round.manhmwin",
+			"ZombieWinVox": "han.zombie.round.manzbwin",
+			"PrecacheSoundEvent": "soundevents/hanroundvoxs.vsndevts"
+		},
+		{
+			"Name": "CSOL女性播报",
+			"Enable": true,
+			"RoundMusicVox": "han.zombie.round.class_startC,han.zombie.round.class_startD",
+			"SecRemainVox": "han.zombie.round.fem20secremain",
+			"CoundDownVox": "han.zombie.round.femcdone,han.zombie.round.femcdtwo,han.zombie.round.femcdthree,han.zombie.round.femcdfour,han.zombie.round.femcdfive,han.zombie.round.femcdsix,han.zombie.round.femcdseven,han.zombie.round.femcdeight,han.zombie.round.femcdnine,han.zombie.round.femcdten",
+			"ZombieSpawnVox": "han.zombie.round.femzbcome",
+			"NormalInfectionVox": "han.zombieplague.end.horror",
+			"MultiInfectionVox": "han.zombieplague.end.horror",
+			"NemesisVox": "han.zombieplague.type.nemesis",
+			"SurvivorVox": "han.zombieplague.type.survivor",
+			"SwarmVox": "han.zombieplague.end.horror",
+			"PlagueVox": "han.zombieplague.end.plague",
+			"AssassinVox": "han.zombieplague.type.nemesis",
+			"SniperVox": "han.zombieplague.type.survivor",
+			"AVSVox": "han.zombieplague.type.nemesis",
+			"HeroVox": "han.zombieplague.type.survivor",
+			"HumanWinVox": "han.zombie.round.femhmwin",
+			"ZombieWinVox": "han.zombie.round.femzbwin",
+			"PrecacheSoundEvent": "soundevents/hanzbplayers.vsndevts"
+		},
+		{
+			"Name": "HL1男性播报",
+			"Enable": true,
+			"RoundMusicVox": "han.zombieplague.round.start",
+			"SecRemainVox": "han.hl.round.remaining",
+			"CoundDownVox": "han.hl.round.mancdone,han.hl.round.mancdtwo,han.hl.round.mancdthree,han.hl.round.mancdfour,han.hl.round.mancdfive,han.hl.round.mancdsix,han.hl.round.mancdseven,han.hl.round.mancdeight,han.hl.round.mancdnine,han.hl.round.mancdten",
+			"ZombieSpawnVox": "han.hl.zombie.infec",
+			"NormalInfectionVox": "han.zombieplague.end.horror",
+			"MultiInfectionVox": "han.zombieplague.end.horror",
+			"NemesisVox": "han.zombieplague.type.nemesis",
+			"SurvivorVox": "han.zombieplague.type.survivor",
+			"SwarmVox": "han.zombieplague.end.horror",
+			"PlagueVox": "han.zombieplague.end.plague",
+			"AssassinVox": "han.zombieplague.type.nemesis",
+			"SniperVox": "han.zombieplague.type.survivor",
+			"AVSVox": "han.zombieplague.type.nemesis",
+			"HeroVox": "han.zombieplague.type.survivor",
+			"HumanWinVox": "han.zombieplague.music.ctwin",
+			"ZombieWinVox": "han.zombieplague.music.twin",
+			"PrecacheSoundEvent": "soundevents/hanhl1zbvox.vsndevts"
+		},
+		{
+			"Name": "HL1女性播报",
+			"Enable": true,
+			"RoundMusicVox": "han.zombieplague.round.start",
+			"SecRemainVox": "han.hl.round.femremaining",
+			"CoundDownVox": "han.hl.round.femcdone,han.hl.round.femcdtwo,han.hl.round.femcdthree,han.hl.round.femcdfour,han.hl.round.femcdfive,han.hl.round.femcdsix,han.hl.round.femcdseven,han.hl.round.femcdeight,han.hl.round.femcdnine,han.hl.round.femcdten",
+			"ZombieSpawnVox": "han.hl.zombie.infec",
+			"NormalInfectionVox": "han.zombieplague.end.horror",
+			"MultiInfectionVox": "han.zombieplague.end.horror",
+			"NemesisVox": "han.zombieplague.type.nemesis",
+			"SurvivorVox": "han.zombieplague.type.survivor",
+			"SwarmVox": "han.zombieplague.end.horror",
+			"PlagueVox": "han.zombieplague.end.plague",
+			"AssassinVox": "han.zombieplague.type.nemesis",
+			"SniperVox": "han.zombieplague.type.survivor",
+			"AVSVox": "han.zombieplague.type.nemesis",
+			"HeroVox": "han.zombieplague.type.survivor",
+			"HumanWinVox": "han.hl.vox.administering",
+			"ZombieWinVox": "han.hl.vox.seek",
+			"PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts"
+		},
+		{
+			"Name": "僵尸瘟疫播报",
+			"Enable": true,
+			"RoundMusicVox": "han.zombieplague.round.start,han.zombie.round.class_start",
+			"SecRemainVox": "han.zombie.round.20secremain",
+			"CoundDownVox": "han.zombie.round.mancdone,han.zombie.round.mancdtwo,han.zombie.round.mancdthree,han.zombie.round.mancdfour,han.zombie.round.mancdfive,han.zombie.round.mancdsix,han.zombie.round.mancdseven,han.zombie.round.mancdeight,han.zombie.round.mancdnine,han.zombie.round.mancdten",
+			"ZombieSpawnVox": "han.hl.zombie.infec",
+			"NormalInfectionVox": "han.zombieplague.end.horror",
+			"MultiInfectionVox": "han.zombieplague.end.horror",
+			"NemesisVox": "han.zombieplague.type.nemesis",
+			"SurvivorVox": "han.zombieplague.type.survivor",
+			"SwarmVox": "han.zombieplague.end.horror",
+			"PlagueVox": "han.zombieplague.end.plague",
+			"AssassinVox": "han.zombieplague.type.nemesis",
+			"SniperVox": "han.zombieplague.type.survivor",
+			"AVSVox": "han.zombieplague.type.nemesis",
+			"HeroVox": "han.zombieplague.type.survivor",
+			"HumanWinVox": "han.zombieplague.music.ctwin,han.zombieplague.round.hmwin,han.zombieplague.round.hmumbwin",
+			"ZombieWinVox": "han.zombieplague.music.twin,han.zombieplague.round.zbwin,han.zombieplague.round.zbumbwin,han.zombieplague.end.horror,han.zombieplague.end.plague",
+			"PrecacheSoundEvent": "soundevents/hanzombieplaguevox.vsndevts"
+		}
+	]
+  },
+
+  // ── Special zombie classes (Nemesis, Assassin, Mother Zombie) ────────────
+  "ZOSpecialClassCFG": {
+    "SpecialClassList": [
+		{
+			"Name": "Mother Zombie",
+			"Enable": true,
+			"PrecacheSoundEvent": "soundevents/hanzbplayers.vsndevts",
+			"Stats": 
+			{
+			  "Health": 15000,
+			  "MotherZombieHealth": 20000,
+			  "Speed": 1.16,
+			  "Damage": 150.0,
+			  "Gravity": 0.6,
+			  "Fov": 110,
+			  "EnableRegen": true,
+			  "HpRegenSec": 1.0,
+			  "HpRegenHp": 100,
+			  "ZombieSoundVolume": 1.0,
+			  "IdleInterval": 70.0
+			},
+			"Models": 
+			{
+			  "ModelPath": "characters/models/basebuilder/zombie_gravity/zombie_gravity.vmdl",
+			  "CustomKinfeModelPath": ""
+			},
+			"Sounds": 
+			{
+			  "SoundInfect": "han.human.mandeath",
+			  "SoundPain": "han.hl.zombie.pain",
+			  "SoundHurt": "han.zombie.manclassic_hurt",
+			  "SoundDeath": "han.zombie.manclassic_death",
+			  "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
+			  "RegenSound": "han.zombie.state.manheal",
+			  "BurnSound": "han.zombieplague.zburn",
+			  "ExplodeSound": "han.hl.zombie.idle",
+			  "HitSound": "han.zombie.classic_hit",
+			  "HitWallSound": "han.zombie.classic_hitwall",
+			  "SwingSound": "han.zombie.classic_swing"
+			}
+		},
+		{
+			"Name": "Nemesis",
+			"Enable": true,
+			"PrecacheSoundEvent": "soundevents/hanzombieplagueplayers.vsndevts",
+			"Stats": 
+			{
+			  "Health": 120000,
+			  "MotherZombieHealth": 240000,
+			  "Speed": 1.0,
+			  "Damage": 250.0,
+			  "Gravity": 0.5,
+			  "Fov": 120,
+			  "EnableRegen": true,
+			  "HpRegenSec": 1.0,
+			  "HpRegenHp": 100,
+			  "ZombieSoundVolume": 1.0,
+			  "IdleInterval": 70.0
+			},
+			"Models": 
+			{
+			  "ModelPath": "characters/models/hmn_sk2/zombie/hl2_zombie/hl2_zombie_sk2model.vmdl",
+			  "CustomKinfeModelPath": ""
+			},
+			"Sounds": 
+			{
+			  "SoundInfect": "han.hl.zombie.infec,han.sic.infectplayer,han.sic.screamA",
+			  "SoundPain": "han.hl.zombie.pain",
+			  "SoundHurt": "han.hl.zombie.pain",
+			  "SoundDeath": "han.hl.zombie.die",
+			  "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
+			  "RegenSound": "han.zombie.state.manheal",
+			  "BurnSound": "han.zombieplague.zburn",
+			  "ExplodeSound": "han.hl.zombie.idle",
+			  "HitSound": "han.zombie.classic_hit",
+			  "HitWallSound": "han.zombie.classic_hitwall",
+			  "SwingSound": "han.zombie.classic_swing"
+			}
+		},
+		{
+			"Name": "Assassin",
+			"Enable": true,
+			"PrecacheSoundEvent": "soundevents/hanzbplayerstate.vsndevts",
+			"Stats": 
+			{
+			  "Health": 24000,
+			  "MotherZombieHealth": 48000,
+			  "Speed": 3.5,
+			  "Damage": 357.0,
+			  "Gravity": 0.5,
+			  "Fov": 120,
+			  "EnableRegen": true,
+			  "HpRegenSec": 2.0,
+			  "HpRegenHp": 60,
+			  "ZombieSoundVolume": 1.0,
+			  "IdleInterval": 70.0
+			},
+			"Models": 
+			{
+			  "ModelPath": "characters/models/daemonium_luka/daemonium_luka.vmdl",
+			  "CustomKinfeModelPath": ""
+			},
+			"Sounds": 
+			{
+			  "SoundInfect": "han.human.femdeath,han.zombie.cso2.feminfect",
+			  "SoundPain": "han.hl.zombie.pain",
+			  "SoundHurt": "han.zombie.femclassic_hurt",
+			  "SoundDeath": "han.zombie.femclassic_death",
+			  "IdleSound": "han.zombie.cso2.femidle,han.zombie.state.femidle",
+			  "RegenSound": "han.zombie.state.femheal",
+			  "BurnSound": "han.zombie.state.femburn",
+			  "ExplodeSound": "han.hl.zombie.idle",
+			  "HitSound": "han.zombie.cso2.femclaw",
+			  "HitWallSound": "han.zombie.classic_hitwall",
+			  "SwingSound": "han.zombie.classic_swing"
+			}
+		}
+	]
+  },
+
+  // ── Weapon buy menu ──────────────────────────────────────────────────────
+  "ZOWeaponsCFG": {
+    // Enable the weapon selection menu system
+    "EnableWeaponsMenu": true,
+    // Show weapon menus to eligible humans at round start
+    "GiveMenuOnRoundStart": true,
+    // Allow players to re-open weapon menu via sw_buyweapons command (once per round)
+    "AllowOpenFromGameMenu": true,
+    // Reserve ammo given to each weapon chosen from the menu
+    "ReserveAmmoAmount": 9999,
+    // Primary weapon list shown in primary weapon menu
+    "PrimaryWeapons": [
+      { "Name": "AK-47",     "Classname": "weapon_ak47" },
+      { "Name": "M4A4",      "Classname": "weapon_m4a1" },
+      { "Name": "M4A1-S",    "Classname": "weapon_m4a1_silencer" },
+      { "Name": "AWP",       "Classname": "weapon_awp" },
+      { "Name": "FAMAS",     "Classname": "weapon_famas" },
+      { "Name": "Galil AR",  "Classname": "weapon_galilar" },
+      { "Name": "SG 553",    "Classname": "weapon_sg556" },
+      { "Name": "AUG",       "Classname": "weapon_aug" }
+    ],
+    // Secondary weapon list shown in secondary weapon menu
+    "SecondaryWeapons": [
+      { "Name": "Desert Eagle", "Classname": "weapon_deagle" },
+      { "Name": "P250",         "Classname": "weapon_p250" },
+      { "Name": "USP-S",        "Classname": "weapon_usp_silencer" },
+      { "Name": "Glock-18",     "Classname": "weapon_glock" },
+      { "Name": "Dual Berettas","Classname": "weapon_elite" }
+    ],
+    // Default grenades given after secondary selection.
+    // Supported classnames: weapon_hegrenade, weapon_flashbang, weapon_smokegrenade,
+    //                       weapon_incgrenade, weapon_decoy
+    "DefaultGrenades": [
+      "weapon_hegrenade",
+      "weapon_flashbang",
+      "weapon_smokegrenade"
+    ]
+  },
+
+  // ── Laser trip mines ─────────────────────────────────────────────────────
+  "ZOMineCFG": {
+    "MineList": [
+      {
+        // Laser beam trap – continuously damages players crossing the beam.
+        "Enable": true,
+        "Name": "Laser Tripwire",
+        "Model": "models/stk_sentry_guns/lasermine/stk_lasermines_one.vmdl",
+        // false = laser beam trap, true = explosive mine
+        "CanExplorer": false,
+        // false = only enemy players trigger, true = owner's team can also trigger
+        "CanOwnerTeamTrigger": false,
+        // Beam-trap settings (ignored when CanExplorer = true)
+        "LaserRate": 0.1,
+        "LaserDamage": 10.0,
+        "LaserKnockBack": 100.0,
+        // Explosive mine settings (ignored when CanExplorer = false)
+        "ExplorerRadius": 360,
+        "ExplorerDamage": 2600,
+        // "all" = everyone, "ct" = CT only, "t" = T only
+        "Team": "ct",
+        // Purchase price in ammo packs
+        "Price": 6,
+        // Max simultaneous mines per player per type (0 = unlimited)
+        "Limit": 2,
+        // Required permission flag (empty = no restriction)
+        "Permissions": "",
+        // Glow outline "R,G,B,A" (empty = no glow)
+        "GlowColor": "0,255,0,255",
+        // Laser beam color "R,G,B,A"
+        "laserColor": "0,0,255,255",
+        // Laser beam visual width
+        "laserSize": 1.0,
+        // Sound events (requires workshop addon 3618032051)
+        "MineOpenSound": "n4a_csdm_sentry.mine_set",
+        "LaserOpenSound": "n4a_csdm_sentry.mine_activate",
+        "LaserTouchSound": "n4a_csdm_sentry.elrocket_lghtning",
+        "PrecacheSoundEvent": "soundevents/n4a_csdm_sentry.vsndevts",
+        // Angle correction to fix model orientation (degrees)
+        "ModelAngleFix": 90.0
+      },
+      {
+        // Explosive laser mine – explodes when beam is touched.
+        "Enable": true,
+        "Name": "Explosive Mine",
+        "Model": "models/stk_sentry_guns/lasermine/stk_lasermines_two.vmdl",
+        "CanExplorer": true,
+        "CanOwnerTeamTrigger": false,
+        "LaserRate": 0.1,
+        "LaserDamage": 10.0,
+        "LaserKnockBack": 100.0,
+        "ExplorerRadius": 360,
+        "ExplorerDamage": 2600,
+        "Team": "ct",
+        "Price": 10,
+        "Limit": 2,
+        "Permissions": "",
+        "GlowColor": "255,0,0,255",
+        "laserColor": "255,0,0,255",
+        "laserSize": 0.5,
+        "MineOpenSound": "n4a_csdm_sentry.mine_set",
+        "LaserOpenSound": "n4a_csdm_sentry.mine_activate",
+        "LaserTouchSound": "n4a_csdm_sentry.elrocket_lghtning",
+        "PrecacheSoundEvent": "soundevents/n4a_csdm_sentry.vsndevts",
+        "ModelAngleFix": 0.0
+      }
+    ]
+  }
+}

@@ -1,0 +1,201 @@
+{
+    "ServerInfoHotReload": "Configuration file ZOMainCFG has been hot reloaded!",
+    "ServerGameBegin": "The game will restart in [green]1 second",
+    "ServerGameHumanWin": "Humans WIN !!!",
+    "ServerGameZombieWin": "Zombies WIN !!!",
+    "GameInfoBecomeHero": "Player [green]{0}[default] has become a [green]Hero[default]!!",
+    "GameInfoBecomeSurvivor": "Player [green]{0}[default] has become a [green]Survivor[default]!!",
+    "GameInfoBecomeSniper": "Player [green]{0}[default] has become a [green]Sniper[default]!!",
+    "GameInfoBecomeNemesis": "Player [green]{0}[default] has become a [green]Nemesis[default]!!",
+    "GameInfoBecomeAssassin": "Player [green]{0}[default] has become an [green]Assassin[default]!!",
+    "GameInfoBecomeMother": "Player [green]{0}[default] has become the [green]Mother Zombie[default]!!",
+    "GameModeBecomeHero": "You have become Hero",
+    "ServerGameCountDown": "The T-virus is searching for Mother Zombie will appear in [green]{0}[default] seconds",
+    "ZClassMenu": "Zombie Class Selection",
+    "ZClassMenuSelect": "Selected zombie class will take effect after next respawn",
+    "ZClassMenuSelectInfo": "Selected:",
+    "ZClassMenuRandomSelect": "Random Selection",
+    "ZClassMenuRandomSelectInfo": "Set to random selection",
+    "AdminItemMenu": "Admin Item Menu",
+    "NoPermission": "You have No Permission to use.",
+    "AdminMenuSelect": "Select the item you want to use",
+    "ItemZombieCantUse": "Zombies cannot use this!!",
+    "ItemHumanCantUse": "You are not a zombie and cannot use this!!",
+    "ItemTVaccine": "T-Virus Vaccine",
+    "ItemTVaccineError": "Assassin and Nemesis cannot use the T-Virus Vaccine!",
+    "ItemTVaccineSuccess": "You used the T-Virus Vaccine and reverted back to a human!!",
+    "ItemTVaccineSuccessToAll": "Player [green]{0}[default] used the T-Virus Vaccine and reverted back to a human!!",
+    "ItemTVirus": "T-Virus Serum",
+    "ItemTVirusSuccess": "You consumed the T-Virus Serum and felt overwhelming power!!",
+    "ItemTVirusSuccessToAll": "Player [green]{0}[default] used the T-Virus Serum and turned into a zombie!!",
+    "ItemTVirusGrenade": "T-Virus Grenade",
+    "ItemTVirusGrenadeSuccess": "You obtained a T-Virus Grenade!!",
+    "ItemTVirusGrenadeSuccessToAll": "Player [green]{0}[default] used a T-Virus Grenade, be careful!!",
+    "ItemSCBASuit": "Hazmat Suit",
+    "ItemSCBASuitAlready": "You already have a Hazmat Suit and cannot use another!!",
+    "ItemSCBASuitBroken": "Your Hazmat Suit has been destroyed!!",
+    "ItemSCBASuitSuccess": "You put on a Hazmat Suit and can resist one zombie attack!!",
+    "ItemSCBASuitSuccessToAll": "Player [green]{0}[default] purchased a Hazmat Suit and can resist one zombie attack!!",
+    "ItemGodMode": "God Mode (20 Seconds)",
+    "ItemGodModeAlready": "You are already in God Mode!!",
+    "ItemGodModeEnd": "Your God Mode has ended!!",
+    "ItemGodModeSuccess": "You now have [green]{0}[default] seconds of God Mode!!",
+    "ItemGodModeSuccessToAll": "Player [green]{0}[default] purchased God Mode for [green]{1}[default] seconds!!",
+    "ItemAddHelath": "Increase 200 Health",
+    "ItemAddHelathMax": "You already have the maximum health [green]{0}[default] and cannot increase further!!",
+    "ItemAddHelathSuccess": "You purchased [green]{0}[default] health. Current health: [green]{1}[default], Maximum health: [green]{2}[default]!!",
+    "ItemAddHelathSuccessToAll": "Player [green]{0}[default] purchased [green]{1}[default] health. Maximum health is [green]{2}[default]!!",
+    "ItemInfiniteAmmo": "Infinite Ammo (30 Seconds)",
+    "ItemInfiniteAmmoAlready": "You are already in Infinite Ammo mode!!",
+    "ItemInfiniteAmmoEnd": "Your Infinite Ammo has ended",
+    "ItemInfiniteAmmoSuccess": "You purchased [green]{0}[default] seconds of Infinite Ammo!!",
+    "ItemInfiniteAmmoSuccessToAll": "Player [green]{0}[default] purchased [green]{1}[default] seconds of Infinite Ammo!!",
+    "ItemFireGrenade": "Obtain Incendiary Grenade",
+    "ItemFireGrenadeSuccess": "You obtained an Incendiary Grenade!!",
+    "ItemLightGrenade": "Obtain Flash Grenade",
+    "ItemLightGrenadeSuccess": "You obtained a Flash Grenade!!",
+    "ItemFreezeGrenade": "Obtain Freeze Grenade",
+    "ItemFreezeGrenadeSuccess": "You obtained a Freeze Grenade!!",
+    "ItemTeleportGrenade": "Obtain Teleport Grenade",
+    "ItemTeleportGrenadeSuccess": "You obtained a Teleport Grenade!!",
+    "TeleportGrenadeUnsafeDestination": "[red]Teleport canceled:[default] grenade destination is unsafe.",
+    "ItemIncGrenade": "Obtain Fire Grenade",
+    "ItemIncGrenadeSuccess": "You obtained a Fire Grenade!!",
+    "HudZombieClass": "Zombie Class：",
+    "HudPlayerName": "Player Name：",
+    "HudCause": "Cause",
+    "HudDamage": "Damage",
+    "HudHpRemaining": "Remaining",
+    "HudHP": "Health",
+    "HudMaxHP": "Max Health",
+    "MenuButtonMove": "Move",
+    "MenuButtonConfirm": "Confirm",
+    "MenuButtonCancel": "Cancel",
+    "ZombieClaw": "Zombie Claw",
+    "NormalInfection": "Infection Mode",
+    "MultiInfection": "MultiInfection Mode",
+    "NemesisMode": "Nemesis Mode",
+    "SurvivorMode": "Survivor Mode",
+    "SwarmMode": "Swarm Mode",
+    "PlagueMode": "Plague Mode",
+    "AssassinMode": "Assassin Mode",
+    "SniperMode": "Sniper Mode",
+    "AssassinVSSniper": "Assassin VS Sniper",
+    "HeroMode": "Hero Mode",
+
+    "WeaponMenuPrimaryTitle": "Primary Weapon Selection",
+    "WeaponMenuPrimarySelect": "Choose your primary weapon for this round",
+    "WeaponMenuSecondaryTitle": "Secondary Weapon Selection",
+    "WeaponMenuSecondarySelect": "Choose your secondary weapon for this round",
+    "WeaponsMenuNotEligible": "You are not eligible to use the weapon menu.",
+    "WeaponsMenuAlreadyUsed": "You have already used the weapon selection menu this round!",
+    "WeaponsMenuDisabledInMode": "The buy weapons menu is not available [red]in this game mode.",
+    "WeaponsMenuInfectionStarted": "Weapon selection is only available [red]before infection begins.",
+
+    // ── Main Game Menu ─────────────────────────────────────────────────────
+    "GameMenuTitle": "ZP Game Menu",
+    "GameMenuHint": "Zombie OutStanding CS@",
+    "GameMenuBuyWeapons": "Buy Weapons",
+    "GameMenuExtraItems": "Buy Extra Items",
+    "GameMenuZombieClass": "Choose Zombie Class",
+    "GameMenuUnstuck": "Unstuck",
+    "GameMenuJoinSpectator": "Join Spectator",
+    "GameMenuAdminMenu": "Admin Menu",
+
+    // ── Unstuck ────────────────────────────────────────────────────────────
+    "UnstuckMustBeAlive": "You must be alive to use Unstuck.",
+    "UnstuckSuccess": "[green]Unstuck success:[default] moved to a nearby safe spot.",
+    "UnstuckFailed": "[red]Unstuck failed:[default] could not find a free position nearby.",
+    "UnstuckNoSafePosition": "[red]Unstuck failed:[default] no safe position was found nearby.",
+
+    // ── Join Spectator ─────────────────────────────────────────────────────
+    "JoinSpectatorSuccess": "You have been moved to the spectator team.",
+    "JoinSpectatorFailed": "Could not move you to spectator at this time.",
+
+    // ── Extra Items Menu ───────────────────────────────────────────────────
+    "ExtraItemsMenuTitle": "Extra Items",
+    "ExtraItemsMenuAP": "Your Ammo Packs: [green]{0}[default]",
+    "ExtraItemsNoneAvailable": "No items available for your team.",
+    "ExtraItemsMustBeAlive": "You must be alive to buy items.",
+    "ExtraItemsRoundNotActive": "Cannot purchase items right now.",
+    "ExtraItemsDisabledInMode": "Extra Items are disabled [red]in this special/custom mode.",
+    "ExtraItemsWrongTeam": "This item is not available for your team.",
+    "ExtraItemsNotEnoughAP": "You need [green]{0}[default] Ammo Packs but only have [green]{1}[default].",
+
+    // ── Armor ──────────────────────────────────────────────────────────────
+    "ExtraItemsArmorSuccess": "You received [green]{0}[default] armor. Ammo Packs remaining: [green]{1}[default].",
+
+    // ── Grenades ───────────────────────────────────────────────────────────
+    "ExtraItemsGrenadeSuccess": "You received a [green]{0}[default]. Ammo Packs remaining: [green]{1}[default].",
+
+    // ── Antidote ───────────────────────────────────────────────────────────
+    "ExtraItemsAntidoteNotZombie": "You are not a zombie; antidote cannot be used.",
+    "ExtraItemsAntidoteSuccess": "You used the Antidote and became human again! Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsAntidoteSuccessToAll": "Player [green]{0}[default] used the Antidote and became human again!",
+
+    // ── Zombie Madness ─────────────────────────────────────────────────────
+    "ExtraItemsMadnessAlready": "Zombie Madness is already active!",
+    "ExtraItemsMadnessSuccess": "Zombie Madness activated for [green]{0}[default] seconds! Ammo Packs remaining: [green]{1}[default].",
+    "ExtraItemsMadnessEnd": "Zombie Madness has ended.",
+
+    // ── Multijump ─────────────────────────────────────────────────────────
+    "ExtraItemsMultijumpMax": "You already have the maximum of [green]{0}[default] extra jumps.",
+    "ExtraItemsMultijumpSuccess": "Multi-Jump upgraded to [green]{0}[default] extra jumps. Ammo Packs remaining: [green]{1}[default].",
+
+    // ── Knife Blink ───────────────────────────────────────────────────────
+    "ExtraItemsKnifeBlinkSuccess": "Received [green]{0}[default] Knife Blink charges (total: [green]{1}[default]). Ammo Packs remaining: [green]{2}[default].",
+    "ExtraItemsKnifeBlinkUsed": "Blinked! Charges remaining: [green]{0}[default] (cooldown: [green]{1}[default]s).",
+
+    // ── AP reward notifications ────────────────────────────────────────────
+    "APRoundSurviveReward": "You survived the round! +[green]{0}[default] Ammo Packs (total: [green]{1}[default]).",
+    "APZombieKillReward": "You infected a human! +[green]{0}[default] Ammo Packs (total: [green]{1}[default]).",
+    "APHumanDamageReward": "Damage bonus! +[green]{0}[default] Ammo Packs (total: [green]{1}[default]).",
+
+    // ── Jetpack ───────────────────────────────────────────────────────────
+    "ExtraItemsJetpackSuccess": "Jetpack equipped! Fuel: [green]{0}[default]. Hold CTRL+SPACE to fly. Ammo Packs remaining: [green]{1}[default].",
+    "ExtraItemsJetpackRefueled": "Jetpack refueled to [green]{0}[default] units. Ammo Packs remaining: [green]{1}[default].",
+
+    // ── Laser Mine ────────────────────────────────────────────────────────
+    "ExtraItemsLaserMineSuccess": "Laser mine menu opened! Select a mine type to place. Ammo Packs remaining: [green]{0}[default].",
+    "ItemSpecialRoleCantUse": "Special roles cannot use this item.",
+
+    // ── Revive Token ──────────────────────────────────────────────────────
+    "ExtraItemsReviveTokenSuccess": "Revive Token purchased! You will automatically respawn once if you die this round. Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsReviveTokenAlready": "You already have a Revive Token active!",
+    "ReviveTokenUsed": "Your Revive Token activated! You have been revived.",
+
+    // ── SCBA Suit (Extra Items) ────────────────────────────────────────────
+    "ExtraItemsScbaSuitSuccess": "You put on a Hazmat Suit and can resist one zombie attack! Ammo Packs remaining: [green]{0}[default].",
+
+    // ── Round start announcement ───────────────────────────────────────────
+    "RoundStartAnnounce": "New round [green]begins[default]! | Your credits: [green]{0}[default] | Players connected: [green]{1}[default]",
+
+    // ── Mine Menu ─────────────────────────────────────────────────────────
+    "MineMenuTitle": "Laser Tripmine",
+    "MineMenuSelectPrompt": "Select a mine type",
+    "MineMenuEmpty": "No mines configured.",
+    "FreeText": "Free",
+    "LimitText": "∞",
+    "MineLimit": "You have reached the limit of [green]{0}[default] mine(s) of this type.",
+    "NoMoney": "You do not have enough money to place this mine.",
+
+    // ── Admin Menu ────────────────────────────────────────────────────────
+    "AdminMenuMakeZombieHuman": "Make Zombie/Human",
+    "AdminMenuMakeNemesis": "Make Nemesis",
+    "AdminMenuMakeAssassin": "Make Assassin",
+    "AdminMenuMakeSurvivor": "Make Survivor",
+    "AdminMenuMakeSniper": "Make Sniper",
+    "AdminMenuRespawnSomeone": "Respawn Someone",
+    "AdminMenuStartGameMode": "Start Game Mode (use at roundstart)",
+    "AdminMenuNoTargets": "No valid targets available.",
+    "AdminMenuModeActivated": "[green]Game mode [red]{0}[default] [green]activated!",
+    "AdminMenuModeInfectionStarted": "Custom game mode can only be started before infection begins!",
+    "AdminMenuToggledZombieToAll": "Admin infected player [green]{0}[default]!",
+    "AdminMenuToggledHumanToAll": "Admin made player [green]{0}[default] human!",
+    "AdminMenuMadeNemesisToAll": "Admin made player [green]{0}[default] a Nemesis!",
+    "AdminMenuMadeAssassinToAll": "Admin made player [green]{0}[default] an Assassin!",
+    "AdminMenuMadeSurvivorToAll": "Admin made player [green]{0}[default] a Survivor!",
+    "AdminMenuMadeSniperToAll": "Admin made player [green]{0}[default] a Sniper!",
+    "AdminMenuRespawnedToAll": "Admin respawned player [green]{0}[default]!"
+
+}
