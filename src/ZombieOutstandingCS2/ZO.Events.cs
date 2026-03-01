@@ -330,6 +330,9 @@ public partial class ZOEvents
                 _globals.ZombieMadnessActive.Remove(id);
                 _globals.PrevJumpPressed.Remove(id);
                 _globals.DamageAccumulator.Remove(id);
+                _globals.InfiniteClipState.Remove(id);
+                _globals.ExtraNoRecoilState.Remove(id);
+                _globals.TryderState.Remove(id);
                 // Jetpack / Revive Token
                 _extraItemsMenu.CleanupJetpack(id);
                 _globals.HasReviveToken.Remove(id);
@@ -647,6 +650,9 @@ public partial class ZOEvents
         _globals.KnifeBlinkCooldownEnd.Remove(Id);
         _globals.ZombieMadnessActive.Remove(Id);
         _globals.PrevJumpPressed.Remove(Id);
+        _globals.InfiniteClipState.Remove(Id);
+        _globals.ExtraNoRecoilState.Remove(Id);
+        _globals.TryderState.Remove(Id);
         // Jetpack and mines cleanup on death
         _extraItemsMenu.CleanupJetpack(Id);
         _mineService.CleanupMinesForPlayer(steamId);
@@ -1126,6 +1132,9 @@ public partial class ZOEvents
         _globals.KnifeBlinkCooldownEnd.Remove(id);
         _globals.ZombieMadnessActive.Remove(id);
         _globals.PrevJumpPressed.Remove(id);
+        _globals.InfiniteClipState.Remove(id);
+        _globals.ExtraNoRecoilState.Remove(id);
+        _globals.TryderState.Remove(id);
         // Jetpack / Revive Token
         _extraItemsMenu.CleanupJetpack(id);
         // Cleanup mines for disconnecting player
@@ -1228,13 +1237,21 @@ public partial class ZOEvents
     private void Event_OnTickNoRecoil()
     {
         var CFG = _mainCFG.CurrentValue;
-        if (!CFG.EnableWeaponNoRecoil)
-            return;
+        bool globalNoRecoil = CFG.EnableWeaponNoRecoil;
 
         foreach (var player in _core.PlayerManager.GetAllPlayers())
         {
             if (!player.IsValid)
                 continue;
+
+            if (!globalNoRecoil)
+            {
+                int id = player.PlayerID;
+                _globals.ExtraNoRecoilState.TryGetValue(id, out bool extraNoRecoil);
+                _globals.TryderState.TryGetValue(id, out bool isTryder);
+                if (!extraNoRecoil && !isTryder)
+                    continue;
+            }
 
             var pawn = player.PlayerPawn;
             if (pawn == null || !pawn.IsValid)
@@ -1443,7 +1460,8 @@ public partial class ZOEvents
         _globals.IsSniper.TryGetValue(Id, out bool IsSniper);
         _globals.IsHero.TryGetValue(Id, out bool IsHero);
         _globals.InfiniteAmmoState.TryGetValue(Id, out bool IsInfiniteAmmoState);
-
+        _globals.InfiniteClipState.TryGetValue(Id, out bool IsInfiniteClipState);
+        _globals.TryderState.TryGetValue(Id, out bool IsTryder);
 
         var CFG = _mainCFG.CurrentValue;
 
@@ -1459,12 +1477,10 @@ public partial class ZOEvents
             activeWeapon.ReserveAmmo[0] = 1000;
         }
 
-        if (_globals.GameInfiniteClipMode)
-        {
-            activeWeapon.Clip1 = 100;
-            activeWeapon.Clip1Updated();
-        }
-        else if (IsInfiniteAmmoState)
+        // Infinite clip: API state, per-player extra item, or Tryder
+        bool hasAnyInfiniteClipSource = IsInfiniteAmmoState || IsInfiniteClipState || IsTryder;
+
+        if (hasAnyInfiniteClipSource)
         {
             activeWeapon.Clip1 = 100;
             activeWeapon.Clip1Updated();

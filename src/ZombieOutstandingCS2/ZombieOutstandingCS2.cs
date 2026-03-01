@@ -151,6 +151,10 @@ public partial class ZombieOutstandingCS2(ISwiftlyCore core) : BasePlugin(core)
 
         ServiceProvider = collection.BuildServiceProvider();
 
+        // Break circular dependency: inject ZOServices into ZOExtraItemsMenu post-build
+        ServiceProvider.GetRequiredService<ZOExtraItemsMenu>()
+            .SetServices(ServiceProvider.GetRequiredService<ZOServices>());
+
         _apiInstance.Initialize(
             Core,
             ServiceProvider.GetRequiredService<ILogger<ZombieOutstandingAPI>>(),

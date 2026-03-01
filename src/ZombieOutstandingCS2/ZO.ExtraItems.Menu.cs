@@ -27,6 +27,10 @@ public class ZOExtraItemsMenu
     private readonly ZOGameMode _gameMode;
     private readonly ZOMineMenu _mineMenu;
 
+    // Injected post-construction to break circular dependency with ZOServices
+    private ZOServices? _services;
+    public void SetServices(ZOServices services) => _services = services;
+
     public ZOExtraItemsMenu(
         ISwiftlyCore core,
         ILogger<ZOExtraItemsMenu> logger,
@@ -321,6 +325,27 @@ public class ZOExtraItemsMenu
             case "scba_suit":
                 ApplyScbaSuit(player, newAp);
                 break;
+            case "unlimited_clip":
+                ApplyUnlimitedClip(player, newAp);
+                break;
+            case "no_recoil":
+                ApplyNoRecoil(player, newAp);
+                break;
+            case "tryder":
+                ApplyTryder(player, newAp);
+                break;
+            case "buy_survivor":
+                ApplyBuySurvivor(player, newAp);
+                break;
+            case "buy_nemesis":
+                ApplyBuyNemesis(player, newAp);
+                break;
+            case "buy_sniper":
+                ApplyBuySniper(player, newAp);
+                break;
+            case "buy_assassin":
+                ApplyBuyAssassin(player, newAp);
+                break;
             default:
                 // Unknown item – refund
                 AddAmmoPacks(playerId, item.Price);
@@ -554,6 +579,153 @@ public class ZOExtraItemsMenu
         _helpers.EmitSoundFormPlayer(player, mainCFG.ScbaSuitGetSound, 1.0f);
         _helpers.SendChatT(player, "ExtraItemsScbaSuitSuccess", remainingAP);
         _helpers.SendChatToAllT("ItemSCBASuitSuccessToAll", player.Name);
+    }
+
+    private void ApplyUnlimitedClip(IPlayer player, int remainingAP)
+    {
+        int playerId = player.PlayerID;
+        if (_globals.InfiniteClipState.GetValueOrDefault(playerId))
+        {
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "unlimited_clip")?.Price ?? 0);
+            _helpers.SendChatT(player, "ExtraItemsUnlimitedClipAlready");
+            return;
+        }
+        _globals.InfiniteClipState[playerId] = true;
+        _helpers.SendChatT(player, "ExtraItemsUnlimitedClipSuccess", remainingAP);
+    }
+
+    private void ApplyNoRecoil(IPlayer player, int remainingAP)
+    {
+        int playerId = player.PlayerID;
+        if (_globals.ExtraNoRecoilState.GetValueOrDefault(playerId))
+        {
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "no_recoil")?.Price ?? 0);
+            _helpers.SendChatT(player, "ExtraItemsNoRecoilAlready");
+            return;
+        }
+        _globals.ExtraNoRecoilState[playerId] = true;
+        _helpers.SendChatT(player, "ExtraItemsNoRecoilSuccess", remainingAP);
+    }
+
+    private void ApplyTryder(IPlayer player, int remainingAP)
+    {
+        int playerId = player.PlayerID;
+        if (_globals.TryderState.GetValueOrDefault(playerId))
+        {
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "tryder")?.Price ?? 0);
+            _helpers.SendChatT(player, "ExtraItemsTryderAlready");
+            return;
+        }
+
+        var cfg = _extraItemsCFG.CurrentValue;
+        var pawn = player.PlayerPawn;
+        if (pawn == null || !pawn.IsValid) return;
+
+        _globals.TryderState[playerId] = true;
+        _globals.InfiniteClipState[playerId] = true;
+
+        pawn.MaxHealth = cfg.TryderHealth;
+        pawn.MaxHealthUpdated();
+        pawn.Health = cfg.TryderHealth;
+        pawn.HealthUpdated();
+
+        pawn.ArmorValue = cfg.TryderArmor;
+        pawn.ArmorValueUpdated();
+
+        _helpers.SetGlow(player, cfg.TryderGlowR, cfg.TryderGlowG, cfg.TryderGlowB, 255);
+
+        _helpers.SendChatT(player, "ExtraItemsTryderSuccess", remainingAP);
+    }
+
+    private void ApplyBuySurvivor(IPlayer player, int remainingAP)
+    {
+        int playerId = player.PlayerID;
+        if (_services == null)
+        {
+            _logger.LogError("[ZOExtraItems] ZOServices not wired – refunding buy_survivor.");
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "buy_survivor")?.Price ?? 0);
+            return;
+        }
+        // Survivors are a human-only role; zombies and existing special roles cannot buy.
+        if (IsZombie(playerId) || IsSpecialRole(playerId))
+        {
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "buy_survivor")?.Price ?? 0);
+            _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEligible");
+            return;
+        }
+        _services.SetupSurvivor(player);
+        _helpers.SendChatT(player, "ExtraItemsBuySurvivorSuccess", remainingAP);
+    }
+
+    private void ApplyBuyNemesis(IPlayer player, int remainingAP)
+    {
+        int playerId = player.PlayerID;
+        if (_services == null)
+        {
+            _logger.LogError("[ZOExtraItems] ZOServices not wired – refunding buy_nemesis.");
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "buy_nemesis")?.Price ?? 0);
+            return;
+        }
+        // Nemesis is a zombie role; any player without a special role can buy it.
+        if (IsSpecialRole(playerId))
+        {
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "buy_nemesis")?.Price ?? 0);
+            _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEligible");
+            return;
+        }
+        _services.SetupNemesis(player);
+        _helpers.SendChatT(player, "ExtraItemsBuyNemesisSuccess", remainingAP);
+    }
+
+    private void ApplyBuySniper(IPlayer player, int remainingAP)
+    {
+        int playerId = player.PlayerID;
+        if (_services == null)
+        {
+            _logger.LogError("[ZOExtraItems] ZOServices not wired – refunding buy_sniper.");
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "buy_sniper")?.Price ?? 0);
+            return;
+        }
+        // Snipers are a human-only role; zombies and existing special roles cannot buy.
+        if (IsZombie(playerId) || IsSpecialRole(playerId))
+        {
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "buy_sniper")?.Price ?? 0);
+            _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEligible");
+            return;
+        }
+        _services.SetupSniper(player);
+        _helpers.SendChatT(player, "ExtraItemsBuySniperSuccess", remainingAP);
+    }
+
+    private void ApplyBuyAssassin(IPlayer player, int remainingAP)
+    {
+        int playerId = player.PlayerID;
+        if (_services == null)
+        {
+            _logger.LogError("[ZOExtraItems] ZOServices not wired – refunding buy_assassin.");
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "buy_assassin")?.Price ?? 0);
+            return;
+        }
+        // Assassin is a zombie role; any player without a special role can buy it.
+        if (IsSpecialRole(playerId))
+        {
+            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "buy_assassin")?.Price ?? 0);
+            _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEligible");
+            return;
+        }
+        _services.SetupAssassin(player);
+        _helpers.SendChatT(player, "ExtraItemsBuyAssassinSuccess", remainingAP);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

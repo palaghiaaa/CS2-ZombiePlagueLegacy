@@ -125,6 +125,14 @@ public class ZOGlobals
     /// <summary>True if the player has an active revive token that will trigger on death.</summary>
     public Dictionary<int, bool> HasReviveToken = new Dictionary<int, bool>();
 
+    // ── Extra Items – per-player single-round states ──────────────────────────
+    /// <summary>True while a player has purchased the Unlimited Clip extra item this round.</summary>
+    public Dictionary<int, bool> InfiniteClipState = new Dictionary<int, bool>();
+    /// <summary>True while a player has purchased the No Recoil extra item this round.</summary>
+    public Dictionary<int, bool> ExtraNoRecoilState = new Dictionary<int, bool>();
+    /// <summary>True while a player has purchased the Tryder extra item this round.</summary>
+    public Dictionary<int, bool> TryderState = new Dictionary<int, bool>();
+
 }
 public class ZombieRegenState
 {

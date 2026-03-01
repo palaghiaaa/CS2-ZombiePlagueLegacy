@@ -167,6 +167,25 @@
     // ── SCBA Suit (Extra Items) ────────────────────────────────────────────
     "ExtraItemsScbaSuitSuccess": "You put on a Hazmat Suit and can resist one zombie attack! Ammo Packs remaining: [green]{0}[default].",
 
+    // ── Unlimited Clip (Extra Item) ───────────────────────────────────────
+    "ExtraItemsUnlimitedClipSuccess": "Unlimited Clip activated for this round! Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsUnlimitedClipAlready": "You already have Unlimited Clip active!",
+
+    // ── No Recoil (Extra Item) ────────────────────────────────────────────
+    "ExtraItemsNoRecoilSuccess": "No Recoil activated for this round! Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsNoRecoilAlready": "You already have No Recoil active!",
+
+    // ── Tryder (Extra Item) ───────────────────────────────────────────────
+    "ExtraItemsTryderSuccess": "You became a [green]Tryder[default]! Glow, infinite clip and bonus HP/armor granted. Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsTryderAlready": "You are already a Tryder!",
+
+    // ── Buy Role (Extra Items) ────────────────────────────────────────────
+    "ExtraItemsBuyRoleNotEligible": "You are not eligible to purchase this role right now.",
+    "ExtraItemsBuySurvivorSuccess": "You became a [green]Survivor[default]! Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsBuyNemesisSuccess": "You became a [green]Nemesis[default]! Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsBuySniperSuccess": "You became a [green]Sniper[default]! Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsBuyAssassinSuccess": "You became an [green]Assassin[default]! Ammo Packs remaining: [green]{0}[default].",
+
     // ── Round start announcement ───────────────────────────────────────────
     "RoundStartAnnounce": "New round [green]begins[default]! | Your credits: [green]{0}[default] | Players connected: [green]{1}[default]",
 
