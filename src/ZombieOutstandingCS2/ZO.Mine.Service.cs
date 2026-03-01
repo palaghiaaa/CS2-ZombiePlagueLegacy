@@ -165,7 +165,7 @@ public class ZOMineService
                     return;
                 }
 
-                ent.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
+                try { ent.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2); } catch { }
                 ent.DispatchSpawn();
                 ent.SetModel(mineData.Model);
                 ent.OwnerEntity.Raw = pawn.Index;
