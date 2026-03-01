@@ -18,6 +18,9 @@ public class ZOMineService
     private readonly ILogger<ZOMineService> _logger;
     private readonly ISwiftlyCore _core;
     private readonly ZOGlobals _globals;
+
+    /// <summary>Units to advance past a hit entity so the next penetration trace doesn't re-hit it.</summary>
+    private const float TraceAdvanceDistance = 8f;
     private readonly IOptionsMonitor<ZOMineCFG> _mineCFG;
 
     public ZOMineService(
@@ -109,7 +112,11 @@ public class ZOMineService
             mineEntity.DispatchSpawn();
 
             var mineHandle = _core.EntitySystem.GetRefEHandle(mineEntity);
-            if (!mineHandle.IsValid) return null;
+            if (!mineHandle.IsValid)
+            {
+                if (mineEntity.IsValid) mineEntity.AcceptInput("Kill", 0);
+                return null;
+            }
 
             var mineData = new MineData
             {
@@ -139,12 +146,31 @@ public class ZOMineService
             mineSet.Add(mineHandle.Raw);
 
             var ent = mineHandle.Value;
-            if (ent == null) return null;
+            if (ent == null)
+            {
+                _globals.MineData.Remove(mineHandle.Raw);
+                mineSet.Remove(mineHandle.Raw);
+                if (mineEntity.IsValid) mineEntity.AcceptInput("Kill", 0);
+                return null;
+            }
 
             // ── Configure entity properties (model must be set after spawn) ────
             _core.Scheduler.NextTick(() =>
             {
                 if (ent == null || !ent.IsValid) return;
+                if (pawn == null || !pawn.IsValid)
+                {
+                    // Owner gone before setup — remove tracking and destroy entity
+                    if (_globals.MineThink.TryGetValue(mineHandle.Raw, out var t))
+                    {
+                        t?.Cancel();
+                        _globals.MineThink.Remove(mineHandle.Raw);
+                    }
+                    _globals.MineData.Remove(mineHandle.Raw);
+                    mineSet.Remove(mineHandle.Raw);
+                    ent.AcceptInput("Kill", 0);
+                    return;
+                }
 
                 ent.SetModel(mineData.Model);
                 ent.OwnerEntity.Raw = pawn.Index;
@@ -293,7 +319,14 @@ public class ZOMineService
             if (trace.HitPlayer(out IPlayer? target) && target != null)
             {
                 var targetPawn = target.PlayerPawn;
-                if (targetPawn == null || !targetPawn.IsValid) return;
+                if (targetPawn == null || !targetPawn.IsValid)
+                {
+                    // Advance past this invalid entity so the next iteration doesn't re-hit it
+                    currentStart  = trace.HitPoint + direction * TraceAdvanceDistance;
+                    remainingDist = remainingDist * (1f - trace.Fraction) - TraceAdvanceDistance;
+                    penetrationCount++;
+                    continue;
+                }
 
                 bool isOwnerTeam = ownerPawn.TeamNum == targetPawn.TeamNum;
                 bool canTrigger  = !isOwnerTeam || (isOwnerTeam && mineData.CanOwnerTeamTrigger);
@@ -317,8 +350,8 @@ public class ZOMineService
                     }
                 }
 
-                currentStart   = trace.HitPoint + direction * 8f;
-                remainingDist  = remainingDist * (1f - trace.Fraction) - 8f;
+                currentStart   = trace.HitPoint + direction * TraceAdvanceDistance;
+                remainingDist  = remainingDist * (1f - trace.Fraction) - TraceAdvanceDistance;
             }
             else
             {
@@ -403,6 +436,9 @@ public class ZOMineService
             // Kill beam entity
             if (_globals.MineBeam.TryGetValue(kvp.Key, out var beamRaw))
                 KillBeamEntity(beamRaw);
+
+            // Kill mine entity
+            KillMineEntity(kvp.Key);
         }
         _globals.MineThink.Clear();
         _globals.MineData.Clear();
@@ -489,6 +525,20 @@ public class ZOMineService
                 var beamHandle = new CHandle<CBeam>(beamRaw);
                 if (beamHandle.IsValid)
                     beamHandle.Value?.AcceptInput("Kill", 0);
+            }
+            catch { }
+        });
+    }
+
+    private void KillMineEntity(uint mineRaw)
+    {
+        _core.Scheduler.NextTick(() =>
+        {
+            try
+            {
+                var handle = new CHandle<CBaseModelEntity>(mineRaw);
+                if (handle.IsValid)
+                    handle.Value?.AcceptInput("Kill", 0);
             }
             catch { }
         });
@@ -689,7 +739,12 @@ public class ZOMineService
 
         CBaseModelEntity? modelRelay = _core.EntitySystem.CreateEntity<CBaseModelEntity>();
         CBaseModelEntity? modelGlow  = _core.EntitySystem.CreateEntity<CBaseModelEntity>();
-        if (modelRelay == null || modelGlow == null) return;
+        if (modelRelay == null || modelGlow == null)
+        {
+            if (modelRelay != null && modelRelay.IsValid) modelRelay.AcceptInput("Kill", 0);
+            if (modelGlow  != null && modelGlow.IsValid)  modelGlow.AcceptInput("Kill", 0);
+            return;
+        }
 
         try { modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2)); } catch { }
         modelRelay.SetModel(modelName);

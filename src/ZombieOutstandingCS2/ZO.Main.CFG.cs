@@ -187,7 +187,7 @@ public class ZOMainCFG
     // ── Economy backend settings ──────────────────────────────────────────────
     /// <summary>
     /// Wallet kind name registered in the Economy plugin.
-    /// Defaults to "ammopacks". Must match a wallet kind configured in Economy's config.
+    /// Defaults to "ammo". Must match a wallet kind configured in Economy's config.
     /// </summary>
-    public string EconomyWalletKind { get; set; } = "ammopacks";
+    public string EconomyWalletKind { get; set; } = "ammo";
 }
