@@ -245,6 +245,7 @@ public partial class ZOEvents
 
     private HookResult OnTimerStart(EventRoundStart @event)
     {
+        _mineService.CleanupAllMines();
         _service.SetRoundEndTime();
         _globals.SafeRoundStart = true;
         _globals.InfectionStartedThisRound = false;
