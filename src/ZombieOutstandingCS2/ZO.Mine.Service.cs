@@ -109,7 +109,11 @@ public class ZOMineService
             mineEntity.DispatchSpawn();
 
             var mineHandle = _core.EntitySystem.GetRefEHandle(mineEntity);
-            if (!mineHandle.IsValid) return null;
+            if (!mineHandle.IsValid)
+            {
+                if (mineEntity.IsValid) mineEntity.AcceptInput("Kill", 0);
+                return null;
+            }
 
             var mineData = new MineData
             {
@@ -139,12 +143,19 @@ public class ZOMineService
             mineSet.Add(mineHandle.Raw);
 
             var ent = mineHandle.Value;
-            if (ent == null) return null;
+            if (ent == null)
+            {
+                _globals.MineData.Remove(mineHandle.Raw);
+                mineSet.Remove(mineHandle.Raw);
+                if (mineEntity.IsValid) mineEntity.AcceptInput("Kill", 0);
+                return null;
+            }
 
             // ── Configure entity properties (model must be set after spawn) ────
             _core.Scheduler.NextTick(() =>
             {
                 if (ent == null || !ent.IsValid) return;
+                if (pawn == null || !pawn.IsValid) return;
 
                 ent.SetModel(mineData.Model);
                 ent.OwnerEntity.Raw = pawn.Index;
@@ -293,7 +304,7 @@ public class ZOMineService
             if (trace.HitPlayer(out IPlayer? target) && target != null)
             {
                 var targetPawn = target.PlayerPawn;
-                if (targetPawn == null || !targetPawn.IsValid) return;
+                if (targetPawn == null || !targetPawn.IsValid) { penetrationCount++; continue; }
 
                 bool isOwnerTeam = ownerPawn.TeamNum == targetPawn.TeamNum;
                 bool canTrigger  = !isOwnerTeam || (isOwnerTeam && mineData.CanOwnerTeamTrigger);
@@ -689,7 +700,12 @@ public class ZOMineService
 
         CBaseModelEntity? modelRelay = _core.EntitySystem.CreateEntity<CBaseModelEntity>();
         CBaseModelEntity? modelGlow  = _core.EntitySystem.CreateEntity<CBaseModelEntity>();
-        if (modelRelay == null || modelGlow == null) return;
+        if (modelRelay == null || modelGlow == null)
+        {
+            if (modelRelay != null && modelRelay.IsValid) modelRelay.AcceptInput("Kill", 0);
+            if (modelGlow  != null && modelGlow.IsValid)  modelGlow.AcceptInput("Kill", 0);
+            return;
+        }
 
         try { modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2)); } catch { }
         modelRelay.SetModel(modelName);
