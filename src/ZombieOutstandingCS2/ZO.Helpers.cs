@@ -635,8 +635,8 @@ public partial class ZOHelpers
 
         particle.StartActive = true;
         particle.EffectName = effectName;
-        particle.AcceptInput("Start", "");
         particle.DispatchSpawn();
+        particle.AcceptInput("Start", "");
 
 
         particle.Teleport(pos, QAngle.Zero, Vector.Zero);

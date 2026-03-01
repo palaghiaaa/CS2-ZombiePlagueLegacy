@@ -108,9 +108,6 @@ public class ZOMineService
 
         try
         {
-            mineEntity.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
-            mineEntity.DispatchSpawn();
-
             var mineHandle = _core.EntitySystem.GetRefEHandle(mineEntity);
             if (!mineHandle.IsValid)
             {
@@ -145,18 +142,14 @@ public class ZOMineService
             _globals.MineData[mineHandle.Raw] = mineData;
             mineSet.Add(mineHandle.Raw);
 
-            var ent = mineHandle.Value;
-            if (ent == null)
-            {
-                _globals.MineData.Remove(mineHandle.Raw);
-                mineSet.Remove(mineHandle.Raw);
-                if (mineEntity.IsValid) mineEntity.AcceptInput("Kill", 0);
-                return null;
-            }
+            // ── Configure entity properties and position (must run in world update) ──
+            var endPos = trace.EndPos;
+            var normal = trace.HitNormal;
+            var angle  = NormalToAngles(normal, playerForward, mineData, out bool isVerticalSurface);
 
-            // ── Configure entity properties (model must be set after spawn) ────
-            _core.Scheduler.NextTick(() =>
+            _core.Scheduler.NextWorldUpdate(() =>
             {
+                var ent = mineHandle.Value;
                 if (ent == null || !ent.IsValid) return;
                 if (pawn == null || !pawn.IsValid)
                 {
@@ -172,6 +165,8 @@ public class ZOMineService
                     return;
                 }
 
+                ent.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
+                ent.DispatchSpawn();
                 ent.SetModel(mineData.Model);
                 ent.OwnerEntity.Raw = pawn.Index;
                 ent.OwnerEntityUpdated();
@@ -179,15 +174,10 @@ public class ZOMineService
                 ent.Health    = 3000;
                 ent.MoveType  = MoveType_t.MOVETYPE_NONE;
                 ent.MoveTypeUpdated();
+                ent.Teleport(endPos, angle, null);
 
                 SetGlow(ent, mineData.GlowColor, mineData.Model, mineData.Team);
             });
-
-            // ── Position and orient the mine ───────────────────────────────────
-            var endPos = trace.EndPos;
-            var normal = trace.HitNormal;
-            var angle  = NormalToAngles(normal, playerForward, mineData, out bool isVerticalSurface);
-            ent.Teleport(endPos, angle, null);
 
             EmitSoundFromEntity(mineHandle, mineData.MineOpenSound);
 
@@ -197,7 +187,8 @@ public class ZOMineService
 
             _core.Scheduler.DelayBySeconds(1.0f, () =>
             {
-                if (ent == null || !ent.IsValid) return;
+                var e = mineHandle.Value;
+                if (e == null || !e.IsValid) return;
                 CreateBeam(player, mineHandle, laserColor, mineData, isVerticalSurface);
             });
 
@@ -229,21 +220,27 @@ public class ZOMineService
 
         CBeam? beam = _core.EntitySystem.CreateEntity<CBeam>();
         if (beam == null) return;
-        beam.DispatchSpawn();
-
-        EmitSoundFromEntity(mineHandle, mineData.LaserOpenSound);
 
         var beamHandle = _core.EntitySystem.GetRefEHandle(beam);
         if (!beamHandle.IsValid) return;
-        var beamEnt = beamHandle.Value;
-        if (beamEnt == null) return;
 
         float size = mineData.LaserSize;
-        beamEnt.Render   = color;
-        beamEnt.Width    = size;
-        beamEnt.EndWidth = size;
-        beamEnt.Teleport(trace.StartPos, null, null);
-        beamEnt.EndPos = trace.EndPos;
+        var traceStartPos = trace.StartPos;
+        var traceEndPos   = trace.EndPos;
+
+        _core.Scheduler.NextWorldUpdate(() =>
+        {
+            var beamEnt = beamHandle.Value;
+            if (beamEnt == null || !beamEnt.IsValid) return;
+            beamEnt.DispatchSpawn();
+            beamEnt.Render   = color;
+            beamEnt.Width    = size;
+            beamEnt.EndWidth = size;
+            beamEnt.Teleport(traceStartPos, null, null);
+            beamEnt.EndPos = traceEndPos;
+        });
+
+        EmitSoundFromEntity(mineHandle, mineData.LaserOpenSound);
 
         var beamStart = trace.StartPos;
         var beamDir   = forward;
@@ -384,20 +381,6 @@ public class ZOMineService
         var pawn = player.PlayerPawn;
         if (pawn == null || !pawn.IsValid) return;
 
-        var grenade = CHEGrenadeProjectile.EmitGrenade(minePos.Value, mineAngle.Value, mine.AbsVelocity, pawn);
-        if (grenade == null) return;
-
-        grenade.DispatchSpawn();
-        grenade.Damage      = mineData.ExplorerDamage;
-        grenade.DamageUpdated();
-        grenade.DmgRadius   = mineData.ExplorerRadius;
-        grenade.DmgRadiusUpdated();
-        grenade.Globalname  = "激光绊雷";
-        grenade.Teleport(minePos, null, null);
-        grenade.AcceptInput("InitializeSpawnFromWorld", "", pawn, pawn);
-        grenade.DetonateTime.Value = 0;
-        grenade.DetonateTimeUpdated();
-
         // Stop the mine's think loop
         if (_globals.MineThink.TryGetValue(mineHandle.Raw, out var task))
         {
@@ -411,8 +394,36 @@ public class ZOMineService
         // Remove mine/beam entities from the player's count tracking
         RemoveMineFromPlayerCount(player.SteamID, mineHandle.Raw);
 
-        _core.Scheduler.NextTick(() =>
+        var capturedMinePos   = minePos.Value;
+        var capturedMineAngle = mineAngle.Value;
+        var capturedVelocity  = mine.AbsVelocity;
+        int explorerDamage    = mineData.ExplorerDamage;
+        int explorerRadius    = mineData.ExplorerRadius;
+
+        _core.Scheduler.NextWorldUpdate(() =>
         {
+            if (pawn == null || !pawn.IsValid)
+            {
+                if (mine.IsValid) mine.AcceptInput("Kill", 0);
+                if (beam.IsValid) beam.AcceptInput("Kill", 0);
+                return;
+            }
+
+            var grenade = CHEGrenadeProjectile.EmitGrenade(capturedMinePos, capturedMineAngle, capturedVelocity, pawn);
+            if (grenade != null)
+            {
+                grenade.DispatchSpawn();
+                grenade.Damage    = explorerDamage;
+                grenade.DamageUpdated();
+                grenade.DmgRadius = explorerRadius;
+                grenade.DmgRadiusUpdated();
+                grenade.Globalname = "激光绊雷";
+                grenade.Teleport(capturedMinePos, null, null);
+                grenade.AcceptInput("InitializeSpawnFromWorld", "", pawn, pawn);
+                grenade.DetonateTime.Value = 0;
+                grenade.DetonateTimeUpdated();
+            }
+
             if (mine.IsValid) mine.AcceptInput("Kill", 0);
             if (beam.IsValid) beam.AcceptInput("Kill", 0);
         });
@@ -468,7 +479,7 @@ public class ZOMineService
                 _globals.MineBeam.Remove(raw);
 
                 // Try to kill the mine entity
-                _core.Scheduler.NextTick(() =>
+                _core.Scheduler.NextWorldUpdate(() =>
                 {
                     try
                     {
@@ -518,7 +529,7 @@ public class ZOMineService
 
     private void KillBeamEntity(uint beamRaw)
     {
-        _core.Scheduler.NextTick(() =>
+        _core.Scheduler.NextWorldUpdate(() =>
         {
             try
             {
@@ -532,7 +543,7 @@ public class ZOMineService
 
     private void KillMineEntity(uint mineRaw)
     {
-        _core.Scheduler.NextTick(() =>
+        _core.Scheduler.NextWorldUpdate(() =>
         {
             try
             {
