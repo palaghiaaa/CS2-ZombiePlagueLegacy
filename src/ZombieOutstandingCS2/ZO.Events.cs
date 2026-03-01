@@ -1284,6 +1284,9 @@ public partial class ZOEvents
                 continue;
 
             int id = player.PlayerID;
+            _globals.IsZombie.TryGetValue(id, out bool isZombie);
+            if (isZombie) continue;
+
             _globals.ExtraJumps.TryGetValue(id, out int extraJumps);
             if (extraJumps <= 0)
                 continue;
