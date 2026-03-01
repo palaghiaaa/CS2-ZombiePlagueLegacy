@@ -135,7 +135,7 @@
 	// game mode (Nemesis, Survivor, etc.) can be randomly chosen.
 	// Set to 0 to disable the restriction (pure weight-based selection).
 	// Example: 2 = at least 2 normal rounds must pass between special rounds.
-	"NormalRoundsInterval": 0,
+	"NormalRoundsInterval": 5,
 
 	// ── Human settings ───────────────────────────────────────────────────────
 	"HumandefaultModel": "characters/models/ctm_st6/ctm_st6_variante.vmdl",
