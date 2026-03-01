@@ -40,6 +40,15 @@
 		"Name": "Nemesis Mode",
 		"NemesisNames": "Nemesis",
 		"Weight": 50,
+		// ── Nemesis HP ────────────────────────────────────────────────────────
+		// Static HP assigned when the round starts (takes priority when > 0).
+		// Balanced for CS2: tankly enough that a single player can't solo it,
+		// but a coordinated team of 5+ can take it down.
+		"NemesisHealth": 120000,
+		// Per-player HP multiplier: FinalHP = NemesisBaseHealth × alive players.
+		// Only active when NemesisHealth is 0. Example: 6000 × 20 players = 120 000 HP.
+		// Set to 0 to disable dynamic HP (use static NemesisHealth above).
+		"NemesisBaseHealth": 0,
 		"EnableInfiniteClipMode": true,
 		"ZombieCanReborn": true
 	},
@@ -49,7 +58,12 @@
 		"Name": "Survivor Mode",
 		"Weight": 50,
 		"SurvivorNames": "Survivor",
+		// ── Survivor HP ───────────────────────────────────────────────────────
+		// Static HP (takes priority when > 0).
 		"SurvivorHealth": 8000,
+		// Per-player HP multiplier (only active when SurvivorHealth == 0).
+		// Set to 0 to keep static HP above.
+		"SurvivorBaseHealth": 0,
 		"SurvivorSpeed": 0.92,
 		"SurvivorGravity": 1.25,
 		"SurvivorDamage": 5.0,
@@ -83,6 +97,14 @@
 		"Name": "Assassin Mode",
 		"Weight": 50,
 		"AssassinNames": "Assassin",
+		// ── Assassin HP ───────────────────────────────────────────────────────
+		// Static HP (takes priority when > 0).
+		"AssassinHealth": 24000,
+		// Per-player HP multiplier (only active when AssassinHealth == 0).
+		// Set to 0 to keep static HP above.
+		"AssassinBaseHealth": 0,
+		// Speed modifier override for the Assassin (0 = use special class Speed).
+		"AssassinSpeed": 0.0,
 		// Distance (units) within which the assassin becomes visible.
 		"InvisibilityDist": 200.0,
 		"EnableInfiniteClipMode": false,
@@ -94,7 +116,12 @@
 		"Name": "Sniper Mode",
 		"Weight": 50,
 		"SniperNames": "Sniper",
+		// ── Sniper HP ─────────────────────────────────────────────────────────
+		// Static HP (takes priority when > 0).
 		"SniperHealth": 5000,
+		// Per-player HP multiplier (only active when SniperHealth == 0).
+		// Set to 0 to keep static HP above.
+		"SniperBaseHealth": 0,
 		"SniperSpeed": 0.92,
 		"SniperGravity": 0.75,
 		"SniperDamage": 35.0,

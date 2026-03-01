@@ -29,8 +29,9 @@ public class NemesisModeConfig : GameModeConfig
     public string NemesisNames { get; set; } = string.Empty;
     /// <summary>Static HP for Nemesis. When 0, BaseHealth × alive players is used.</summary>
     public int NemesisHealth { get; set; } = 120000;
-    /// <summary>Per-player HP multiplier. FinalHP = NemesisBaseHealth × alive players (when NemesisHealth == 0).</summary>
-    public int NemesisBaseHealth { get; set; } = 120000;
+    /// <summary>Per-player HP multiplier. FinalHP = NemesisBaseHealth × alive players (when NemesisHealth == 0).
+    /// Set to 0 to use static NemesisHealth (default).</summary>
+    public int NemesisBaseHealth { get; set; } = 0;
 }
 
 public class NormalInfectionModeConfig : GameModeConfig
@@ -49,8 +50,9 @@ public class SurvivorModeConfig : GameModeConfig
     public string SurvivorNames { get; set; } = string.Empty;
     /// <summary>Static HP for Survivor. When 0, SurvivorBaseHealth × alive players is used.</summary>
     public int SurvivorHealth { get; set; } = 8000;
-    /// <summary>Per-player HP multiplier. FinalHP = SurvivorBaseHealth × alive players (when SurvivorHealth == 0).</summary>
-    public int SurvivorBaseHealth { get; set; } = 8000;
+    /// <summary>Per-player HP multiplier. FinalHP = SurvivorBaseHealth × alive players (when SurvivorHealth == 0).
+    /// Set to 0 to use static SurvivorHealth (default).</summary>
+    public int SurvivorBaseHealth { get; set; } = 0;
     public float SurvivorSpeed { get; set; } = 3.0f;
     public float SurvivorGravity { get; set; } = 3.0f;
     public float SurvivorDamage { get; set; } = 5.0f;
@@ -64,8 +66,9 @@ public class AssassinModeConfig : GameModeConfig
     public string AssassinNames { get; set; } = string.Empty;
     /// <summary>Static HP for Assassin. When 0, AssassinBaseHealth × alive players is used.</summary>
     public int AssassinHealth { get; set; } = 24000;
-    /// <summary>Per-player HP multiplier. FinalHP = AssassinBaseHealth × alive players (when AssassinHealth == 0).</summary>
-    public int AssassinBaseHealth { get; set; } = 24000;
+    /// <summary>Per-player HP multiplier. FinalHP = AssassinBaseHealth × alive players (when AssassinHealth == 0).
+    /// Set to 0 to use static AssassinHealth (default).</summary>
+    public int AssassinBaseHealth { get; set; } = 0;
     /// <summary>
     /// Reference damage per knife hit as Assassin (from ZO 1.6 config: 357).
     /// Stored for documentation purposes; actual damage in CS2 is handled by
@@ -82,8 +85,9 @@ public class SniperModeConfig : GameModeConfig
     public string SniperNames { get; set; } = string.Empty;
     /// <summary>Static HP for Sniper. When 0, SniperBaseHealth × alive players is used.</summary>
     public int SniperHealth { get; set; } = 5000;
-    /// <summary>Per-player HP multiplier. FinalHP = SniperBaseHealth × alive players (when SniperHealth == 0).</summary>
-    public int SniperBaseHealth { get; set; } = 5000;
+    /// <summary>Per-player HP multiplier. FinalHP = SniperBaseHealth × alive players (when SniperHealth == 0).
+    /// Set to 0 to use static SniperHealth (default).</summary>
+    public int SniperBaseHealth { get; set; } = 0;
     public float SniperSpeed { get; set; } = 3.0f;
     public float SniperGravity { get; set; } = 3.0f;
     public float SniperDamage { get; set; } = 10.0f;
