@@ -283,7 +283,11 @@ public partial class ZOServices
         string Default = "characters/models/ctm_st6/ctm_st6_variante.vmdl";
         string Custom = string.IsNullOrEmpty(CFG.HumandefaultModel) ? Default : CFG.HumandefaultModel;
 
-        pawn.SetModel(Custom);
+        _core.Scheduler.NextWorldUpdate(() =>
+        {
+            if (pawn.IsValid)
+                pawn.SetModel(Custom);
+        });
 
         var maxHealth = CFG.HumanMaxHealth;
         pawn.MaxHealth = maxHealth;
@@ -368,11 +372,14 @@ public partial class ZOServices
             _helpers.RemoveGodState(zombie);
             _helpers.RemoveInfiniteAmmo(zombie);
 
-            // Disable jetpack and remove mines when player becomes zombie
+            // Disable human-only extra items when player becomes zombie
             _globals.HasJetpack.Remove(Id);
             _globals.JetpackFuel.Remove(Id);
             _globals.JetpackLastFuelTime.Remove(Id);
             _globals.HasReviveToken.Remove(Id);
+            _globals.ExtraJumps.Remove(Id);
+            _globals.KnifeBlinkCharges.Remove(Id);
+            _globals.KnifeBlinkCooldownEnd.Remove(Id);
 
             // Close any open menu (e.g. mine placement menu) before the team switch.
             _core.MenusAPI.CloseActiveMenu(zombie);

@@ -162,13 +162,10 @@ public partial class ZOHelpers
             if (pwan == null || !pwan.IsValid)
                 return;
 
-            var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(SoundPath, Volume, 1.0f);
+            using var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(SoundPath, Volume, 1.0f);
             sound.SourceEntityIndex = (int)pwan.Index;
             sound.Recipients.AddAllPlayers();
-            _core.Scheduler.NextTick(() =>
-            {
-                sound.Emit();
-            });
+            sound.Emit();
         }
     }
 
@@ -176,13 +173,10 @@ public partial class ZOHelpers
     {
         if (!string.IsNullOrEmpty(SoundPath))
         {
-            var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(SoundPath, Volume, 1.0f);
+            using var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(SoundPath, Volume, 1.0f);
             sound.SourceEntityIndex = -1;
             sound.Recipients.AddAllPlayers();
-            _core.Scheduler.NextTick(() =>
-            {
-                sound.Emit();
-            });
+            sound.Emit();
         }
     }
 
@@ -430,8 +424,8 @@ public partial class ZOHelpers
 
         _globals.GlowEntity[controller] = new GlowEntity()
         {
-            Glow = modelGlow,
-            Relay = modelRelay
+            Glow = modelGlowHandle,
+            Relay = modelRelayHandle
         };
     }
 
@@ -445,22 +439,14 @@ public partial class ZOHelpers
             return;
         if (_globals.GlowEntity.TryGetValue(controller, out var glowEntity))
         {
-            if (glowEntity.Relay != null && glowEntity.Relay.IsValid)
+            if (glowEntity.Relay.IsValid && glowEntity.Relay.Value != null && glowEntity.Relay.Value.IsValid && glowEntity.Relay.Value.IsValidEntity)
             {
-                var relayHandle = _core.EntitySystem.GetRefEHandle(glowEntity.Relay);
-                if (relayHandle.IsValid && relayHandle.Value != null && relayHandle.Value.IsValid)
-                {
-                    relayHandle.Value.AcceptInput("Kill", 0);
-                }
+                glowEntity.Relay.Value.AcceptInput("Kill", 0);
             }
 
-            if (glowEntity.Glow != null && glowEntity.Glow.IsValid)
+            if (glowEntity.Glow.IsValid && glowEntity.Glow.Value != null && glowEntity.Glow.Value.IsValid && glowEntity.Glow.Value.IsValidEntity)
             {
-                var glowHandle = _core.EntitySystem.GetRefEHandle(glowEntity.Glow);
-                if (glowHandle.IsValid && glowHandle.Value != null && glowHandle.Value.IsValid)
-                {
-                    glowHandle.Value.AcceptInput("Kill", 0);
-                }
+                glowEntity.Glow.Value.AcceptInput("Kill", 0);
             }
 
             _globals.GlowEntity.Remove(controller);
@@ -649,8 +635,8 @@ public partial class ZOHelpers
 
         particle.StartActive = true;
         particle.EffectName = effectName;
-        particle.AcceptInput("Start", "");
         particle.DispatchSpawn();
+        particle.AcceptInput("Start", 0);
 
 
         particle.Teleport(pos, QAngle.Zero, Vector.Zero);
@@ -659,7 +645,7 @@ public partial class ZOHelpers
     }
     public void DrawExpandingRing(Vector position, float maxRadius, int R, int G, int B, int A, float duration = 0.4f, int segments = 16, float thickness = 18.0f)
     {
-        CBeam?[] beams = new CBeam?[segments];
+        CHandle<CBeam>[] beams = new CHandle<CBeam>[segments];
         float startTime = _core.Engine.GlobalVars.CurrentTime;
         for (int i = 0; i < segments; i++)
         {
@@ -678,12 +664,9 @@ public partial class ZOHelpers
                 position.Z
             );
 
-            beams[i] = CreateLaser(
-                start,
-                end,
-                new Color(R, G, B, A),
-                thickness
-            );
+            var created = CreateLaser(start, end, new Color(R, G, B, A), thickness);
+            if (created != null)
+                beams[i] = _core.EntitySystem.GetRefEHandle(created);
         }
 
         CancellationTokenSource? timer = null;
@@ -696,8 +679,9 @@ public partial class ZOHelpers
 
             for (int i = 0; i < segments; i++)
             {
-                var beam = beams[i];
-                if (beam is not { IsValid: true, IsValidEntity: true })
+                if (!beams[i].IsValid) continue;
+                var beam = beams[i].Value;
+                if (beam == null || !beam.IsValid || !beam.IsValidEntity)
                     continue;
 
                 float angle = MathF.PI * 2 * i / segments;
@@ -722,12 +706,12 @@ public partial class ZOHelpers
             {
                 for (int i = 0; i < segments; i++)
                 {
-                    var beam = beams[i];
-                    if (beam is not { IsValid: true, IsValidEntity: true })
+                    if (!beams[i].IsValid) continue;
+                    var beam = beams[i].Value;
+                    if (beam == null || !beam.IsValid || !beam.IsValidEntity)
                         continue;
 
                     beam.AcceptInput("Kill", 0);
-                    beams[i] = null;
                 }
 
                 timer?.Cancel();
@@ -796,6 +780,8 @@ public partial class ZOHelpers
         if (particle == null || !particle.IsValid || !particle.IsValidEntity)
             return;
 
+        var particleHandle = _core.EntitySystem.GetRefEHandle(particle);
+
         // 持续伤害timer
         float startTime = _core.Engine.GlobalVars.CurrentTime;
         float lastSoundTime = startTime;
@@ -814,7 +800,7 @@ public partial class ZOHelpers
                 return;
             }
 
-            if (particle == null || !particle.IsValid || !particle.IsValidEntity)
+            if (!particleHandle.IsValid || particleHandle.Value == null || !particleHandle.Value.IsValid || !particleHandle.Value.IsValidEntity)
             {
                 _globals.ActiveBurns.Remove(playerId);
                 return;
@@ -838,7 +824,7 @@ public partial class ZOHelpers
 
         });
 
-        _globals.ActiveBurns[playerId] = (particle, timer);
+        _globals.ActiveBurns[playerId] = (particleHandle, timer);
     }
 
     public void ClearAllBurns()
@@ -848,9 +834,9 @@ public partial class ZOHelpers
         {
             var burn = pair.Value;
 
-            if (burn.particle != null && burn.particle.IsValid && burn.particle.IsValidEntity)
+            if (burn.particle.IsValid && burn.particle.Value is { IsValid: true, IsValidEntity: true } burnParticle)
             {
-                burn.particle.AcceptInput("kill", 0);
+                burnParticle.AcceptInput("kill", 0);
             }
             burn.timer?.Cancel();
         }
@@ -861,11 +847,11 @@ public partial class ZOHelpers
     {
         if (_globals.ActiveBurns.TryGetValue(playerId, out var burn))
         {
-            if (burn.particle != null && burn.particle.IsValid && burn.particle.IsValidEntity)
+            if (burn.particle.IsValid && burn.particle.Value is { IsValid: true, IsValidEntity: true } burnParticle)
             {
                 try
                 {
-                    burn.particle.AcceptInput("kill", 0);
+                    burnParticle.AcceptInput("kill", 0);
                 }
                 catch
                 {
@@ -933,13 +919,10 @@ public partial class ZOHelpers
 
         if (!string.IsNullOrEmpty(sound))
         {
-            var sounds = new SwiftlyS2.Shared.Sounds.SoundEvent(sound, 1.0f, 1.0f);
+            using var sounds = new SwiftlyS2.Shared.Sounds.SoundEvent(sound, 1.0f, 1.0f);
             sounds.SourceEntityIndex = (int)light.Index;
             sounds.Recipients.AddAllPlayers();
-            _core.Scheduler.NextTick(() =>
-            {
-                sounds.Emit();
-            });
+            sounds.Emit();
         }
 
         return light;
@@ -948,12 +931,11 @@ public partial class ZOHelpers
 
     public void RemoveLight(uint lightIndex)
     {
-        if (!_globals.activeLights.TryGetValue(lightIndex, out var light))
+        if (!_globals.activeLights.TryGetValue(lightIndex, out var lightHandle))
             return;
 
-
-        if (light.IsValid && light.Entity != null && light.Entity.IsValid && light.IsValidEntity)
-            light.AcceptInput("kill", 0);
+        if (lightHandle.IsValid && lightHandle.Value is { IsValid: true, IsValidEntity: true } lightEnt)
+            lightEnt.AcceptInput("kill", 0);
 
         _globals.activeLights.Remove(lightIndex);
         _globals.lightTimers.Remove(lightIndex);
@@ -967,10 +949,10 @@ public partial class ZOHelpers
         }
         _globals.lightTimers.Clear();
 
-        foreach (var light in _globals.activeLights.Values)
+        foreach (var lightHandle in _globals.activeLights.Values)
         {
-            if (light.IsValid)
-                light.AcceptInput("kill", 0);
+            if (lightHandle.IsValid && lightHandle.Value is { IsValid: true } lightEnt)
+                lightEnt.AcceptInput("kill", 0);
         }
         _globals.activeLights.Clear();
     }

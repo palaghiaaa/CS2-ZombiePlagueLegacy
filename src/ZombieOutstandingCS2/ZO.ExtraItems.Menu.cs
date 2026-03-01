@@ -569,6 +569,8 @@ public class ZOExtraItemsMenu
 
         int playerId = player.PlayerID;
 
+        if (IsZombie(playerId)) return;
+
         _globals.KnifeBlinkCharges.TryGetValue(playerId, out int charges);
         if (charges <= 0) return;
 
