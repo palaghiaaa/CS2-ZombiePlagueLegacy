@@ -246,7 +246,6 @@
 	"MainMenuCommand": "sw_zmenu",
 	"ExtraItemsCommand": "sw_zextra",
 	"BuyWeaponsCommand": "sw_buyweapons",
-	"KnifeBlinkCommand": "sw_blink",
 	// Command to open the mine selection menu (must start with sw_)
 	"MineMenuCommand": "sw_mine",
 	// Leave empty ("") to allow everyone to open the admin menu.

@@ -33,16 +33,6 @@
     "JetpackThrustForce": 350.0,
     // Fuel consumed per second while flying
     "JetpackFuelConsumeRate": 30.0,
-    // Base damage of a jetpack rocket at point-blank range
-    "JetpackRocketDamage": 500,
-    // Explosion radius of the jetpack rocket (units)
-    "JetpackRocketRadius": 300.0,
-    // Maximum forward range of a rocket (units)
-    "JetpackRocketRange": 750.0,
-    // Simulated rocket flight time before detonation (seconds)
-    "JetpackRocketFlightTime": 0.3,
-    // Minimum seconds between rocket shots (right-click cooldown)
-    "JetpackRocketCooldown": 2.0,
 
     // ── Revive Token ──────────────────────────────────────────────────────
     // Seconds after death before the revive token respawns the player
@@ -130,14 +120,14 @@
       },
       {
         "Key": "knife_blink",
-        "Name": "Knife Blink (3 charges)",
+        "Name": "Knife Blink (3 charges, knife swing to teleport)",
         "Price": 5,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "jetpack",
-        "Name": "Jetpack (CTRL+SPACE fly / RClick rocket)",
+        "Name": "Jetpack (CTRL+SPACE to fly)",
         "Price": 10,
         "Enable": true,
         "Team": "Human"

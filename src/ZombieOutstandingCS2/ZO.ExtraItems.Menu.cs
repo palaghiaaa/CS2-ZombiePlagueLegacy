@@ -729,7 +729,7 @@ public class ZOExtraItemsMenu
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    //  Knife-blink execution (called from weapon-fire hook or OnTick)
+    //  Knife-blink execution (triggered from EventWeaponFire when knife is fired)
     // ─────────────────────────────────────────────────────────────────────────
 
     public void TryExecuteKnifeBlink(IPlayer player)
