@@ -672,8 +672,8 @@ public class ZOExtraItemsMenu
                 .FirstOrDefault(i => i.Key == "buy_nemesis")?.Price ?? 0);
             return;
         }
-        // Nemesis is a zombie role; any player without a special role can buy it.
-        if (IsSpecialRole(playerId))
+        // Nemesis is a zombie role — only active zombies without a special role can buy.
+        if (!IsZombie(playerId) || IsSpecialRole(playerId))
         {
             AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
                 .FirstOrDefault(i => i.Key == "buy_nemesis")?.Price ?? 0);
@@ -716,8 +716,8 @@ public class ZOExtraItemsMenu
                 .FirstOrDefault(i => i.Key == "buy_assassin")?.Price ?? 0);
             return;
         }
-        // Assassin is a zombie role; any player without a special role can buy it.
-        if (IsSpecialRole(playerId))
+        // Assassin is a zombie role — only active zombies without a special role can buy.
+        if (!IsZombie(playerId) || IsSpecialRole(playerId))
         {
             AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
                 .FirstOrDefault(i => i.Key == "buy_assassin")?.Price ?? 0);

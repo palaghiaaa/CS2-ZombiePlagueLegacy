@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
@@ -321,6 +322,23 @@ public partial class ZOServices
 
     }
 
+    /// <summary>
+    /// Returns the HP to assign to a special class.
+    /// When <paramref name="staticHp"/> is &gt; 0, it is used directly.
+    /// Otherwise FinalHP = <paramref name="baseHp"/> × number of currently alive players (minimum 1).
+    /// </summary>
+    private int ComputeSpecialHealth(int staticHp, int baseHp)
+    {
+        if (staticHp > 0)
+            return staticHp;
+
+        if (baseHp <= 0)
+            return 0; // 0 means "do not override" — caller decides
+
+        int alivePlayers = Math.Max(1, _core.PlayerManager.GetAlive().Count());
+        return baseHp * alivePlayers;
+    }
+
     public void SetupSurvivor(IPlayer player)
     {
         if (!player.IsValid)
@@ -335,7 +353,6 @@ public partial class ZOServices
         if (_api != null)
             _api.NotifySurvivorSelected(player);
     }
-
     public void SetupSniper(IPlayer player)
     {
         if (!player.IsValid)
@@ -462,6 +479,22 @@ public partial class ZOServices
             };
             posszombie(player, zombieClass, true);
 
+            // Apply dynamic / static HP from main config (overrides special class stats).
+            // ComputeSpecialHealth returns 0 when neither value is configured — skip override.
+            var nemCfg = _mainCFG.CurrentValue.Nemesis;
+            var pawn = player.PlayerPawn;
+            if (pawn != null && pawn.IsValid)
+            {
+                int finalHp = ComputeSpecialHealth(nemCfg.NemesisHealth, nemCfg.NemesisBaseHealth);
+                if (finalHp > 0)
+                {
+                    pawn.MaxHealth = finalHp;
+                    pawn.MaxHealthUpdated();
+                    pawn.Health = finalHp;
+                    pawn.HealthUpdated();
+                }
+            }
+
             _core.Scheduler.NextWorldUpdate(() => 
             {
                 _helpers.SetGlow(player, 255, 0, 0, 255);
@@ -529,6 +562,29 @@ public partial class ZOServices
                 }
             };
             posszombie(player, zombieClass, true);
+
+            // Apply dynamic / static HP and speed from main config.
+            // ComputeSpecialHealth returns 0 when neither value is configured — skip override.
+            // AssassinDamage is stored for reference and future use; actual weapon damage is
+            // handled by CS2's engine and the ZombieClass.Stats.Damage multiplier.
+            var assCfg = _mainCFG.CurrentValue.Assassin;
+            var pawn = player.PlayerPawn;
+            if (pawn != null && pawn.IsValid)
+            {
+                int finalHp = ComputeSpecialHealth(assCfg.AssassinHealth, assCfg.AssassinBaseHealth);
+                if (finalHp > 0)
+                {
+                    pawn.MaxHealth = finalHp;
+                    pawn.MaxHealthUpdated();
+                    pawn.Health = finalHp;
+                    pawn.HealthUpdated();
+                }
+                if (assCfg.AssassinSpeed > 0f)
+                {
+                    pawn.VelocityModifier = assCfg.AssassinSpeed;
+                    pawn.VelocityModifierUpdated();
+                }
+            }
 
             _helpers.SendChatToAllT("GameInfoBecomeAssassin", player.Name);
 
@@ -726,11 +782,16 @@ public partial class ZOServices
             _helpers.SetGlow(player, 0, 0, 255, 255);
         });
 
-        int Health = isSurvivor ? config.Survivor.SurvivorHealth : config.Sniper.SniperHealth;
-        pawn.MaxHealth = Health;
-        pawn.MaxHealthUpdated();
-        pawn.Health = Health;
-        pawn.HealthUpdated();
+        int Health = isSurvivor
+            ? ComputeSpecialHealth(config.Survivor.SurvivorHealth, config.Survivor.SurvivorBaseHealth)
+            : ComputeSpecialHealth(config.Sniper.SniperHealth, config.Sniper.SniperBaseHealth);
+        if (Health > 0)
+        {
+            pawn.MaxHealth = Health;
+            pawn.MaxHealthUpdated();
+            pawn.Health = Health;
+            pawn.HealthUpdated();
+        }
 
         float Speed = isSurvivor ? config.Survivor.SurvivorSpeed : config.Sniper.SniperSpeed;
         pawn.VelocityModifier = Speed;
