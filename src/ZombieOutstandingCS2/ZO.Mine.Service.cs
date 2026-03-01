@@ -180,7 +180,7 @@ public class ZOMineService
                 ent.MoveType  = MoveType_t.MOVETYPE_NONE;
                 ent.MoveTypeUpdated();
 
-                SetGlow(ent, mineData.GlowColor);
+                SetGlow(ent, mineData.GlowColor, mineData.Model, mineData.Team);
             });
 
             // ── Position and orient the mine ───────────────────────────────────
@@ -726,16 +726,24 @@ public class ZOMineService
             50f);
     }
 
-    private void SetGlow(CBaseEntity entity, string glowColorStr)
+    private void SetGlow(CBaseEntity entity, string glowColorStr, string modelName, string team)
     {
         if (entity == null || !entity.IsValid) return;
         if (string.IsNullOrEmpty(glowColorStr)) return;
         if (!TryParseColor(glowColorStr, out SwiftlyS2.Shared.Natives.Color parsedColor)) return;
-
-        string modelName;
-        try { modelName = entity.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName; }
-        catch { return; }
         if (string.IsNullOrEmpty(modelName)) return;
+
+        // Determine which team should see the glow (avoids cross-team wall visibility).
+        // CS2 team indices: 2 = T, 3 = CT, -1 = all teams.
+        const int GlowTeamT   = 2;
+        const int GlowTeamCT  = 3;
+        const int GlowTeamAll = -1;
+        int glowTeam = (team ?? string.Empty).ToLowerInvariant() switch
+        {
+            "ct" => GlowTeamCT,
+            "t"  => GlowTeamT,
+            _    => GlowTeamAll
+        };
 
         CBaseModelEntity? modelRelay = _core.EntitySystem.CreateEntity<CBaseModelEntity>();
         CBaseModelEntity? modelGlow  = _core.EntitySystem.CreateEntity<CBaseModelEntity>();
@@ -759,7 +767,7 @@ public class ZOMineService
 
         modelGlow.Glow.GlowColorOverride = parsedColor;
         modelGlow.Glow.GlowRange         = 5000;
-        modelGlow.Glow.GlowTeam          = -1;
+        modelGlow.Glow.GlowTeam          = glowTeam;
         modelGlow.Glow.GlowType          = 3;
         modelGlow.Glow.GlowRangeMin      = 100;
 
