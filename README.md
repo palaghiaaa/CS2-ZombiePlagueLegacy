@@ -48,10 +48,10 @@ Ammo Packs are persisted via the <strong>Economy</strong> plugin — no database
 | 🛒 **Extra Items Shop** | Ammo-pack currency; Armor, Grenades, Jetpack, Laser Mine, SCBA Suit, Revive Token, and more |
 | 💰 **Damage-Based AP Rewards** | Every N damage dealt to zombies → +AP (configurable) |
 | 💣 **Laser Trip Mines** | Two types: beam trap (6 AP) and explosive (10 AP); plant with `!mine` |
-| 🚀 **Jetpack** | CTRL+SPACE to fly; right-click to fire a rocket |
+| 🚀 **Jetpack** | CTRL+SPACE to fly; fuel depletes over time |
 | 🧪 **SCBA Suit** | Absorbs one zombie infection |
 | ❤️ **Revive Token** | Auto-respawn once on death |
-| 🏃 **Multi-Jump & Knife Blink** | Stackable extra jumps; teleport blink on knife swing |
+| 🏃 **Multi-Jump & Knife Blink** | Stackable extra jumps; teleport blink triggered on knife swing |
 | ⚡ **Knockback System** | Per-hit-location and per-hero damage multipliers |
 | 🌑 **Dark Atmosphere** | Configurable per-server fog and screen darkness via tonemap; applied on every map load |
 | 💾 **AP Persistence via Economy** | Balances survive reconnects, map changes, and server restarts |
@@ -139,7 +139,6 @@ translations/
 | `sw_zextra` | `!zextra` | Open the Extra Items shop |
 | `sw_buyweapons` | `!buyweapons` | Open the weapon buy menu (alive CT only) |
 | `sw_zclass` | `!zclass` | Choose your zombie class preference |
-| `sw_blink` | `!blink` | Activate Knife Blink (costs 1 charge) |
 | `sw_mine` | `!mine` | Open the mine menu to plant / manage mines |
 
 > Command names can be changed freely in `ZombieOutstandingCFG.jsonc` under the command keys (`MainMenuCommand`, `ExtraItemsCommand`, etc.).
@@ -226,8 +225,8 @@ Open with `!zextra` or via the main menu (`!zmenu`). Items are purchased with **
 | 🌀 **Teleport Grenade** | Human | 3 AP | Decoy teleporter |
 | 🧪 **SCBA Suit** | Human | 5 AP | Absorbs one zombie infection |
 | 🦘 **Multi-Jump (+1 jump)** | Human | 4 AP | Stackable, up to `MultijumpMax` |
-| 🗡️ **Knife Blink (3 charges)** | Human | 5 AP | Teleport blink on knife swing (`!blink`) |
-| 🚀 **Jetpack** | Human | 10 AP | CTRL+SPACE to fly; right-click to fire a rocket |
+| 🗡️ **Knife Blink (3 charges)** | Human | 5 AP | Teleport blink automatically on each knife swing |
+| 🚀 **Jetpack** | Human | 10 AP | CTRL+SPACE to fly; fuel depletes over time |
 | 💣 **Laser Mine** | Human | 6 AP | Opens mine menu — choose Laser Tripwire (6 AP) or Explosive Mine (10 AP) |
 | ❤️ **Revive Token** | Human | 8 AP | Auto-respawn once on death |
 | 🏹 **Become Survivor** | Human | 20 AP | Transform into Survivor for the rest of the round (no special role required) |
@@ -272,9 +271,9 @@ Mine visuals (color, model, sounds) and all other settings → `ZombieOutstandin
 ## 🚀 Jetpack Details
 
 - Hold **CTRL + SPACE** to fly (consumes fuel).
-- **Right-click** to fire a rocket (cooldown: 2 s).
+- Existing horizontal velocity is preserved — only vertical thrust is applied.
 - Fuel resets every round.
-- Configure in `ExtraItemsCFG.jsonc`: `JetpackMaxFuel`, `JetpackThrustForce`, `JetpackFuelConsumeRate`, `JetpackRocketDamage`, `JetpackRocketRadius`.
+- Configure in `ExtraItemsCFG.jsonc`: `JetpackMaxFuel`, `JetpackThrustForce`, `JetpackFuelConsumeRate`.
 
 ---
 
@@ -354,7 +353,6 @@ AP balances live in a wallet kind configured by `EconomyWalletKind` in `ZombieOu
     "ZombieClassCommand": "sw_zclass",
     "AdminMenuItemCommand": "sw_zadmin",
     "BuyWeaponsCommand": "sw_buyweapons",
-    "KnifeBlinkCommand": "sw_blink",
     "MineMenuCommand": "sw_mine",
 
     // ── Admin ───────────────────────────────────────────────────────────────

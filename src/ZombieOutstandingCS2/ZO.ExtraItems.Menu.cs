@@ -729,7 +729,7 @@ public class ZOExtraItemsMenu
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    //  Knife-blink execution (called from weapon-fire hook or OnTick)
+    //  Knife-blink execution (triggered from EventWeaponFire when knife is fired)
     // ─────────────────────────────────────────────────────────────────────────
 
     public void TryExecuteKnifeBlink(IPlayer player)
@@ -783,14 +783,12 @@ public class ZOExtraItemsMenu
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    //  Jetpack – thrust only (rocket removed, use Economy/admin commands for AP)
+    //  Jetpack – upward thrust only (no horizontal rocket push)
     // ─────────────────────────────────────────────────────────────────────────
 
     // Named constants for internal physics values
-    private const float PlayerEyeHeight   = 64f;   // eye is ~64 units above AbsOrigin
     private const float MaxDeltaTime      = 0.15f; // clamp dt to avoid large jumps
     private const float DefaultDeltaTime  = 0.05f; // fallback dt on first tick / long gap
-    private const float ForwardPushMultiplier = 0.4f; // fraction of thrust applied horizontally
 
     public void TryExecuteJetpackThrust(IPlayer player)
     {
@@ -821,17 +819,13 @@ public class ZOExtraItemsMenu
         _globals.JetpackFuel[id] = Math.Max(0f, fuel - fuelUsed);
         _globals.JetpackLastFuelTime[id] = now;
 
-        // Apply thrust: fixed upward velocity + gentle forward push
-        QAngle eyeAngles = pawn.EyeAngles;
-        eyeAngles.ToDirectionVectors(out Vector fwd, out _, out _);
-
+        // Apply upward thrust only – preserve existing horizontal velocity
         var vel = pawn.AbsVelocity;
         float force = cfg.JetpackThrustForce;
-        float fwdPush = force * ForwardPushMultiplier * dt;
 
         var newVel = new Vector(
-            vel.X + fwd.X * fwdPush,
-            vel.Y + fwd.Y * fwdPush,
+            vel.X,
+            vel.Y,
             force  // fixed upward velocity override (counters gravity + lifts)
         );
 
