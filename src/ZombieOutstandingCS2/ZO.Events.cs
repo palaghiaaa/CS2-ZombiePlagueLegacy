@@ -1716,7 +1716,7 @@ public partial class ZOEvents
             return HookResult.Continue;
 
         var lightIndex = light.Index;
-        _globals.activeLights[lightIndex] = light;
+        _globals.activeLights[lightIndex] = _core.EntitySystem.GetRefEHandle(light);
         _globals.lightTimers[lightIndex] = _core.Scheduler.DelayBySeconds(Duration, () => 
         {
             _helpers.RemoveLight(lightIndex);

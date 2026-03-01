@@ -283,7 +283,11 @@ public partial class ZOServices
         string Default = "characters/models/ctm_st6/ctm_st6_variante.vmdl";
         string Custom = string.IsNullOrEmpty(CFG.HumandefaultModel) ? Default : CFG.HumandefaultModel;
 
-        pawn.SetModel(Custom);
+        _core.Scheduler.NextWorldUpdate(() =>
+        {
+            if (pawn.IsValid)
+                pawn.SetModel(Custom);
+        });
 
         var maxHealth = CFG.HumanMaxHealth;
         pawn.MaxHealth = maxHealth;

@@ -42,7 +42,11 @@ public partial class ZOHelpers
         SetFov(player, 90);
         ClearPlayerBurn(Id);
 
-        pawn.SetModel(models);
+        _core.Scheduler.NextWorldUpdate(() =>
+        {
+            if (pawn.IsValid)
+                pawn.SetModel(models);
+        });
         pawn.MaxHealth = maxHealth;
         pawn.MaxHealthUpdated();
         pawn.Health = maxHealth;

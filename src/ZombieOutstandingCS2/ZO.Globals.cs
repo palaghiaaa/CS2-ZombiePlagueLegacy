@@ -61,9 +61,9 @@ public class ZOGlobals
 
     public Dictionary<int, bool> ThrowerIsZombie = new();
 
-    public Dictionary<int, (CParticleSystem particle, CancellationTokenSource timer)> ActiveBurns = new();
+    public Dictionary<int, (CHandle<CParticleSystem> particle, CancellationTokenSource timer)> ActiveBurns = new();
 
-    public Dictionary<uint, COmniLight> activeLights = new Dictionary<uint, COmniLight>();
+    public Dictionary<uint, CHandle<COmniLight>> activeLights = new Dictionary<uint, CHandle<COmniLight>>();
     public Dictionary<uint, CancellationTokenSource> lightTimers = new Dictionary<uint, CancellationTokenSource>();
 
     public readonly Dictionary<SpawnType, List<SpawnPointData>> spawnCache= new();
