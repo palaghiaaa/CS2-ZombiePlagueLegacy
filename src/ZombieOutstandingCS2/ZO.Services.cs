@@ -769,7 +769,7 @@ public partial class ZOServices
      $"<span><font color='green'>{_helpers.T(attacker, "HudHpRemaining")} </font><font color='red'>{health}</font><font color='green'> {_helpers.T(attacker, "HudHP")}</font></span><br>" +
      $"<span><font color='green'>{_helpers.T(attacker, "HudMaxHP")} </font><font color='red'>{Maxhealth}</font><font color='green'> {_helpers.T(attacker, "HudHP")}</font></span><br>";
 
-        attacker.SendCenterHTMLAsync(message);
+        attacker.SendCenterHTML(message);
 
     }
 

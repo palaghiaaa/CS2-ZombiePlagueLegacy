@@ -174,6 +174,42 @@
         "Price": 5,
         "Enable": true,
         "Team": "Human"
+      },
+      {
+        // Converts the buying zombie into a Nemesis for the rest of the round.
+        // Only available to active zombies that don't already hold a special role.
+        "Key": "buy_nemesis",
+        "Name": "Become Nemesis",
+        "Price": 20,
+        "Enable": true,
+        "Team": "Zombie"
+      },
+      {
+        // Converts the buying zombie into an Assassin for the rest of the round.
+        // Only available to active zombies that don't already hold a special role.
+        "Key": "buy_assassin",
+        "Name": "Become Assassin",
+        "Price": 15,
+        "Enable": true,
+        "Team": "Zombie"
+      },
+      {
+        // Converts the buying human into a Survivor for the rest of the round.
+        // Only available to alive humans that don't already hold a special role.
+        "Key": "buy_survivor",
+        "Name": "Become Survivor",
+        "Price": 20,
+        "Enable": true,
+        "Team": "Human"
+      },
+      {
+        // Converts the buying human into a Sniper for the rest of the round.
+        // Only available to alive humans that don't already hold a special role.
+        "Key": "buy_sniper",
+        "Name": "Become Sniper",
+        "Price": 15,
+        "Enable": true,
+        "Team": "Human"
       }
     ]
   }

@@ -40,6 +40,13 @@
 		"Name": "Nemesis Mode",
 		"NemesisNames": "Nemesis",
 		"Weight": 50,
+		// HP assigned to the Nemesis at round start.
+		// Balance rationale (round = 4 min, human weapon DPS ~270 effective):
+		//   5 humans  → ~60 s to kill  (half the round — fair for small servers)
+		//   10 humans → ~29 s to kill  (rewards coordination on full servers)
+		// The 100 HP/s regen adds ~6 000 extra effective HP over a sustained fight.
+		// Set to 0 to fall back to the special-class HP in ZOSpecialClassCFG.
+		"NemesisHealth": 75000,
 		"EnableInfiniteClipMode": true,
 		"ZombieCanReborn": true
 	},
@@ -49,6 +56,9 @@
 		"Name": "Survivor Mode",
 		"Weight": 50,
 		"SurvivorNames": "Survivor",
+		// HP assigned to the Survivor when it spawns. 8 000 HP lets one human
+		// endure sustained zombie pressure for most of the round without being
+		// unkillable. Set to 0 to use human base HP.
 		"SurvivorHealth": 8000,
 		"SurvivorSpeed": 0.92,
 		"SurvivorGravity": 1.25,
@@ -83,7 +93,12 @@
 		"Name": "Assassin Mode",
 		"Weight": 50,
 		"AssassinNames": "Assassin",
-		// Distance (units) within which the assassin becomes visible.
+		// HP assigned to the Assassin when it spawns. 24 000 HP places it
+		// between a normal zombie and the Nemesis — dangerous enough to be a
+		// real threat, but killable by two coordinated players.
+		// Set to 0 to use the special-class default HP in ZOSpecialClassCFG.
+		"AssassinHealth": 24000,
+		// Distance (units) within which the Assassin becomes visible to humans.
 		"InvisibilityDist": 200.0,
 		"EnableInfiniteClipMode": false,
 		"ZombieCanReborn": true
@@ -94,6 +109,9 @@
 		"Name": "Sniper Mode",
 		"Weight": 50,
 		"SniperNames": "Sniper",
+		// HP assigned to the Sniper when it spawns. 5 000 HP is intentionally
+		// lower than the Survivor — glass-cannon role: extreme damage output but
+		// dies quickly if zombies close the gap. Set to 0 to use human base HP.
 		"SniperHealth": 5000,
 		"SniperSpeed": 0.92,
 		"SniperGravity": 0.75,
@@ -416,8 +434,10 @@
 			"PrecacheSoundEvent": "soundevents/hanzombieplagueplayers.vsndevts",
 			"Stats": 
 			{
-			  "Health": 120000,
-			  "MotherZombieHealth": 240000,
+			  // Fallback HP — only used when NemesisHealth = 0 in ZombieOutstandingCFG.
+			  // Keep in sync with the NemesisHealth value above.
+			  "Health": 75000,
+			  "MotherZombieHealth": 150000,
 			  "Speed": 1.0,
 			  "Damage": 250.0,
 			  "Gravity": 0.5,

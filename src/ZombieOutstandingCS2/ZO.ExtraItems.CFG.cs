@@ -66,6 +66,18 @@ public class ZOExtraItemsCFG
     /// <summary>Seconds after death before the revive token respawns the player.</summary>
     public float ReviveTokenRespawnDelay { get; set; } = 1.5f;
 
+    // ── Tryder ────────────────────────────────────────────────────────────────
+    /// <summary>Health given to a Tryder player.</summary>
+    public int TryderHealth { get; set; } = 1000;
+    /// <summary>Armor given to a Tryder player.</summary>
+    public int TryderArmor { get; set; } = 500;
+    /// <summary>Glow red channel (0–255) for the Tryder player.</summary>
+    public byte TryderGlowR { get; set; } = 0;
+    /// <summary>Glow green channel (0–255) for the Tryder player.</summary>
+    public byte TryderGlowG { get; set; } = 127;
+    /// <summary>Glow blue channel (0–255) for the Tryder player.</summary>
+    public byte TryderGlowB { get; set; } = 255;
+
     // ── Ammo Packs ───────────────────────────────────────────────────────────
     /// <summary>Starting ammo packs given to a player when they connect.</summary>
     public int StartingAmmoPacks { get; set; } = 0;

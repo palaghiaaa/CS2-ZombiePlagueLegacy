@@ -27,6 +27,13 @@ public class GameModeConfig
 public class NemesisModeConfig : GameModeConfig
 {
     public string NemesisNames { get; set; } = string.Empty;
+    /// <summary>
+    /// HP assigned to the Nemesis at round start.
+    /// Balanced for CS2: tanky enough that a single player cannot solo it,
+    /// but a coordinated team of 5+ players can bring it down in a round.
+    /// Set to 0 to leave the Nemesis with its special-class default HP.
+    /// </summary>
+    public int NemesisHealth { get; set; } = 120000;
 }
 
 public class NormalInfectionModeConfig : GameModeConfig
@@ -43,7 +50,13 @@ public class MultiInfectionModeConfig : GameModeConfig
 public class SurvivorModeConfig : GameModeConfig
 {
     public string SurvivorNames { get; set; } = string.Empty;
-    public int SurvivorHealth { get; set; } = 1000;
+    /// <summary>
+    /// HP assigned to the Survivor at round start.
+    /// 8 000 HP lets one human endure sustained zombie attacks long enough
+    /// to be a real threat without being unkillable.
+    /// Set to 0 to leave the Survivor with human base HP.
+    /// </summary>
+    public int SurvivorHealth { get; set; } = 8000;
     public float SurvivorSpeed { get; set; } = 3.0f;
     public float SurvivorGravity { get; set; } = 3.0f;
     public float SurvivorDamage { get; set; } = 5.0f;
@@ -55,18 +68,31 @@ public class SurvivorModeConfig : GameModeConfig
 public class AssassinModeConfig : GameModeConfig
 {
     public string AssassinNames { get; set; } = string.Empty;
+    /// <summary>
+    /// HP assigned to the Assassin at round start.
+    /// 24 000 HP makes the Assassin a mid-tier threat: much harder to kill than a
+    /// normal zombie but not as tanky as the Nemesis.
+    /// Set to 0 to leave the Assassin with its special-class default HP.
+    /// </summary>
+    public int AssassinHealth { get; set; } = 24000;
+    /// <summary>Distance (units) within which the Assassin becomes visible to humans.</summary>
     public float InvisibilityDist { get; set; } = 200.0f;
 }
 
 public class SniperModeConfig : GameModeConfig
 {
     public string SniperNames { get; set; } = string.Empty;
-    public int SniperHealth { get; set; } = 500;
+    /// <summary>
+    /// HP assigned to the Sniper at round start.
+    /// 5 000 HP is more fragile than the Survivor, which fits the glass-cannon
+    /// sniper role: extreme damage output but dies quickly if zombies get close.
+    /// Set to 0 to leave the Sniper with human base HP.
+    /// </summary>
+    public int SniperHealth { get; set; } = 5000;
     public float SniperSpeed { get; set; } = 3.0f;
     public float SniperGravity { get; set; } = 3.0f;
     public float SniperDamage { get; set; } = 10.0f;
     public string SniperWeapon { get; set; } = string.Empty;
-
     public string CustomWeaponName { get; set; } = string.Empty;
     public string ModelsPath { get; set; } = string.Empty;
 }
