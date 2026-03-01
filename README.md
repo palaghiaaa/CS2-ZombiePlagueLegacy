@@ -193,13 +193,20 @@ Configured in `ZombieClassesCFG.jsonc`. Stats match the original **Zombie Outsta
 
 ## 👑 Special Classes
 
-Configured in `ZombieOutstandingCFG.jsonc` (under `ZOSpecialClassCFG`).
+Configured in `ZombieOutstandingCFG.jsonc` (under `ZOSpecialClassCFG` for model/sound/regen and under each game-mode section for HP).
 
 | Class | HP | Speed | Gravity | Damage | Used In |
 |-------|----|-------|---------|--------|---------|
 | 🧟 **Mother Zombie** | 15 000 | 1.16× | 0.60 | 150 | Normal / Multi Infection |
-| 💀 **Nemesis** | 120 000 | 1.00× | 0.50 | 250 | Nemesis / Plague |
+| 💀 **Nemesis** | **75 000** | 1.00× | 0.50 | 250 | Nemesis / Plague |
 | 🥷 **Assassin** | 24 000 | 3.50× | 0.50 | 357 | Assassin / AVS |
+
+> **HP balance (4-min round, ~270 effective DPS per human shooter):**  
+> Nemesis — 5 humans kill it in ~60 s · 10 humans in ~29 s · 100 HP/s regen adds ~6 000 extra effective HP.  
+> Assassin — 2 focused players kill it in ~45 s · compensated by near-invisibility and extreme speed.
+
+> HP shown is what the mode config sets at round start.  
+> `NemesisHealth` / `AssassinHealth` in `ZombieOutstandingCFG.jsonc` can be tuned freely; set to `0` to use the raw special-class HP from `ZOSpecialClassCFG`.
 
 ---
 
@@ -223,11 +230,16 @@ Open with `!zextra` or via the main menu (`!zmenu`). Items are purchased with **
 | 🚀 **Jetpack** | Human | 10 AP | CTRL+SPACE to fly; right-click to fire a rocket |
 | 💣 **Laser Mine** | Human | 6 AP | Opens mine menu — choose Laser Tripwire (6 AP) or Explosive Mine (10 AP) |
 | ❤️ **Revive Token** | Human | 8 AP | Auto-respawn once on death |
+| 🏹 **Become Survivor** | Human | 20 AP | Transform into Survivor for the rest of the round (no special role required) |
+| 🎯 **Become Sniper** | Human | 15 AP | Transform into Sniper for the rest of the round (no special role required) |
 | 💊 **Antidote** | Zombie | 8 AP | Converts zombie back to human |
 | 🛡️ **Zombie Madness** | Zombie | 6 AP | Temporary invulnerability (10 s) |
 | 🧬 **T-Virus Grenade** | Zombie | 6 AP | Infects humans in radius |
+| 💀 **Become Nemesis** | Zombie | 20 AP | Transform into Nemesis for the rest of the round (must be an active zombie) |
+| 🥷 **Become Assassin** | Zombie | 15 AP | Transform into Assassin for the rest of the round (must be an active zombie) |
 
-> Items whose corresponding `ZombieOutstandingCFG` toggle is `false` are automatically hidden.
+> Role-buy items (`buy_nemesis`, `buy_assassin`, `buy_survivor`, `buy_sniper`) are disabled by default — enable them by setting `"Enable": true` in `ExtraItemsCFG.jsonc`.  
+> Players already holding a special role cannot purchase another role item.
 
 ---
 
@@ -352,120 +364,96 @@ AP balances live in a wallet kind configured by `EconomyWalletKind` in `ZombieOu
     "ChatPrefix": "[red][INFO][default]",
 
     // ── Ammo Packs (Economy plugin) ─────────────────────────────────────────
-    "EconomyWalletKind": "ammo",
-
-    // ── Atmosphere (fog + darkness) — see "Dark Atmosphere" section ──────────
-    "Atmosphere": {
-      "FogEnable": false,
-      "FogColor": "100,120,130",
-      "FogStart": 400.0,
-      "FogEnd": 2000.0,
-      "FogMaxDensity": 0.7,
-      "DarknessEnable": false,
-      "ExposureMin": 0.1,
-      "ExposureMax": 0.3
-    }
+    "EconomyWalletKind": "ammo"
   }
 }
 ```
 
----
+### Special-class HP — mode config sections
+
+Each special game mode has its own HP field. Set to `0` to fall back to the raw `Health` value in `ZOSpecialClassCFG`.
+
+```jsonc
+"Nemesis":   { "NemesisHealth":   75000 }   // ~60 s TTK for 5 players / ~29 s for 10
+"Survivor":  { "SurvivorHealth":   8000 }   // one human vs all zombies — durable but killable
+"Sniper":    { "SniperHealth":     5000 }   // glass-cannon: dies fast if zombies close the gap
+"Assassin":  { "AssassinHealth":  24000 }   // mid-tier: 2 focused players kill in ~45 s
+```
 
 ### `ZombieOutstandingCFG.jsonc` — Laser Mine Types
 
 ```jsonc
-{
-  "ZOMineCFG": {
-    "MineList": [
-      {
-        "Name": "Laser Tripwire",   // Beam trap — continuous damage
-        "CanExplorer": false,
-        "Price": 6,                 // Cost in ammo packs
-        "Limit": 2,                 // Max active per player
-        "Team": "ct",
-        "LaserRate": 0.1,
-        "LaserDamage": 10.0,
-        "LaserKnockBack": 100.0
-      },
-      {
-        "Name": "Explosive Mine",   // Explodes on beam cross
-        "CanExplorer": true,
-        "Price": 10,                // Cost in ammo packs
-        "Limit": 2,
-        "Team": "ct",
-        "ExplorerRadius": 360,
-        "ExplorerDamage": 2600
-      }
-    ]
-  }
+"ZOMineCFG": {
+  "MineList": [
+    {
+      "Name": "Laser Tripwire",  // Beam trap — continuous damage
+      "CanExplorer": false,
+      "Price": 6,   "Limit": 2,  "Team": "ct",
+      "LaserRate": 0.1,  "LaserDamage": 10.0,  "LaserKnockBack": 100.0
+    },
+    {
+      "Name": "Explosive Mine",  // Explodes on beam cross
+      "CanExplorer": true,
+      "Price": 10,  "Limit": 2,  "Team": "ct",
+      "ExplorerRadius": 360,  "ExplorerDamage": 2600
+    }
+  ]
 }
 ```
-
----
 
 ### `ExtraItemsCFG.jsonc` — Items & AP Rewards
 
 ```jsonc
-{
-  "ZOExtraItemsCFG": {
-    // ── AP Rewards ──────────────────────────────────────────────────────────
-    "RoundSurviveReward": 3,              // AP for surviving a round as human
-    "ZombieKillReward": 2,                // AP for a zombie killing a human
-    "HumanDamageRewardThreshold": 600,    // Damage dealt needed to earn +AP
-    "HumanDamageReward": 1,               // AP earned per threshold crossed
+"ZOExtraItemsCFG": {
+  "RoundSurviveReward": 3,           // AP for surviving a round as human
+  "ZombieKillReward": 2,             // AP per human kill / infection
+  "HumanDamageRewardThreshold": 600, // cumulative damage → +1 AP
+  "HumanDamageReward": 1,
 
-    // ── Item list ───────────────────────────────────────────────────────────
-    "Items": [
-      { "Key": "armor",            "Name": "Armor (100 AP)",                    "Price": 3,  "Team": "Human"  },
-      { "Key": "he_grenade",       "Name": "HE Grenade",                        "Price": 2,  "Team": "Human"  },
-      { "Key": "flash_grenade",    "Name": "Flash Grenade",                     "Price": 2,  "Team": "Human"  },
-      { "Key": "smoke_grenade",    "Name": "Smoke Grenade",                     "Price": 2,  "Team": "Human"  },
-      { "Key": "inc_grenade",      "Name": "Incendiary Bomb",                   "Price": 4,  "Team": "Human"  },
-      { "Key": "teleport_grenade", "Name": "Teleport Grenade",                  "Price": 3,  "Team": "Human"  },
-      { "Key": "scba_suit",        "Name": "SCBA Suit (resist one attack)",      "Price": 5,  "Team": "Human"  },
-      { "Key": "multijump",        "Name": "Multi-Jump (+1 jump)",              "Price": 4,  "Team": "Human"  },
-      { "Key": "knife_blink",      "Name": "Knife Blink (3 charges)",           "Price": 5,  "Team": "Human"  },
-      { "Key": "jetpack",          "Name": "Jetpack",                           "Price": 10, "Team": "Human"  },
-      { "Key": "laser_mine",       "Name": "Laser Mine (opens mine menu)",      "Price": 6,  "Team": "Human"  },
-      { "Key": "revive_token",     "Name": "Revive Token (respawn once)",       "Price": 8,  "Team": "Human"  },
-      { "Key": "antidote",         "Name": "Antidote (cure to human)",          "Price": 8,  "Team": "Zombie" },
-      { "Key": "zombie_madness",   "Name": "Zombie Madness (10s invulnerable)", "Price": 6,  "Team": "Zombie" },
-      { "Key": "t_virus_grenade",  "Name": "T-Virus Grenade",                   "Price": 6,  "Team": "Zombie" }
-    ]
-  }
+  "Items": [
+    // Human items
+    { "Key": "armor",            "Price": 3,  "Team": "Human" },
+    { "Key": "he_grenade",       "Price": 2,  "Team": "Human" },
+    { "Key": "flash_grenade",    "Price": 2,  "Team": "Human" },
+    { "Key": "smoke_grenade",    "Price": 2,  "Team": "Human" },
+    { "Key": "inc_grenade",      "Price": 4,  "Team": "Human" },
+    { "Key": "teleport_grenade", "Price": 3,  "Team": "Human" },
+    { "Key": "scba_suit",        "Price": 5,  "Team": "Human" },
+    { "Key": "multijump",        "Price": 4,  "Team": "Human" },
+    { "Key": "knife_blink",      "Price": 5,  "Team": "Human" },
+    { "Key": "jetpack",          "Price": 10, "Team": "Human" },
+    { "Key": "laser_mine",       "Price": 6,  "Team": "Human" },
+    { "Key": "revive_token",     "Price": 8,  "Team": "Human" },
+    { "Key": "buy_survivor",     "Price": 20, "Team": "Human",  "Enable": true },
+    { "Key": "buy_sniper",       "Price": 15, "Team": "Human",  "Enable": true },
+    // Zombie items
+    { "Key": "antidote",         "Price": 8,  "Team": "Zombie" },
+    { "Key": "zombie_madness",   "Price": 6,  "Team": "Zombie" },
+    { "Key": "t_virus_grenade",  "Price": 6,  "Team": "Zombie" },
+    { "Key": "buy_nemesis",      "Price": 20, "Team": "Zombie", "Enable": true },
+    { "Key": "buy_assassin",     "Price": 15, "Team": "Zombie", "Enable": true }
+  ]
 }
 ```
-
----
 
 ### `ZombieClassesCFG.jsonc` — Zombie Class Schema
 
 ```jsonc
-{
-  "ZOZombieClassCFG": {
-    "ZombieClassList": [
-      {
-        "Name": "Classic Zombie",
-        "Enable": true,
-        "Stats": {
-          "Health": 6000,
-          "MotherZombieHealth": 15000,
-          "Speed": 1.16,
-          "Damage": 60.0,
-          "Gravity": 0.6,
-          "Fov": 110,
-          "EnableRegen": true,
-          "HpRegenSec": 5.0,
-          "HpRegenHp": 100
-        },
-        "Models": { "ModelPath": "characters/models/..." },
-        "Sounds": {
-          "SoundInfect": "han.human.mandeath",
-          "SoundPain":   "han.hl.zombie.pain"
-        }
-      }
-    ]
-  }
+"ZOZombieClassCFG": {
+  "ZombieClassList": [
+    {
+      "Name": "Classic Zombie",
+      "Enable": true,
+      "Stats": {
+        "Health": 6000, "MotherZombieHealth": 15000,
+        "Speed": 1.16,  "Damage": 60.0, "Gravity": 0.6,
+        "Fov": 110, "EnableRegen": true, "HpRegenSec": 5.0, "HpRegenHp": 100
+      },
+      "Models": { "ModelPath": "characters/models/..." },
+      "Sounds": { "SoundInfect": "han.human.mandeath", "SoundPain": "han.hl.zombie.pain" }
+    }
+    // ... more classes
+  ]
 }
 ```
 
