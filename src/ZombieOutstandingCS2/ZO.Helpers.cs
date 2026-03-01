@@ -162,13 +162,10 @@ public partial class ZOHelpers
             if (pwan == null || !pwan.IsValid)
                 return;
 
-            var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(SoundPath, Volume, 1.0f);
+            using var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(SoundPath, Volume, 1.0f);
             sound.SourceEntityIndex = (int)pwan.Index;
             sound.Recipients.AddAllPlayers();
-            _core.Scheduler.NextTick(() =>
-            {
-                sound.Emit();
-            });
+            sound.Emit();
         }
     }
 
@@ -176,13 +173,10 @@ public partial class ZOHelpers
     {
         if (!string.IsNullOrEmpty(SoundPath))
         {
-            var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(SoundPath, Volume, 1.0f);
+            using var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(SoundPath, Volume, 1.0f);
             sound.SourceEntityIndex = -1;
             sound.Recipients.AddAllPlayers();
-            _core.Scheduler.NextTick(() =>
-            {
-                sound.Emit();
-            });
+            sound.Emit();
         }
     }
 
@@ -430,8 +424,8 @@ public partial class ZOHelpers
 
         _globals.GlowEntity[controller] = new GlowEntity()
         {
-            Glow = modelGlow,
-            Relay = modelRelay
+            Glow = modelGlowHandle,
+            Relay = modelRelayHandle
         };
     }
 
@@ -445,22 +439,14 @@ public partial class ZOHelpers
             return;
         if (_globals.GlowEntity.TryGetValue(controller, out var glowEntity))
         {
-            if (glowEntity.Relay != null && glowEntity.Relay.IsValid)
+            if (glowEntity.Relay.IsValid && glowEntity.Relay.Value != null && glowEntity.Relay.Value.IsValid && glowEntity.Relay.Value.IsValidEntity)
             {
-                var relayHandle = _core.EntitySystem.GetRefEHandle(glowEntity.Relay);
-                if (relayHandle.IsValid && relayHandle.Value != null && relayHandle.Value.IsValid)
-                {
-                    relayHandle.Value.AcceptInput("Kill", 0);
-                }
+                glowEntity.Relay.Value.AcceptInput("Kill", 0);
             }
 
-            if (glowEntity.Glow != null && glowEntity.Glow.IsValid)
+            if (glowEntity.Glow.IsValid && glowEntity.Glow.Value != null && glowEntity.Glow.Value.IsValid && glowEntity.Glow.Value.IsValidEntity)
             {
-                var glowHandle = _core.EntitySystem.GetRefEHandle(glowEntity.Glow);
-                if (glowHandle.IsValid && glowHandle.Value != null && glowHandle.Value.IsValid)
-                {
-                    glowHandle.Value.AcceptInput("Kill", 0);
-                }
+                glowEntity.Glow.Value.AcceptInput("Kill", 0);
             }
 
             _globals.GlowEntity.Remove(controller);
@@ -933,13 +919,10 @@ public partial class ZOHelpers
 
         if (!string.IsNullOrEmpty(sound))
         {
-            var sounds = new SwiftlyS2.Shared.Sounds.SoundEvent(sound, 1.0f, 1.0f);
+            using var sounds = new SwiftlyS2.Shared.Sounds.SoundEvent(sound, 1.0f, 1.0f);
             sounds.SourceEntityIndex = (int)light.Index;
             sounds.Recipients.AddAllPlayers();
-            _core.Scheduler.NextTick(() =>
-            {
-                sounds.Emit();
-            });
+            sounds.Emit();
         }
 
         return light;

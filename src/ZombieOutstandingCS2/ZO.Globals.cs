@@ -155,8 +155,8 @@ public struct SpawnPointData
 
 public class GlowEntity
 {
-    public CBaseModelEntity? Relay { get; set; } = null;
-    public CBaseModelEntity? Glow { get; set; } = null;
+    public CHandle<CBaseModelEntity> Relay { get; set; }
+    public CHandle<CBaseModelEntity> Glow { get; set; }
 }
 
 /// <summary>

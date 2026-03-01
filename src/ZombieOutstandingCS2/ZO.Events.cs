@@ -1585,13 +1585,10 @@ public partial class ZOEvents
             float radius = CFG.TVirusGrenadeRange;
             _helpers.DrawExpandingRing(position, radius, 0, 255, 0, 125);
 
-            var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(CFG.TVirusGrenadeSound, 1.0f, 1.0f);
+            using var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(CFG.TVirusGrenadeSound, 1.0f, 1.0f);
             sound.SourceEntityIndex = (int)entity.Index;
             sound.Recipients.AddAllPlayers();
-            _core.Scheduler.NextTick(() =>
-            {
-                sound.Emit();
-            });
+            sound.Emit();
 
             var allPlayer = _core.PlayerManager.GetAlive();
             foreach (var human in allPlayer)
@@ -1640,13 +1637,10 @@ public partial class ZOEvents
             float radius = CFG.FireGrenadeRange;
             _helpers.DrawExpandingRing(position, radius, 255, 0, 0, 125);
 
-            var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(CFG.FireGrenadeSound, 1.0f, 1.0f);
+            using var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(CFG.FireGrenadeSound, 1.0f, 1.0f);
             sound.SourceEntityIndex = (int)entity.Index;
             sound.Recipients.AddAllPlayers();
-            _core.Scheduler.NextTick(() =>
-            {
-                sound.Emit();
-            });
+            sound.Emit();
 
             var allPlayer = _core.PlayerManager.GetAlive();
             foreach (var zombie in allPlayer)
@@ -1747,13 +1741,10 @@ public partial class ZOEvents
         SwiftlyS2.Shared.Natives.Vector position = new SwiftlyS2.Shared.Natives.Vector(@event.X, @event.Y, @event.Z);
         float radius = 500f;
         _helpers.DrawExpandingRing(position, radius, 0, 0, 255, 125);
-        var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(CFG.FreezeGrenadeSound, 1.0f, 1.0f);
+        using var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(CFG.FreezeGrenadeSound, 1.0f, 1.0f);
         sound.SourceEntityIndex = (int)entity.Index;
         sound.Recipients.AddAllPlayers();
-        _core.Scheduler.NextTick(() =>
-        {
-            sound.Emit();
-        });
+        sound.Emit();
 
 
         var allPlayer = _core.PlayerManager.GetAlive();

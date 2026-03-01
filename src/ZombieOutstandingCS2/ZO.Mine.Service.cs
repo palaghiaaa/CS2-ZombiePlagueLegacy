@@ -665,10 +665,10 @@ public class ZOMineService
         var mine = mineHandle.Value;
         if (mine == null || !mine.IsValid) return;
 
-        var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(soundPath, 1.0f, 1.0f);
+        using var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(soundPath, 1.0f, 1.0f);
         sound.SourceEntityIndex = (int)mine.Index;
         sound.Recipients.AddAllPlayers();
-        _core.Scheduler.NextTick(() => sound.Emit());
+        sound.Emit();
     }
 
     private void ApplyDamage(IPlayer attacker, IPlayer target, CHandle<CBaseModelEntity> mineHandle, float damage, string hurtSound)
