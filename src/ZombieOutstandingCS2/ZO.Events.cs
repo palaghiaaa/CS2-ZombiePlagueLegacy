@@ -659,8 +659,7 @@ public partial class ZOEvents
         _globals.IsZombie.TryGetValue(Id, out bool victimIsZombie);
         if (!victimIsZombie)
         {
-            var attackerId = @event.Attacker;
-            var attacker = _core.PlayerManager.GetPlayer(attackerId);
+            var attacker = @event.AttackerPlayer;
             if (attacker != null && attacker.IsValid)
             {
                 var aId = attacker.PlayerID;
@@ -792,9 +791,7 @@ public partial class ZOEvents
         if (victim == null || !victim.IsValid)
             return HookResult.Continue;
 
-        var attackerId = @event.Attacker;
-
-        var attacker = _core.PlayerManager.GetPlayer(attackerId);
+        var attacker = @event.AttackerPlayer;
         if (attacker == null || !attacker.IsValid)
             return HookResult.Continue;
 
@@ -804,7 +801,6 @@ public partial class ZOEvents
         var CFG = _mainCFG.CurrentValue;
 
         int Dmg = @event.DmgHealth;
-        int Health = @event.Health;
         string waepon = @event.Weapon;
         _globals.IsZombie.TryGetValue(aId, out bool attackerIsZombie);
         _globals.IsZombie.TryGetValue(vId, out bool victimIsZombie);
@@ -833,9 +829,7 @@ public partial class ZOEvents
         if(victim == null || !victim.IsValid)
             return HookResult.Continue;
 
-        var attackerId = @event.Attacker;
-
-        var attacker = _core.PlayerManager.GetPlayer(attackerId);
+        var attacker = @event.AttackerPlayer;
         if (attacker == null || !attacker.IsValid)
             return HookResult.Continue;
 
@@ -885,9 +879,7 @@ public partial class ZOEvents
         if (victim == null || !victim.IsValid)
             return HookResult.Continue;
 
-        var attackerId = @event.Attacker;
-
-        var attacker = _core.PlayerManager.GetPlayer(attackerId);
+        var attacker = @event.AttackerPlayer;
         if (attacker == null || !attacker.IsValid)
             return HookResult.Continue;
 

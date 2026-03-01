@@ -63,7 +63,7 @@ public partial class ZOEvents
 
     private HookResult OnPlayerSoundHurt(EventPlayerHurt @event)
     {
-        var attacker = _core.PlayerManager.GetPlayer(@event.Attacker);
+        var attacker = @event.AttackerPlayer;
         if (attacker == null || !attacker.IsValid)
             return HookResult.Continue;
 
@@ -138,7 +138,7 @@ public partial class ZOEvents
 
     private HookResult OnPlayerSoundAttack(EventPlayerHurt @event)
     {
-        var attacker = _core.PlayerManager.GetPlayer(@event.Attacker);
+        var attacker = @event.AttackerPlayer;
         if (attacker == null || !attacker.IsValid)
             return HookResult.Continue;
 
