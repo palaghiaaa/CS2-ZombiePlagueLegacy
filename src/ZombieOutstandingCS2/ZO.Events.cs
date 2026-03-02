@@ -1410,7 +1410,10 @@ public partial class ZOEvents
             }
             else if (attackerIsSniper && activeWeapon.DesignerName == config.Sniper.SniperWeapon)
             {
-                @event.Info.Damage *= config.Sniper.SniperDamage;
+                if (config.Sniper.OneShotKill)
+                    @event.Info.Damage = victimPawn.Health;
+                else
+                    @event.Info.Damage *= config.Sniper.SniperDamage;
             }
             else if (attackerIsHero)
             {

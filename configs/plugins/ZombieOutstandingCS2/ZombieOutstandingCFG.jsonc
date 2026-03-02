@@ -116,6 +116,9 @@
 		"SniperSpeed": 0.92,
 		"SniperGravity": 0.75,
 		"SniperDamage": 35.0,
+		// When true, a single sniper shot instantly kills any zombie (CS 1.6 style).
+		// When false, damage is multiplied by SniperDamage instead.
+		"OneShotKill": true,
 		"SniperWeapon": "weapon_awp",
 		"CustomWeaponName": "Sniper AWP",
 		"ModelsPath": "characters/models/tm_professional/tm_professional_varf4.vmdl",

@@ -92,6 +92,12 @@ public class SniperModeConfig : GameModeConfig
     public float SniperSpeed { get; set; } = 3.0f;
     public float SniperGravity { get; set; } = 3.0f;
     public float SniperDamage { get; set; } = 10.0f;
+    /// <summary>
+    /// When true, a single shot from the sniper's weapon instantly kills any zombie,
+    /// regardless of the zombie's current HP (replicating CS 1.6 sniper mode behavior).
+    /// When false, damage is multiplied by SniperDamage instead.
+    /// </summary>
+    public bool OneShotKill { get; set; } = true;
     public string SniperWeapon { get; set; } = string.Empty;
     public string CustomWeaponName { get; set; } = string.Empty;
     public string ModelsPath { get; set; } = string.Empty;
