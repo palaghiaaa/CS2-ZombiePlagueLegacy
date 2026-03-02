@@ -66,31 +66,31 @@ public partial class ZombieOutstandingCS2(ISwiftlyCore core) : BasePlugin(core)
     {
         Core.Configuration.InitializeJsonWithModel<ZOMainCFG>("ZombieOutstandingCFG.jsonc", "ZOMainCFG").Configure(builder =>
         {
-            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, false);
         });
         Core.Configuration.InitializeJsonWithModel<ZOVoxCFG>("ZombieOutstandingCFG.jsonc", "ZOVoxCFG").Configure(builder =>
         {
-            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, false);
         });
         Core.Configuration.InitializeJsonWithModel<ZOZombieClassCFG>("ZombieClassesCFG.jsonc", "ZOZombieClassCFG").Configure(builder =>
         {
-            builder.AddJsonFile("ZombieClassesCFG.jsonc", false, true);
+            builder.AddJsonFile("ZombieClassesCFG.jsonc", false, false);
         });
         Core.Configuration.InitializeJsonWithModel<ZOSpecialClassCFG>("ZombieOutstandingCFG.jsonc", "ZOSpecialClassCFG").Configure(builder =>
         {
-            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, false);
         });
         Core.Configuration.InitializeJsonWithModel<ZOWeaponsCFG>("ZombieOutstandingCFG.jsonc", "ZOWeaponsCFG").Configure(builder =>
         {
-            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, false);
         });
         Core.Configuration.InitializeJsonWithModel<ZOExtraItemsCFG>("ExtraItemsCFG.jsonc", "ZOExtraItemsCFG").Configure(builder =>
         {
-            builder.AddJsonFile("ExtraItemsCFG.jsonc", false, true);
+            builder.AddJsonFile("ExtraItemsCFG.jsonc", false, false);
         });
         Core.Configuration.InitializeJsonWithModel<ZOMineCFG>("ZombieOutstandingCFG.jsonc", "ZOMineCFG").Configure(builder =>
         {
-            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, false);
         });
 
         var collection = new ServiceCollection();
