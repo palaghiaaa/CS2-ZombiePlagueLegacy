@@ -275,7 +275,17 @@
 	// ── Economy (Ammo Packs) ─────────────────────────────────────────────────
 	// Wallet kind name registered in the Economy plugin.
 	// Must match a wallet kind configured in Economy's config.
-	"EconomyWalletKind": "ammo"
+	"EconomyWalletKind": "ammo",
+
+	// ── Skybox ───────────────────────────────────────────────────────────────
+	// Path to the .vmat skybox material applied server-wide on every map load.
+	// Example: "materials/skybox/sky_de_dust2.vmat"
+	// Leave empty ("") to keep the map's default skybox.
+	"SkyboxMaterial": "",
+	// Brightness multiplier for the skybox (0.0 – 10.0, default 1.0).
+	"SkyboxBrightness": 1.0,
+	// Tint colour in "R G B A" format (0-255 each). Default is white (no tint).
+	"SkyboxTintColor": "255 255 255 255"
   },
 
   // ── Vox / round sound groups ─────────────────────────────────────────────
