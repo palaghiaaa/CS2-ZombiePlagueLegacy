@@ -225,8 +225,9 @@ public class ZOMainCFG
     // ── Skybox settings ───────────────────────────────────────────────────────
     /// <summary>
     /// Path to the skybox .vmat material applied server-wide on every map load.
-    /// Example: "materials/skybox/sky_de_dust2.vmat"
-    /// Leave empty to keep the map's default skybox.
+    /// Example: "materials/skybox/sky_overcast_01.vmat" (dark overcast — ideal for zombie plague).
+    /// Leave empty to keep the map's default skybox material; brightness and tint
+    /// will still be applied to whatever sky the map owns.
     /// </summary>
     public string SkyboxMaterial { get; set; } = string.Empty;
 
