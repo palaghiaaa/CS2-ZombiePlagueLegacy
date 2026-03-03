@@ -275,33 +275,7 @@
 	// ── Economy (Ammo Packs) ─────────────────────────────────────────────────
 	// Wallet kind name registered in the Economy plugin.
 	// Must match a wallet kind configured in Economy's config.
-	"EconomyWalletKind": "ammo",
-
-	// ── Skybox ───────────────────────────────────────────────────────────────
-	// Path to the .vmat skybox material applied server-wide on every map load.
-	// Leave empty ("") to keep the map's default skybox material while still
-	// allowing SkyboxBrightness / SkyboxTintColor to darken the existing sky.
-	//
-	// ── Built-in CS2 skyboxes (zombie-plague recommendations) ─────────────────
-	//  sky_overcast_01  → dark, cloudy overcast sky  ★ recommended for zombie plague
-	//  sky_black        → pure black sky (maximum darkness)
-	//  sky_de_nuke      → industrial / grey overcast
-	//  sky_hr_aztec_02  → dark jungle / ruins
-	//
-	// Full path format: "materials/skybox/<name>.vmat"
-	// ── Zombie plague dark atmosphere ────────────────────────────────────────
-	//   SkyboxMaterial:   "materials/skybox/sky_overcast_01.vmat" ← gloomy overcast
-	//   SkyboxBrightness: 0.1                                     ← very dark sky
-	//   SkyboxTintColor:  "20 20 20 255"                          ← near-black tint
-	// ─────────────────────────────────────────────────────────────────────────
-	"SkyboxMaterial": "materials/skybox/sky_overcast_01.vmat",
-	// Brightness multiplier for the skybox (0.0 – 10.0, default 1.0).
-	// Applied to existing sky entities when SkyboxMaterial is empty, or to the
-	// custom sky entity when a material is set. Use 0.1 for zombie-plague darkness.
-	"SkyboxBrightness": 0.1,
-	// Tint colour in "R G B A" format (0-255 each). Default is white (no tint).
-	// Use "20 20 20 255" for a dark zombie-plague atmosphere.
-	"SkyboxTintColor": "20 20 20 255"
+	"EconomyWalletKind": "ammo"
   },
 
   // ── Vox / round sound groups ─────────────────────────────────────────────
