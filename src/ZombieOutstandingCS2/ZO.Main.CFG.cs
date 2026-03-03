@@ -222,29 +222,4 @@ public class ZOMainCFG
     /// </summary>
     public string EconomyWalletKind { get; set; } = "ammo";
 
-    // ── Skybox settings ───────────────────────────────────────────────────────
-    /// <summary>
-    /// Path to the skybox .vmat material applied server-wide on every map load.
-    /// Example: "materials/skybox/sky_overcast_01.vmat" (dark overcast — ideal for zombie plague).
-    /// Leave empty to keep the map's default skybox material; brightness and tint
-    /// will still be applied to whatever sky the map owns.
-    /// </summary>
-    public string SkyboxMaterial { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Brightness multiplier for the skybox (0.0 – 10.0, default 1.0).
-    /// Applied to the map's existing sky entities when <see cref="SkyboxMaterial"/>
-    /// is empty, or to the custom sky entity when a material is set.
-    /// Set to a low value (e.g. 0.1) for a dark zombie-plague atmosphere.
-    /// </summary>
-    public float SkyboxBrightness { get; set; } = 1.0f;
-
-    /// <summary>
-    /// Tint colour for the skybox in "R G B A" format (0-255 each).
-    /// Example: "255 255 255 255" (white, no tint).
-    /// Applied to the map's existing sky entities when <see cref="SkyboxMaterial"/>
-    /// is empty, or to the custom sky entity when a material is set.
-    /// Use a near-black value (e.g. "20 20 20 255") for a dark zombie-plague atmosphere.
-    /// </summary>
-    public string SkyboxTintColor { get; set; } = "255 255 255 255";
 }

@@ -36,7 +36,6 @@ public partial class ZOEvents
     private readonly AmmoPacksService _ammoPacks;
     private readonly ZOMineService _mineService;
     private readonly IOptionsMonitor<ZOMineCFG> _mineCFG;
-    private readonly ZOSkyboxManager _skyboxManager;
 
     public ZOEvents(ISwiftlyCore core, ILogger<ZOEvents> logger
         , ZOGlobals globals, ZOServices services,
@@ -51,8 +50,7 @@ public partial class ZOEvents
         ZOWeaponsMenu weaponsMenu,
         AmmoPacksService ammoPacks,
         ZOMineService mineService,
-        IOptionsMonitor<ZOMineCFG> mineCFG,
-        ZOSkyboxManager skyboxManager)
+        IOptionsMonitor<ZOMineCFG> mineCFG)
     {
         _core = core;
         _logger = logger;
@@ -73,7 +71,6 @@ public partial class ZOEvents
         _ammoPacks = ammoPacks;
         _mineService = mineService;
         _mineCFG = mineCFG;
-        _skyboxManager = skyboxManager;
     }
 
     public void HookEvents()
@@ -120,12 +117,6 @@ public partial class ZOEvents
         _core.GameEvent.HookPre<EventDecoyFiring>(OnDecoyFiring);
 
         _core.Event.OnEntityCreated += Event_OnEntityCreated;
-        _core.Event.OnEntitySpawned += Event_OnEntitySpawned;
-    }
-
-    private void Event_OnEntitySpawned(IOnEntitySpawnedEvent @event)
-    {
-        _skyboxManager.OnEntitySpawned(@event.Entity);
     }
 
     private void Event_OnEntityCreated(IOnEntityCreatedEvent @event)
@@ -982,8 +973,6 @@ public partial class ZOEvents
         {
             _globals.RoundVoxGroup = _helpers.PickRandomActiveGroup(VoxList);
         }
-
-        _skyboxManager.OnMapLoad();
     }
 
     private void Event_OnEntityTakeDamage(SwiftlyS2.Shared.Events.IOnEntityTakeDamageEvent @event)
