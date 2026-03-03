@@ -1196,6 +1196,120 @@ public partial class ZOHelpers
         return entity;
     }
 
+    // ── Fog ──────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Creates (or reuses) a single global fog controller and applies it to all
+    /// connected players. Intended to be called on map load. No-op when
+    /// <see cref="FogConfig.Enable"/> is false.
+    /// </summary>
+    public void ApplyFog(FogConfig fogCfg)
+    {
+        if (!fogCfg.Enable)
+            return;
+
+        // Re-use the stored handle across rounds; create a new entity on map load.
+        CFogController? fogController = null;
+        if (_globals.GlobalFogController.IsValid)
+        {
+            fogController = _globals.GlobalFogController.Value;
+            if (fogController == null || !fogController.IsValid || !fogController.IsValidEntity)
+                fogController = null;
+        }
+
+        if (fogController == null)
+        {
+            fogController = _core.EntitySystem.CreateEntityByDesignerName<CFogController>("env_fog_controller");
+            if (fogController == null || !fogController.IsValid || !fogController.IsValidEntity)
+                return;
+            fogController.DispatchSpawn();
+        }
+
+        // Set all fog properties on the nested fogparams_t ref struct.
+        var fog = fogController.Fog;
+        fog.Enable      = true;
+        fog.Start       = fogCfg.StartDist;
+        fog.End         = fogCfg.EndDist;
+        fog.Maxdensity  = fogCfg.MaxDensity;
+        fog.Exponent    = fogCfg.Exponent;
+        fog.ColorPrimary   = new Color(fogCfg.ColorR, fogCfg.ColorG, fogCfg.ColorB, 255);
+        fog.ColorSecondary = new Color(fogCfg.ColorR, fogCfg.ColorG, fogCfg.ColorB, 255);
+
+        // Notify the engine of every changed field (Updated methods live on fogparams_t).
+        fog.EnableUpdated();
+        fog.StartUpdated();
+        fog.EndUpdated();
+        fog.MaxdensityUpdated();
+        fog.ExponentUpdated();
+        fog.ColorPrimaryUpdated();
+        fog.ColorSecondaryUpdated();
+
+        // Signal the entity itself.
+        fogController.FogUpdated();
+
+        // Set FogMaxDensityMultiplier on env_player_visibility so the fog
+        // distance cap is respected for all players.
+        foreach (var pv in _core.EntitySystem.GetAllEntitiesByDesignerName<CPlayerVisibility>("env_player_visibility"))
+        {
+            if (pv == null || !pv.IsValid || !pv.IsValidEntity) continue;
+            pv.FogMaxDensityMultiplier = fogCfg.MaxDensity;
+            pv.FogMaxDensityMultiplierUpdated();
+        }
+
+        // Store handle so spawning players can reuse the same controller.
+        _globals.GlobalFogController = _core.EntitySystem.GetRefEHandle(fogController);
+
+        // Apply to every player currently in the server.
+        foreach (var player in _core.PlayerManager.GetAllPlayers())
+            ApplyFogToPlayer(player, fogController);
+    }
+
+    /// <summary>
+    /// Assigns the global fog controller to a single player's pawn.
+    /// Safe to call even when fog is disabled (handle will be invalid → no-op).
+    /// </summary>
+    public void ApplyFogToPlayer(IPlayer player, CFogController? fogController = null)
+    {
+        if (!player.IsValid || player.IsFakeClient)
+            return;
+
+        if (fogController == null)
+        {
+            if (!_globals.GlobalFogController.IsValid) return;
+            fogController = _globals.GlobalFogController.Value;
+            if (fogController == null || !fogController.IsValid || !fogController.IsValidEntity) return;
+        }
+
+        var pawn = player.PlayerPawn;
+        if (pawn == null || !pawn.IsValid) return;
+
+        pawn.AcceptInput("SetFogController", "!activator", fogController, pawn);
+    }
+
+    // ── Skybox ───────────────────────────────────────────────────────────────
+
+    private static readonly System.Text.RegularExpressions.Regex _safeSkynamePattern =
+        new(@"^[a-zA-Z0-9_/]+$", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    /// <summary>
+    /// Overrides the map skybox via the engine. No-op when <paramref name="skyName"/>
+    /// is empty or whitespace (keep the map's default sky).
+    /// Only names matching [a-zA-Z0-9_/]+ are accepted to prevent command injection.
+    /// </summary>
+    public void ApplySkybox(string skyName)
+    {
+        if (string.IsNullOrWhiteSpace(skyName))
+            return;
+
+        if (!_safeSkynamePattern.IsMatch(skyName))
+        {
+            _logger.LogWarning("[ZO] Skybox name '{Name}' contains invalid characters and was not applied.", skyName);
+            return;
+        }
+
+        _core.Engine.ExecuteCommand($"sv_skyname {skyName}");
+    }
+
     
 
 }

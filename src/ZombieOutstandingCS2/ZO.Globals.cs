@@ -133,6 +133,10 @@ public class ZOGlobals
     /// <summary>True while a player has purchased the Tryder extra item this round.</summary>
     public Dictionary<int, bool> TryderState = new Dictionary<int, bool>();
 
+    // ── Fog ──────────────────────────────────────────────────────────────────
+    /// <summary>Handle to the global env_fog_controller entity, reused across rounds.</summary>
+    public CHandle<CFogController> GlobalFogController;
+
 }
 public class ZombieRegenState
 {

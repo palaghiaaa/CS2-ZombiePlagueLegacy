@@ -520,6 +520,7 @@ public partial class ZOEvents
                         return;
 
                     _helpers.SetNoBlock(player);
+                    _helpers.ApplyFogToPlayer(player);
                 }
                 catch (Exception ex)
                 {
@@ -973,6 +974,15 @@ public partial class ZOEvents
         {
             _globals.RoundVoxGroup = _helpers.PickRandomActiveGroup(VoxList);
         }
+
+        var cfg = _mainCFG.CurrentValue;
+
+        // Apply fog and skybox after a world tick so entities are fully ready.
+        _core.Scheduler.NextWorldUpdate(() =>
+        {
+            _helpers.ApplyFog(cfg.Fog);
+            _helpers.ApplySkybox(cfg.Skybox);
+        });
     }
 
     private void Event_OnEntityTakeDamage(SwiftlyS2.Shared.Events.IOnEntityTakeDamageEvent @event)
