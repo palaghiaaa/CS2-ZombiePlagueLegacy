@@ -126,6 +126,26 @@ public class HeroConfig : GameModeConfig
     public string ModelsPath { get; set; } = string.Empty;
 
 }
+public class FogConfig
+{
+    /// <summary>Set to true to enable server-wide fog on every map load.</summary>
+    public bool Enable { get; set; } = true;
+    /// <summary>Primary fog colour – red component (0-255). Dark grey-green for zombie horror.</summary>
+    public int ColorR { get; set; } = 100;
+    /// <summary>Primary fog colour – green component (0-255).</summary>
+    public int ColorG { get; set; } = 110;
+    /// <summary>Primary fog colour – blue component (0-255).</summary>
+    public int ColorB { get; set; } = 100;
+    /// <summary>Distance at which the fog begins (game units).</summary>
+    public float StartDist { get; set; } = 128f;
+    /// <summary>Distance at which the fog reaches maximum density (game units).</summary>
+    public float EndDist { get; set; } = 2048f;
+    /// <summary>Maximum fog opacity (0.0 = invisible, 1.0 = fully opaque).</summary>
+    public float MaxDensity { get; set; } = 0.9f;
+    /// <summary>Fog density fall-off exponent.</summary>
+    public float Exponent { get; set; } = 1.0f;
+}
+
 public class ZOMainCFG
 {
     public float RoundReadyTime { get; set; } = 25f;
@@ -221,5 +241,20 @@ public class ZOMainCFG
     /// Defaults to "ammo". Must match a wallet kind configured in Economy's config.
     /// </summary>
     public string EconomyWalletKind { get; set; } = "ammo";
+
+    // ── Fog ──────────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Server-wide fog applied automatically on every map load and to every
+    /// player that spawns. Set Enable to false to disable completely.
+    /// </summary>
+    public FogConfig Fog { get; set; } = new();
+
+    // ── Skybox ───────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Override the map's skybox on every map load.
+    /// Set to a sky material path, e.g. "skybox/sky_dust_hdr".
+    /// Leave empty ("") to keep the map's default skybox.
+    /// </summary>
+    public string Skybox { get; set; } = string.Empty;
 
 }
