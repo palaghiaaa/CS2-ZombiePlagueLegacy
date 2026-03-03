@@ -148,6 +148,7 @@ public partial class ZombieOutstandingCS2(ISwiftlyCore core) : BasePlugin(core)
         collection.AddSingleton<ZOWeaponsMenu>();
         collection.AddSingleton<ZOExtraItemsMenu>();
         collection.AddSingleton<ZOGameMenu>();
+        collection.AddSingleton<ZOSkyboxManager>();
 
         ServiceProvider = collection.BuildServiceProvider();
 

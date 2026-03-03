@@ -221,4 +221,25 @@ public class ZOMainCFG
     /// Defaults to "ammo". Must match a wallet kind configured in Economy's config.
     /// </summary>
     public string EconomyWalletKind { get; set; } = "ammo";
+
+    // ── Skybox settings ───────────────────────────────────────────────────────
+    /// <summary>
+    /// Path to the skybox .vmat material applied server-wide on every map load.
+    /// Example: "materials/skybox/sky_de_dust2.vmat"
+    /// Leave empty to keep the map's default skybox.
+    /// </summary>
+    public string SkyboxMaterial { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Brightness multiplier for the skybox (0.0 – 10.0, default 1.0).
+    /// Only applied when SkyboxMaterial is set.
+    /// </summary>
+    public float SkyboxBrightness { get; set; } = 1.0f;
+
+    /// <summary>
+    /// Tint colour for the skybox in "R G B A" format (0-255 each).
+    /// Example: "255 255 255 255" (white, no tint).
+    /// Only applied when SkyboxMaterial is set.
+    /// </summary>
+    public string SkyboxTintColor { get; set; } = "255 255 255 255";
 }
