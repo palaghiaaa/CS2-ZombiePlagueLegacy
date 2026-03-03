@@ -43,8 +43,12 @@ public class ZOSkyboxManager
     // ── Public surface ────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Called on map load: removes every native <c>env_sky</c>, then creates
-    /// one with the configured material/brightness/tint (if configured).
+    /// Called on map load: when a <see cref="ZOMainCFG.SkyboxMaterial"/> is
+    /// configured, removes every native <c>env_sky</c> and spawns a new one
+    /// with the configured material/brightness/tint.  When no material is set
+    /// but brightness or tint differ from their defaults, the values are applied
+    /// directly to whatever <c>env_sky</c> entities the map already owns —
+    /// enabling a dark zombie-plague atmosphere without overriding the sky art.
     /// </summary>
     public void OnMapLoad()
     {
@@ -52,8 +56,15 @@ public class ZOSkyboxManager
         _matSysInitialized = false;
 
         var cfg = _mainCFG.CurrentValue;
+
         if (string.IsNullOrWhiteSpace(cfg.SkyboxMaterial))
-            return; // nothing to do — keep map's default
+        {
+            // No custom material — still honour brightness / tint overrides so
+            // servers can achieve a dark atmosphere (e.g. zombie plague) without
+            // changing the map's sky art.
+            ApplyAtmosphereToExistingSkyboxes(cfg);
+            return;
+        }
 
         RemoveNativeSkyboxes();
         SpawnDefaultSkybox(cfg);
@@ -69,7 +80,7 @@ public class ZOSkyboxManager
 
         var cfg = _mainCFG.CurrentValue;
         if (string.IsNullOrWhiteSpace(cfg.SkyboxMaterial))
-            return; // not managing skyboxes
+            return; // not overriding the sky material — nothing to guard
 
         var tag = entity.PrivateVScripts;
         if (tag == OwnedTag) return; // it's ours — keep it
@@ -85,6 +96,40 @@ public class ZOSkyboxManager
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private void ApplyAtmosphereToExistingSkyboxes(ZOMainCFG cfg)
+    {
+        // Skip if both values are at their defaults — nothing to change.
+        bool brightnessDefault = Math.Abs(cfg.SkyboxBrightness - 1.0f) < 0.001f;
+        bool tintDefault = string.Equals(
+            cfg.SkyboxTintColor.Trim(), "255 255 255 255", StringComparison.Ordinal);
+
+        if (brightnessDefault && tintDefault) return;
+
+        _core.Scheduler.NextTick(() =>
+        {
+            try
+            {
+                var tint = ParseTintColor(cfg.SkyboxTintColor, _logger);
+                foreach (var sky in _core.EntitySystem
+                             .GetAllEntitiesByDesignerName<CEnvSky>("env_sky")
+                             .ToList())
+                {
+                    if (!sky.IsValidEntity) continue;
+
+                    sky.BrightnessScale = cfg.SkyboxBrightness;
+                    sky.BrightnessScaleUpdated();
+
+                    sky.TintColor = tint;
+                    sky.TintColorUpdated();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[ZOSkybox] ApplyAtmosphereToExistingSkyboxes failed.");
+            }
+        });
+    }
 
     private void RemoveNativeSkyboxes()
     {
