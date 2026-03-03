@@ -280,12 +280,20 @@
 	// ── Skybox ───────────────────────────────────────────────────────────────
 	// Path to the .vmat skybox material applied server-wide on every map load.
 	// Example: "materials/skybox/sky_de_dust2.vmat"
-	// Leave empty ("") to keep the map's default skybox.
+	// Leave empty ("") to keep the map's default skybox material.
 	"SkyboxMaterial": "",
 	// Brightness multiplier for the skybox (0.0 – 10.0, default 1.0).
-	"SkyboxBrightness": 1.0,
+	// Applied to the map's existing sky even when SkyboxMaterial is empty.
+	// ── Zombie plague dark atmosphere ────────────────────────────────────────
+	// For a dark zombie-plague feel (no custom sky art needed):
+	//   "SkyboxMaterial":   ""              ← keep map's own sky art
+	//   "SkyboxBrightness": 0.1             ← very dark sky
+	//   "SkyboxTintColor":  "20 20 20 255"  ← near-black tint
+	// ─────────────────────────────────────────────────────────────────────────
+	"SkyboxBrightness": 0.1,
 	// Tint colour in "R G B A" format (0-255 each). Default is white (no tint).
-	"SkyboxTintColor": "255 255 255 255"
+	// Use "20 20 20 255" for a dark zombie-plague atmosphere.
+	"SkyboxTintColor": "20 20 20 255"
   },
 
   // ── Vox / round sound groups ─────────────────────────────────────────────
