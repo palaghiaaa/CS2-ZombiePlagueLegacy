@@ -159,16 +159,20 @@
 	"NormalRoundsInterval": 5,
 
 	// ── Solo / low-population guard ──────────────────────────────────────────
-	// Minimum number of alive human players required before infection starts
-	// (i.e. before a mother zombie is selected). When the human count is below
-	// this value, SelectMotherZombie does nothing and the round runs to its
-	// natural timer end — preventing an immediate Zombie-Win that would occur
-	// if the only player on the server was converted to a zombie.
-	// Set to 1 (recommended) so a solo player can test/explore without the
-	// round ending within seconds of infection time.
-	// Set to 2 if you want at least one "victim" human to remain after
-	// mother-zombie selection before the game starts in earnest.
-	"MinPlayersForInfection": 1,
+	// Minimum number of alive human players required before infection starts.
+	// The check is: if (humanCandidates < MinPlayersForInfection) → skip infection.
+	//
+	// WHY YOU NEED 2 (NOT 1) TO PROTECT A SOLO PLAYER:
+	//   With 1 human and this set to 1:  1 < 1 = false  → infection runs →
+	//     solo player becomes zombie → humanCount=0 → FakeZombieWins → round ends
+	//     immediately. Setting to 1 is identical to having no guard at all.
+	//   With 1 human and this set to 2:  1 < 2 = true   → infection is skipped →
+	//     round runs to the natural timer end. ✓
+	//   With 2 humans and this set to 2: 2 < 2 = false  → infection runs normally. ✓
+	//
+	// Recommended: 2 (protects solo / test sessions while normal multi-player
+	// rounds are completely unaffected).
+	"MinPlayersForInfection": 2,
 
 	// ── Human settings ───────────────────────────────────────────────────────
 	"HumandefaultModel": "characters/models/ctm_st6/ctm_st6_variante.vmdl",
