@@ -978,11 +978,22 @@ public partial class ZOEvents
 
         var cfg = _mainCFG.CurrentValue;
 
+        // Reset the cached fog controller so a fresh entity is always created on every
+        // map load instead of accidentally reusing a stale handle from the previous map.
+        _globals.GlobalFogController = default;
+
         // Apply fog and skybox after a world tick so entities are fully ready.
         _core.Scheduler.NextWorldUpdate(() =>
         {
             _helpers.ApplyFog(cfg.Fog);
             _helpers.ApplySkybox(cfg.Skybox);
+        });
+
+        // Delayed retry for workshop maps whose entity system may not be fully
+        // initialised by the time the first NextWorldUpdate fires.
+        _core.Scheduler.DelayBySeconds(1.5f, () =>
+        {
+            _helpers.ApplyFog(cfg.Fog);
         });
     }
 

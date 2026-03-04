@@ -1221,7 +1221,10 @@ public partial class ZOHelpers
         {
             fogController = _core.EntitySystem.CreateEntityByDesignerName<CFogController>("env_fog_controller");
             if (fogController == null || !fogController.IsValid || !fogController.IsValidEntity)
+            {
+                _logger.LogWarning("[ZO] Failed to create env_fog_controller entity – fog will not be applied this attempt.");
                 return;
+            }
             fogController.DispatchSpawn();
         }
 
