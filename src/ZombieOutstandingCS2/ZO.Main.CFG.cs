@@ -227,6 +227,19 @@ public class ZOMainCFG
     /// </summary>
     public int NormalRoundsInterval { get; set; } = 0;
 
+    // ── Solo / low-population guard ───────────────────────────────────────────
+    /// <summary>
+    /// Minimum number of human players required to start infection (select a
+    /// mother zombie). When the alive human count is below this threshold,
+    /// <see cref="SelectMotherZombie"/> skips infection entirely and the round
+    /// runs to its natural timer end — preventing an immediate round-end that
+    /// would otherwise occur when the only player is converted to a zombie
+    /// (leaving humanCount == 0 and triggering FakeZombieWins within seconds).
+    /// Set to 1 (default) to preserve the original behavior on populated servers
+    /// while still letting solo testing run to the round timer.
+    /// </summary>
+    public int MinPlayersForInfection { get; set; } = 1;
+
     // ── Debug / chat settings ────────────────────────────────────────────────
     /// <summary>Prefix prepended to chat messages sent by the plugin.</summary>
     public string ChatPrefix { get; set; } = "[ZO]";
