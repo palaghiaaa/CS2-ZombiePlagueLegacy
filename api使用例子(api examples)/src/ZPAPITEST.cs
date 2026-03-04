@@ -43,9 +43,9 @@ public partial class ZPAPITEST(ISwiftlyCore core) : BasePlugin(core)
     
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
     {
-        if (interfaceManager.HasSharedInterface("HanZombiePlague")) //获取api  Get API
+        if (interfaceManager.HasSharedInterface("ZombieOutstanding")) //获取api  Get API
         {
-            _zpApi = interfaceManager.GetSharedInterface<IZombieOutstandingAPI>("HanZombiePlague");  //获取api  Get API
+            _zpApi = interfaceManager.GetSharedInterface<IZombieOutstandingAPI>("ZombieOutstanding");  //获取api  Get API
             Core.Logger.LogInformation($"[External] 成功获取 API/Successfully obtained API，Hash: {_zpApi.GetHashCode()}");
 
             if (_zpApi == null)
