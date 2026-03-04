@@ -76,6 +76,10 @@ public partial class ZOServices
         if (candidates.Count == 0)
             return;
 
+        var cfg = _mainCFG.CurrentValue;
+        if (candidates.Count < cfg.MinPlayersForInfection)
+            return;
+
         // 随机打乱候选列表
         Random.Shared.Shuffle(CollectionsMarshal.AsSpan(candidates));
 
