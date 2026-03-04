@@ -250,6 +250,7 @@ public partial class ZOEvents
         _globals.SafeRoundStart = true;
         _globals.InfectionStartedThisRound = false;
         _globals.AdminForcedModeThisRound = false;
+        _globals.MotherZombieWasSelected = false;
         _gameMode.ResetMode();
         var CFG = _mainCFG.CurrentValue;
         float configDist = CFG.Assassin.InvisibilityDist;
