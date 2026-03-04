@@ -37,6 +37,12 @@ public class ZOGlobals
     /// <summary>True when an admin forced a custom mode this round.</summary>
     public bool AdminForcedModeThisRound { get; set; } = false;
     /// <summary>
+    /// True when at least one mother zombie was successfully selected this round.
+    /// Prevents CheckRoundWinConditions() from ending the round immediately when
+    /// there are not enough players to run a proper infection (e.g. solo testing).
+    /// </summary>
+    public bool MotherZombieWasSelected { get; set; } = false;
+    /// <summary>
     /// Number of consecutive Normal-Infection rounds played since the last custom round.
     /// Used together with <see cref="ZOMainCFG.NormalRoundsInterval"/> to throttle custom rounds.
     /// </summary>

@@ -92,6 +92,7 @@ public partial class ZOServices
                 continue;
 
             SetupMotherZombie(target);
+            _globals.MotherZombieWasSelected = true;
             _helpers.SendChatToAllT("GameInfoBecomeMother", target.Name);
 
         }
@@ -600,6 +601,13 @@ public partial class ZOServices
 
     public void CheckRoundWinConditions()
     {
+        // Win conditions only apply once a mother zombie has been selected.
+        // Without this guard a solo player on the server would trigger an
+        // immediate round-end the moment infection "starts" with nobody left
+        // to oppose them (humanCount == 0 or zombieCount == 0 with 1 player).
+        if (!_globals.MotherZombieWasSelected)
+            return;
+
         var allPlayers = _core.PlayerManager.GetAlive();
         int zombieCount = 0;
         int humanCount = 0;
