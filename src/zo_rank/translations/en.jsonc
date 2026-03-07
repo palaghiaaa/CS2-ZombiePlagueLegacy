@@ -1,0 +1,19 @@
+{
+    // ── ZO Rank & Top – English translations ──────────────────────────────────
+    // {0}, {1} … are positional arguments filled in at runtime.
+
+    // !rank command – sent to the player who typed it.
+    // {0} = player name, {1} = rank position, {2} = total ranked players,
+    // {3} = kills, {4} = deaths
+    "RankMessage": "Player {0}'s rank is {1}/{2} with {3} Kills and {4} Deaths",
+
+    // Top menu title. {0} = number of entries shown (10, 15 …)
+    "TopMenuTitle": "TOP {0}",
+
+    // Shown inside the menu when no kill/death data exists yet.
+    "TopMenuNoStats": "No stats available yet.",
+
+    // One row inside the top menu.
+    // {0} = rank number, {1} = player name, {2} = kills, {3} = deaths
+    "TopMenuEntry": "#{0}  {1}  [{2} Kills / {3} Deaths]"
+}

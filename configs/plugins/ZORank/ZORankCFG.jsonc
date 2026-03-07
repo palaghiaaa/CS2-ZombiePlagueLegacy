@@ -1,0 +1,40 @@
+{
+  // ════════════════════════════════════════════════════════════════════════════
+  // ZO RANK & TOP — CONFIGURATION
+  // ════════════════════════════════════════════════════════════════════════════
+
+  "ZORankCFG": {
+
+    // ── Chat ─────────────────────────────────────────────────────────────────
+    // Tag prepended to every chat message sent by this plugin.
+    "ChatTag": "[ZO Rank]",
+
+    // ── Commands ─────────────────────────────────────────────────────────────
+    // Console / chat command that shows the caller's rank.
+    "RankCommand": "rank",
+
+    // Console / chat command that opens the default top-players menu.
+    "TopCommand": "top",
+
+    // Alias that always opens the top-15 menu.
+    "Top15Command": "top15",
+
+    // Alias that always opens the top-10 menu.
+    "Top10Command": "top10",
+
+    // ── Top menu ─────────────────────────────────────────────────────────────
+    // Number of players shown by !top (the default top command).
+    // !top10 and !top15 always show 10 and 15 respectively.
+    "TopListSize": 15,
+
+    // Number of rows visible at once in the scrollable top menu.
+    "TopMenuVisibleRows": 5,
+
+    // ── Feature toggles ───────────────────────────────────────────────────────
+    // Set to false to disable the !rank command.
+    "EnableRankCommand": true,
+
+    // Set to false to disable all !top / !top10 / !top15 commands.
+    "EnableTopCommands": true
+  }
+}

@@ -9,8 +9,23 @@
 		<PlatformTarget>x64</PlatformTarget>
 		<AssemblyName>ZORank</AssemblyName>
 		<OutputPath>$(MSBuildThisFileDirectory)../../build/</OutputPath>
+		<PublishDir>$(OutputPath)publish/ZORank</PublishDir>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="SwiftlyS2.CS2" Version="1.1.5-beta.27" />
+	</ItemGroup>
+	<!-- Bundle the plugin's own translation files -->
+	<ItemGroup>
+		<Content Include="translations/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>resources/translations/%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</Content>
+	</ItemGroup>
+	<!-- Bundle the default config file so operators have a reference copy -->
+	<ItemGroup>
+		<Content Include="../../configs/plugins/ZORank/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>configs/%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</Content>
 	</ItemGroup>
 </Project>

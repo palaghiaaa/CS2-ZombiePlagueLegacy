@@ -1,5 +1,7 @@
 using System.Drawing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SwiftlyS2.Core.Menus.OptionsBase;
 using SwiftlyS2.Shared;
 using SwiftlyS2.Shared.Commands;
@@ -22,6 +24,9 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
     // Per-session kill/death stats keyed by SteamID.
     private readonly Dictionary<ulong, PlayerStat> _stats = new();
 
+    private ServiceProvider? _sp;
+    private IOptionsMonitor<ZORankCFG>? _cfg;
+
     private class PlayerStat
     {
         public string Name { get; set; } = string.Empty;
@@ -35,24 +40,59 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     public override void Load(bool hotReload)
     {
+        // Bind config from configs/plugins/ZORank/ZORankCFG.jsonc
+        Core.Configuration.InitializeJsonWithModel<ZORankCFG>("ZORankCFG.jsonc", "ZORankCFG");
+
+        var collection = new ServiceCollection();
+        collection.AddSwiftly(Core);
+        collection.AddOptions<ZORankCFG>().BindConfiguration("ZORankCFG");
+        _sp = collection.BuildServiceProvider();
+        _cfg = _sp.GetRequiredService<IOptionsMonitor<ZORankCFG>>();
+
         Core.GameEvent.HookPre<EventPlayerDeath>(OnPlayerDeath);
 
-        // !rank  → chat rank message
-        Core.Command.RegisterCommand("rank", OnRankCommand, true);
+        RegisterCommands(_cfg.CurrentValue);
 
-        // !top / !top15 → top-15 menu
-        Core.Command.RegisterCommand("top", OnTopCommand, true);
-        Core.Command.RegisterCommand("top15", OnTopCommand, true);
+        _cfg.OnChange(newCfg =>
+        {
+            Core.Logger.LogInformation("[ZORank] Configuration hot-reloaded.");
+        });
 
-        // !top10 → top-10 menu
-        Core.Command.RegisterCommand("top10", OnTop10Command, true);
-
-        Core.Logger.LogInformation("[ZORank] Loaded. Commands: !rank, !top, !top15, !top10");
+        Core.Logger.LogInformation("[ZORank] Loaded. Commands: !{Rank}, !{Top}, !{Top15}, !{Top10}",
+            _cfg.CurrentValue.RankCommand,
+            _cfg.CurrentValue.TopCommand,
+            _cfg.CurrentValue.Top15Command,
+            _cfg.CurrentValue.Top10Command);
     }
 
     public override void Unload()
     {
         _stats.Clear();
+        _sp?.Dispose();
+        _sp = null;
+    }
+
+    private void RegisterCommands(ZORankCFG cfg)
+    {
+        if (cfg.EnableRankCommand)
+            Core.Command.RegisterCommand(cfg.RankCommand, OnRankCommand, true);
+
+        if (cfg.EnableTopCommands)
+        {
+            Core.Command.RegisterCommand(cfg.TopCommand, OnTopCommand, true);
+            Core.Command.RegisterCommand(cfg.Top15Command, OnTop15Command, true);
+            Core.Command.RegisterCommand(cfg.Top10Command, OnTop10Command, true);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Translation helper
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private string T(IPlayer player, string key, params object[] args)
+    {
+        var localizer = Core.Translation.GetPlayerLocalizer(player);
+        return args.Length == 0 ? localizer[key] : localizer[key, args];
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -112,7 +152,7 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         else
             myStat.Name = player.Name;
 
-        // Build ranking: sort by kills desc, then deaths asc.
+        // Sort by kills desc, then deaths asc.
         var sorted = _stats
             .OrderByDescending(kvp => kvp.Value.Kills)
             .ThenBy(kvp => kvp.Value.Deaths)
@@ -121,35 +161,42 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         int rank = sorted.FindIndex(kvp => kvp.Key == steamId) + 1;
         int total = sorted.Count;
 
-        player.SendMessage(MessageType.Chat,
-            $" \x04[ZO Rank]\x01 Player\x03 {myStat.Name}\x01's rank is" +
-            $"\x03 {rank}/{total}\x01 with\x03 {myStat.Kills}\x01 Kills and" +
-            $"\x03 {myStat.Deaths}\x01 Deaths");
+        var cfg = _cfg!.CurrentValue;
+        string body = T(player, "RankMessage", myStat.Name, rank, total, myStat.Kills, myStat.Deaths);
+        player.SendMessage(MessageType.Chat, $" \x04{cfg.ChatTag}\x01 {body}");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     //  !top / !top15 / !top10 commands
     // ─────────────────────────────────────────────────────────────────────────
 
-    private void OnTopCommand(ICommandContext context) => OpenTopMenu(context.Sender, 15);
-    private void OnTop10Command(ICommandContext context) => OpenTopMenu(context.Sender, 10);
+    private void OnTopCommand(ICommandContext context)
+        => OpenTopMenu(context.Sender, _cfg!.CurrentValue.TopListSize);
 
-    private void OpenTopMenu(IPlayer? player, int maxEntries)
+    private void OnTop15Command(ICommandContext context)
+        => OpenTopMenu(context.Sender, 15);
+
+    private void OnTop10Command(ICommandContext context)
+        => OpenTopMenu(context.Sender, 10);
+
+    private void OpenTopMenu(IPlayer? player, int limit)
     {
         if (player == null || !player.IsValid || player.IsFakeClient)
             return;
 
+        var cfg = _cfg!.CurrentValue;
+
         var sorted = _stats
             .OrderByDescending(kvp => kvp.Value.Kills)
             .ThenBy(kvp => kvp.Value.Deaths)
-            .Take(maxEntries)
+            .Take(limit)
             .ToList();
 
         var menuConfig = new MenuConfiguration
         {
-            Title = HtmlGradient.GenerateGradientText($"TOP {maxEntries}", Color.Gold),
+            Title = HtmlGradient.GenerateGradientText(T(player, "TopMenuTitle", limit), Color.Gold),
             FreezePlayer = false,
-            MaxVisibleItems = 5,
+            MaxVisibleItems = cfg.TopMenuVisibleRows,
             PlaySound = true,
             AutoIncreaseVisibleItems = false,
             HideFooter = false
@@ -159,14 +206,14 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         if (sorted.Count == 0)
         {
-            menu.AddOption(new TextMenuOption("No stats available yet."));
+            menu.AddOption(new TextMenuOption(T(player, "TopMenuNoStats")));
         }
         else
         {
             for (int i = 0; i < sorted.Count; i++)
             {
                 var stat = sorted[i].Value;
-                string label = $"#{i + 1}  {stat.Name}  [{stat.Kills} Kills / {stat.Deaths} Deaths]";
+                string label = T(player, "TopMenuEntry", i + 1, stat.Name, stat.Kills, stat.Deaths);
                 menu.AddOption(new TextMenuOption(label));
             }
         }
@@ -174,3 +221,4 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.MenusAPI.OpenMenuForPlayer(player, menu);
     }
 }
+
