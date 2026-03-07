@@ -7,6 +7,15 @@ namespace ZORank;
 /// </summary>
 public class ZORankCFG
 {
+    // ── Database ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Path (relative to the server's CS:GO root, or absolute) for the SQLite
+    /// database file that stores rank statistics across server restarts.
+    /// The directory is created automatically on first run.
+    /// </summary>
+    public string DatabasePath { get; set; } = "addons/swiftly/data/ZORank.db";
+
     // ── Chat ─────────────────────────────────────────────────────────────────
 
     /// <summary>Tag prepended to every chat message sent by this plugin.</summary>

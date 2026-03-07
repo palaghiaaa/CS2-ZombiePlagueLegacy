@@ -5,6 +5,13 @@
 
   "ZORankCFG": {
 
+    // ── Database ─────────────────────────────────────────────────────────────
+    // Path to the SQLite database file (relative to the csgo/ root, or absolute).
+    // The directory is created automatically on first load.
+    // Stats are loaded on plugin start and player connect, and saved on
+    // player disconnect, round end, and plugin unload.
+    "DatabasePath": "addons/swiftly/data/ZORank.db",
+
     // ── Chat ─────────────────────────────────────────────────────────────────
     // Tag prepended to every chat message sent by this plugin.
     "ChatTag": "[ZO Rank]",

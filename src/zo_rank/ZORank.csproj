@@ -12,12 +12,12 @@
 		<PublishDir>$(OutputPath)publish/ZORank</PublishDir>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.3" />
 		<PackageReference Include="SwiftlyS2.CS2" Version="1.1.5-beta.27" />
 	</ItemGroup>
 	<ItemGroup>
 		<!-- ZombieOutstandingCS2 API contract (zombie-state queries + infect event) -->
-		<ProjectReference Include="../IZombieOutstandingAPI/IZombieOutstandingAPI.csproj"
-		                  Private="false" />
+		<ProjectReference Include="../IZombieOutstandingAPI/IZombieOutstandingAPI.csproj" Private="false" />
 	</ItemGroup>
 	<!-- Bundle the plugin's own translation files -->
 	<ItemGroup>

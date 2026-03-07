@@ -24,16 +24,18 @@ namespace ZORank;
     Description = "Rank and Top stats plugin for ZombieOutstanding CS2. Tracks kills, deaths, infections, assists and damage.")]
 public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
 {
-    // Per-session stats keyed by SteamID.
+    // Per-session stats keyed by SteamID.  Populated from DB on load, merged
+    // with live data during the session, and flushed back to DB on saves.
     private readonly Dictionary<ulong, PlayerStat> _stats = new();
 
-    private ServiceProvider? _sp;
+    private ServiceProvider?   _sp;
     private IOptionsMonitor<ZORankCFG>? _cfg;
+    private ZORankDatabase?    _db;
 
     // ZO API — used for ZO_IsZombie() and ZO_OnPlayerInfect event.
     private IZombieOutstandingAPI? _zoApi;
 
-    private class PlayerStat
+    public class PlayerStat
     {
         public string Name       { get; set; } = string.Empty;
         public int    Kills      { get; set; }
@@ -55,11 +57,21 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         var collection = new ServiceCollection();
         collection.AddSwiftly(Core);
         collection.AddOptions<ZORankCFG>().BindConfiguration("ZORankCFG");
+        collection.AddSingleton<ZORankDatabase>();
         _sp  = collection.BuildServiceProvider();
         _cfg = _sp.GetRequiredService<IOptionsMonitor<ZORankCFG>>();
 
+        // ── SQLite database ───────────────────────────────────────────────────
+        _db = _sp.GetRequiredService<ZORankDatabase>();
+        _db.EnsureSchema(_cfg.CurrentValue.DatabasePath);
+        _db.LoadAll(_stats);   // Pre-populate with historical stats.
+
+        // ── Event hooks ───────────────────────────────────────────────────────
         Core.GameEvent.HookPre<EventPlayerDeath>(OnPlayerDeath);
-        Core.Event.OnEntityTakeDamage += OnEntityTakeDamage;
+        Core.GameEvent.HookPre<EventRoundEnd>(OnRoundEnd);
+        Core.Event.OnEntityTakeDamage  += OnEntityTakeDamage;
+        Core.Event.OnClientConnected   += OnClientConnected;
+        Core.Event.OnClientDisconnected += OnClientDisconnected;
 
         RegisterCommands(_cfg.CurrentValue);
 
@@ -97,6 +109,9 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         if (_zoApi != null)
             _zoApi.ZO_OnPlayerInfect -= OnZOPlayerInfect;
+
+        // Flush all in-memory stats to DB before shutdown.
+        _db?.SaveAll(_stats);
 
         _stats.Clear();
         _sp?.Dispose();
@@ -165,6 +180,9 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         return positive / Math.Max(s.Deaths, 1);
     }
 
+    /// <summary>Returns the score formatted to 2 decimal places for display.</summary>
+    private static string FormatScore(double score) => score.ToString("F2");
+
     /// <summary>Returns all stats sorted by score descending.</summary>
     private List<KeyValuePair<ulong, PlayerStat>> BuildSortedList()
     {
@@ -182,6 +200,57 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
     // ─────────────────────────────────────────────────────────────────────────
     //  Stat tracking
     // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// When a player connects, merge their stored DB row into <c>_stats</c>
+    /// (additive: adds DB values on top of any in-memory values that might
+    /// already exist from a late reconnect within the same session).
+    /// </summary>
+    private void OnClientConnected(IOnClientConnectedEvent @event)
+    {
+        var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
+        if (!IsValidRealPlayer(player)) return;
+
+        ulong sid = player!.SteamID;
+        var stored = _db?.Load(sid);
+        if (stored == null) return;
+
+        // Merge strategy: take Math.Max of each stat so that in-session kills
+        // earned before a reconnect are not discarded, and a manual DB correction
+        // (zeroing stats) takes effect only when the in-memory value is also zero.
+        // This is intentional: the in-memory session is always the most up-to-date
+        // source; the DB is the floor, not the ceiling.
+        var s = GetOrCreate(sid, stored.Name);
+        s.Kills      = Math.Max(s.Kills,      stored.Kills);
+        s.Deaths     = Math.Max(s.Deaths,     stored.Deaths);
+        s.Infections = Math.Max(s.Infections, stored.Infections);
+        s.Assists    = Math.Max(s.Assists,     stored.Assists);
+        s.Damage     = Math.Max(s.Damage,     stored.Damage);
+    }
+
+    /// <summary>Persists the disconnecting player's stats to the database.</summary>
+    private void OnClientDisconnected(IOnClientDisconnectedEvent @event)
+    {
+        // Use the PlayerId → look up SteamID from our stats dictionary by iterating,
+        // since the player object may already be invalid at this point.
+        // The cleanest approach is to look up by PlayerId from PlayerManager first.
+        var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
+        ulong? sid = (player != null && player.IsValid) ? player.SteamID : null;
+
+        // Fall back: scan _stats for the first entry whose Name matches if needed.
+        // This is not needed when the PlayerManager still holds the reference.
+        if (sid == null || sid == 0) return;
+
+        if (_stats.TryGetValue(sid.Value, out var stat))
+            _db?.Save(sid.Value, stat);
+    }
+
+    /// <summary>Round-end safety flush: persists all in-memory stats.</summary>
+    private HookResult OnRoundEnd(EventRoundEnd @event)
+    {
+        _db?.SaveAll(_stats);
+        return HookResult.Continue;
+    }
 
     private HookResult OnPlayerDeath(EventPlayerDeath @event)
     {
@@ -276,7 +345,7 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
             myStat.Name, rank, total,
             myStat.Kills, myStat.Deaths,
             myStat.Infections, myStat.Assists, myStat.Damage,
-            score.ToString("F2"));
+            FormatScore(score));
         p.SendMessage(MessageType.Chat, $" \x04{cfg.ChatTag}\x01 {body}");
     }
 
@@ -312,7 +381,7 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         if (sorted.Count == 0)
         {
-            menu.AddOption(new TextMenuOption(T(player, "TopMenuNoStats")));
+            menu.AddOption(new TextMenuOption(T(p, "TopMenuNoStats")));
         }
         else
         {
@@ -320,16 +389,16 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
             {
                 var s      = sorted[i].Value;
                 double sc  = ComputeScore(s, cfg);
-                string lbl = T(player, "TopMenuEntry",
+                string lbl = T(p, "TopMenuEntry",
                     i + 1, s.Name,
-                    sc.ToString("F2"),
+                    FormatScore(sc),
                     s.Kills, s.Deaths,
                     s.Infections, s.Assists, s.Damage);
                 menu.AddOption(new TextMenuOption(lbl));
             }
         }
 
-        Core.MenusAPI.OpenMenuForPlayer(player, menu);
+        Core.MenusAPI.OpenMenuForPlayer(p, menu);
     }
 }
 
