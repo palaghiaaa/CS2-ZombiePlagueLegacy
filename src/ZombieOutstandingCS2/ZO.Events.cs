@@ -2009,9 +2009,9 @@ public partial class ZOEvents
             var localModeName = _helpers.T(player, modeName);
 
             string message =
-                $"<span><font color='orange'>{_helpers.T(player, "HudStatusRound")} </font><font color='yellow'>{localModeName}</font></span><br>" +
-                $"<span><font color='orange'>{_helpers.T(player, "HudStatusClass")} </font><font color='{classColor}'>{className}</font></span><br>" +
-                $"<span><font color='orange'>{_helpers.T(player, "HudStatusAP")} </font><font color='green'>{ap}</font></span>";
+                $"<font color='yellow'>{localModeName}</font>" +
+                $"<font color='#888888'> · </font><font color='{classColor}'>{className}</font>" +
+                $"<font color='#888888'> · </font><font color='green'>{ap} AP</font>";
 
             player.SendCenterHTML(message);
         }

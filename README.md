@@ -470,9 +470,6 @@ Translation files live in the `translations/` folder (`en.jsonc` is bundled). Co
 | `ServerGameHumanWin` | `Humans WIN !!!` |
 | `ServerGameZombieWin` | `Zombies WIN !!!` |
 | `RoundStartAnnounce` | `New round begins! \| Your credits: {0} \| Players: {1}` |
-| `HudStatusRound` | `Round:` |
-| `HudStatusClass` | `Class:` |
-| `HudStatusAP` | `Ammo Packs:` |
 | `APRoundSurviveReward` | `You survived the round! +{0} Ammo Packs (total: {1}).` |
 | `APZombieKillReward` | `You infected a human! +{0} Ammo Packs (total: {1}).` |
 | `APHumanDamageReward` | `Damage bonus! +{0} Ammo Packs (total: {1}).` |
