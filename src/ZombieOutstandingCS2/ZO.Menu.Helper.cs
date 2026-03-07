@@ -27,29 +27,10 @@ public class ZOMenuHelper
             MaxVisibleItems = 5,
             PlaySound = true,
             AutoIncreaseVisibleItems = false,
-            HideFooter = true
+            HideFooter = false
         };
 
-        MenuKeybindOverrides keys = new MenuKeybindOverrides()
-        {
-            Move = KeyBind.S,
-            MoveBack = KeyBind.W,
-            Exit = KeyBind.Shift,
-            Select = KeyBind.E
-        };
-
-        IMenuAPI menu = _core.MenusAPI.CreateMenu(
-            configuration,
-            keybindOverrides: keys,
-            optionScrollStyle: MenuOptionScrollStyle.WaitingCenter
-            );
-
-        configuration.DefaultComment = HtmlGradient.GenerateGradientText("[W/S]", Color.Crimson) + HtmlGradient.GenerateGradientText(_core.Localizer["MenuButtonMove"], Color.White)
-            + HtmlGradient.GenerateGradientText("[E]", Color.Crimson) + HtmlGradient.GenerateGradientText(_core.Localizer["MenuButtonConfirm"], Color.White)
-            + HtmlGradient.GenerateGradientText("[SHIFT]", Color.Crimson) + HtmlGradient.GenerateGradientText(_core.Localizer["MenuButtonCancel"], Color.White)
-            ;
-
-        return menu;
+        return _core.MenusAPI.CreateMenu(configuration, default);
     }
 
 }
