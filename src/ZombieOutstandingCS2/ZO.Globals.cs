@@ -30,6 +30,7 @@ public class ZOGlobals
 
     public CancellationTokenSource? g_hRoundEndTimer { get; set; } = null;
     public CancellationTokenSource? g_hCountdown { get; set; } = null;
+    public CancellationTokenSource? g_hStatusHud { get; set; } = null;
 
     // ── Round-state flags ─────────────────────────────────────────────────────
     /// <summary>True once SwitchMode() has been called this round (infection started).</summary>

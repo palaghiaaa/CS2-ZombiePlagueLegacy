@@ -225,6 +225,14 @@ public partial class ZOEvents
                 _globals.g_hCountdown = _core.Scheduler.DelayAndRepeatBySeconds(0.1f, 1.0f, () => _service.Round_Countdown());
                 _core.Scheduler.StopOnMapChange(_globals.g_hCountdown);
             }
+
+            if (_mainCFG.CurrentValue.EnableStatusHud)
+            {
+                _globals.g_hStatusHud?.Cancel();
+                _globals.g_hStatusHud = null;
+                _globals.g_hStatusHud = _core.Scheduler.RepeatBySeconds(1.0f, SendStatusHudToAll);
+                _core.Scheduler.StopOnMapChange(_globals.g_hStatusHud);
+            }
         }
         catch (Exception ex)
         {
@@ -294,6 +302,8 @@ public partial class ZOEvents
         _helpers.ClearAllLights();
         _mineService.CleanupAllMines();
         _globals.GameInfiniteClipMode = false;
+        _globals.g_hStatusHud?.Cancel();
+        _globals.g_hStatusHud = null;
         _core.Scheduler.DelayBySeconds(2.0f, () =>
         {
             _globals.RoundVoxGroup = null;
@@ -1941,6 +1951,70 @@ public partial class ZOEvents
         }
         return HookResult.Continue;
 
+    }
+
+    private void SendStatusHudToAll()
+    {
+        var CFG = _mainCFG.CurrentValue;
+        if (!CFG.EnableStatusHud)
+            return;
+
+        var modeName = _gameMode.GetTramslationsModeName();
+
+        foreach (var player in _core.PlayerManager.GetAllPlayers())
+        {
+            if (!player.IsValid || player.IsFakeClient)
+                continue;
+
+            var controller = player.Controller;
+            if (controller == null || !controller.IsValid || !controller.PawnIsAlive)
+                continue;
+
+            var id = player.PlayerID;
+
+            _globals.IsZombie.TryGetValue(id, out bool isZombie);
+            _globals.IsNemesis.TryGetValue(id, out bool isNemesis);
+            _globals.IsAssassin.TryGetValue(id, out bool isAssassin);
+            _globals.IsSurvivor.TryGetValue(id, out bool isSurvivor);
+            _globals.IsSniper.TryGetValue(id, out bool isSniper);
+            _globals.IsHero.TryGetValue(id, out bool isHero);
+
+            string classColor;
+            string className;
+
+            if (isZombie)
+            {
+                classColor = "red";
+                if (isNemesis)
+                    className = _helpers.T(player, "HudStatusNemesis");
+                else if (isAssassin)
+                    className = _helpers.T(player, "HudStatusAssassin");
+                else
+                    className = _zombieState.GetPlayerZombieClass(id) ?? _helpers.T(player, "HudStatusZombie");
+            }
+            else
+            {
+                classColor = "cyan";
+                if (isSurvivor)
+                    className = _helpers.T(player, "HudStatusSurvivor");
+                else if (isSniper)
+                    className = _helpers.T(player, "HudStatusSniper");
+                else if (isHero)
+                    className = _helpers.T(player, "HudStatusHero");
+                else
+                    className = _helpers.T(player, "HudStatusHuman");
+            }
+
+            var ap = _ammoPacks.GetBalance(id);
+            var localModeName = _helpers.T(player, modeName);
+
+            string message =
+                $"<span><font color='orange'>{_helpers.T(player, "HudStatusRound")} </font><font color='yellow'>{localModeName}</font></span><br>" +
+                $"<span><font color='orange'>{_helpers.T(player, "HudStatusClass")} </font><font color='{classColor}'>{className}</font></span><br>" +
+                $"<span><font color='orange'>{_helpers.T(player, "HudStatusAP")} </font><font color='green'>{ap}</font></span>";
+
+            player.SendCenterHTML(message);
+        }
     }
 
 }
