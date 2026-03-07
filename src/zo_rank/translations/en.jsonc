@@ -4,16 +4,17 @@
 
     // !rank command – sent to the player who typed it.
     // {0} = player name, {1} = rank position, {2} = total ranked players,
-    // {3} = kills, {4} = deaths
-    "RankMessage": "Player {0}'s rank is {1}/{2} with {3} Kills and {4} Deaths",
+    // {3} = kills, {4} = deaths, {5} = infections, {6} = assists, {7} = damage dealt
+    "RankMessage": "Player {0}'s rank is {1}/{2} | Kills: {3} | Deaths: {4} | Infections: {5} | Assists: {6} | Damage: {7}",
 
     // Top menu title. {0} = number of entries shown (10, 15 …)
     "TopMenuTitle": "TOP {0}",
 
-    // Shown inside the menu when no kill/death data exists yet.
+    // Shown inside the menu when no stats exist yet.
     "TopMenuNoStats": "No stats available yet.",
 
     // One row inside the top menu.
-    // {0} = rank number, {1} = player name, {2} = kills, {3} = deaths
-    "TopMenuEntry": "#{0}  {1}  [{2} Kills / {3} Deaths]"
+    // {0} = rank number, {1} = player name, {2} = kills, {3} = deaths,
+    // {4} = infections, {5} = assists, {6} = damage dealt
+    "TopMenuEntry": "#{0}  {1}  [K:{2} D:{3} I:{4} A:{5} DMG:{6}]"
 }

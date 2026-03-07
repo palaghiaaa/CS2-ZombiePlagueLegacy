@@ -26,6 +26,18 @@ public class ZORankCFG
     /// <summary>Alias that always opens the top-10 menu.</summary>
     public string Top10Command { get; set; } = "top10";
 
+    // ── Sorting ───────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Primary stat used to rank players.
+    /// "kills"      – most human kills first (PvP / last-man-standing focus).
+    /// "infections" – most zombie infections first (classic Zombie Plague focus).
+    /// "damage"     – most total damage dealt first.
+    /// Tiebreakers are always applied in the order: kills → infections → assists →
+    /// damage → deaths ascending.
+    /// </summary>
+    public string SortMode { get; set; } = "kills";
+
     // ── Top menu ──────────────────────────────────────────────────────────────
 
     /// <summary>

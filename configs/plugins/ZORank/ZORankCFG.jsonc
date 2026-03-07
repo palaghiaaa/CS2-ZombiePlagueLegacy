@@ -22,6 +22,14 @@
     // Alias that always opens the top-10 menu.
     "Top10Command": "top10",
 
+    // ── Sorting ───────────────────────────────────────────────────────────────
+    // Primary stat used to rank players.
+    //   "kills"      – most human kills first (PvP / last-man-standing focus).
+    //   "infections" – most zombie infections first (classic Zombie Plague focus).
+    //   "damage"     – most total damage dealt first.
+    // Tiebreakers are always applied: kills → infections → assists → damage → deaths asc.
+    "SortMode": "kills",
+
     // ── Top menu ─────────────────────────────────────────────────────────────
     // Number of players shown by !top (the default top command).
     // !top10 and !top15 always show 10 and 15 respectively.
