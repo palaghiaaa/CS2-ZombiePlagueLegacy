@@ -179,6 +179,8 @@
 	"HumanMaxHealth": 150,
 	// Show a damage HUD indicator when a human damages a zombie.
 	"EnableDamageHud": true,
+	// Show a status HUD with game mode, player class, and ammo packs every 1 second.
+	"EnableStatusHud": true,
 	"HumanInitialSpeed": 1.0,
 	"HumanInitialGravity": 1.0,
 
