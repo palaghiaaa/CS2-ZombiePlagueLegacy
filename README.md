@@ -2,16 +2,18 @@
 
 <img width="600" height="131" alt="Zombie Outstanding CS2" src="https://github.com/user-attachments/assets/d0316faa-c2d0-478f-a642-1e3c3651f1d4" />
 
-<h2>Zombie Outstanding — Counter-Strike 2</h2>
+<h3>A full-featured Zombie Plague gamemode plugin for Counter-Strike 2</h3>
 
-<p>A full-featured Zombie Plague plugin for CS2, built on the <strong>SwiftlyS2</strong> framework.<br>
-Ammo Packs are persisted via the <strong>Economy</strong> plugin — no database setup needed.</p>
+<p>Built on <strong>SwiftlyS2</strong> · Ammo Packs stored via the <strong>Economy</strong> plugin — no database needed</p>
 
-**[▶ Video Preview](https://www.youtube.com/watch?v=DVeR5u28M_s)**
+<a href="https://www.youtube.com/watch?v=DVeR5u28M_s">▶ Video Preview</a> &nbsp;·&nbsp;
+<a href="LICENSE">GPL-3.0 License</a>
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Framework](https://img.shields.io/badge/Framework-SwiftlyS2-orange)](https://github.com/swiftly-solution/swiftlys2)
-[![Economy](https://img.shields.io/badge/Requires-Economy%20Plugin-green)](https://github.com/SwiftlyS2-Plugins/Economy)
+<br/><br/>
+
+[![Framework](https://img.shields.io/badge/Framework-SwiftlyS2-orange?style=for-the-badge)](https://github.com/swiftly-solution/swiftlys2)
+[![Economy](https://img.shields.io/badge/Requires-Economy_Plugin-brightgreen?style=for-the-badge)](https://github.com/SwiftlyS2-Plugins/Economy)
+[![License](https://img.shields.io/badge/License-GPL_v3-blue?style=for-the-badge)](LICENSE)
 
 </div>
 
@@ -20,7 +22,7 @@ Ammo Packs are persisted via the <strong>Economy</strong> plugin — no database
 ## 📋 Table of Contents
 
 1. [Features](#-features)
-2. [Dependencies](#-dependencies)
+2. [Dependencies & Setup](#-dependencies--setup)
 3. [Workshop Assets](#-workshop-assets)
 4. [Installation](#-installation)
 5. [Commands](#-commands)
@@ -28,61 +30,84 @@ Ammo Packs are persisted via the <strong>Economy</strong> plugin — no database
 7. [Zombie Classes](#-zombie-classes)
 8. [Special Classes](#-special-classes)
 9. [Extra Items Shop](#-extra-items-shop)
-10. [Laser Trip Mines](#-laser-trip-mines)
-11. [Grenades](#-grenades)
-12. [Ammo Packs & Rewards](#-ammo-packs--rewards)
-13. [Dark Atmosphere](#-dark-atmosphere)
-14. [Configuration Reference](#-configuration-reference)
-15. [Translations](#-translations)
-16. [API](#-api)
+10. [Grenades & Weapons](#-grenades--weapons)
+11. [Ammo Packs & Rewards](#-ammo-packs--rewards)
+12. [Configuration Reference](#️-configuration-reference)
+13. [Translations](#-translations)
+14. [API](#-api)
 
 ---
 
 ## ✨ Features
 
-| Feature | Details |
-|---------|---------|
-| 🗺️ **10 Game Modes** | Infection, Multi-Infection, Nemesis, Survivor, Sniper, Swarm, Plague, Assassin, Hero, Assassin vs Sniper |
-| 🧟 **6 Zombie Classes** | Classic Zombie, Raptor, Tight Zombie, Mutant, Predator Blue, Regenerator |
-| 👑 **3 Special Classes** | Nemesis, Assassin, Mother Zombie — each with own HP / Speed / Gravity / Damage |
-| 🛒 **Extra Items Shop** | Ammo-pack currency; Armor, Grenades, Jetpack, Laser Mine, SCBA Suit, Revive Token, and more |
-| 💰 **Damage-Based AP Rewards** | Every N damage dealt to zombies → +AP (configurable) |
-| 💣 **Laser Trip Mines** | Two types: beam trap (6 AP) and explosive (10 AP); plant with `!mine` |
-| 🚀 **Jetpack** | CTRL+SPACE to fly; fuel depletes over time |
-| 🧪 **SCBA Suit** | Absorbs one zombie infection |
-| ❤️ **Revive Token** | Auto-respawn once on death |
-| 🏃 **Multi-Jump & Knife Blink** | Stackable extra jumps; teleport blink triggered on knife swing |
-| ⚡ **Knockback System** | Per-hit-location and per-hero damage multipliers |
-| 🌑 **Dark Atmosphere** | Configurable per-server fog and screen darkness via tonemap; applied on every map load |
-| 💾 **AP Persistence via Economy** | Balances survive reconnects, map changes, and server restarts |
-| 🔌 **Full Plugin API** | `IZombieOutstandingAPI` — external plugins can hook events, query state, and set roles |
-| 🔊 **Vox / Sound System** | Countdown, mode announcements, win sounds, ambient music |
+<table>
+<tr>
+  <td>🗺️ <strong>10 Game Modes</strong></td>
+  <td>Infection, Multi-Infection, Nemesis, Survivor, Sniper, Swarm, Plague, Assassin, Hero, Assassin vs Sniper</td>
+</tr>
+<tr>
+  <td>🧟 <strong>Zombie Classes</strong></td>
+  <td>Classic Zombie, Raptor, Tight Zombie, Mutant, Predator Blue, Regenerator — each with unique HP / Speed / Gravity</td>
+</tr>
+<tr>
+  <td>👑 <strong>Special Roles</strong></td>
+  <td>Nemesis, Assassin, Mother Zombie, Survivor, Sniper, Hero — buy-able mid-round via the shop</td>
+</tr>
+<tr>
+  <td>📊 <strong>Permanent Status HUD</strong></td>
+  <td>Live center display showing round type, player class, and Ammo Packs balance — always visible</td>
+</tr>
+<tr>
+  <td>🛒 <strong>Extra Items Shop</strong></td>
+  <td>Armor, Grenades, Jetpack, Laser Mines, SCBA Suit, Revive Token, Multi-Jump, Knife Blink, and more</td>
+</tr>
+<tr>
+  <td>💰 <strong>Ammo Pack Economy</strong></td>
+  <td>Earn AP from damage, kills, and survival — balances persist across maps and restarts</td>
+</tr>
+<tr>
+  <td>💣 <strong>Laser Trip Mines</strong></td>
+  <td>Plant beam traps or explosive mines using the <code>!mine</code> menu</td>
+</tr>
+<tr>
+  <td>🚀 <strong>Jetpack</strong></td>
+  <td>Hold CTRL + SPACE to fly; fuel depletes over time and resets each round</td>
+</tr>
+<tr>
+  <td>⚡ <strong>Knockback System</strong></td>
+  <td>Configurable knockback per hit location, with separate multipliers for hero players</td>
+</tr>
+<tr>
+  <td>🌑 <strong>Dark Atmosphere</strong></td>
+  <td>Per-server fog and tonemap darkness applied automatically on every map load</td>
+</tr>
+<tr>
+  <td>🔊 <strong>Vox / Sound System</strong></td>
+  <td>Countdown voices, mode announcements, win sounds, and looping ambient music</td>
+</tr>
+<tr>
+  <td>🔌 <strong>Full Plugin API</strong></td>
+  <td><code>IZombieOutstandingAPI</code> — hook events, query player state, and set roles from external plugins</td>
+</tr>
+</table>
 
 ---
 
-## 📦 Dependencies
+## 📦 Dependencies & Setup
 
-> **All dependencies are required.** The plugin will not load correctly if any of them are missing.
+> **Both dependencies are required.** The plugin will not work without them.
 
-| Dependency | Version | Link | Notes |
-|------------|---------|------|-------|
-| **SwiftlyS2** | latest | [swiftly-solution/swiftlys2](https://github.com/swiftly-solution/swiftlys2) | Core plugin framework |
-| **Economy plugin** | latest | [SwiftlyS2-Plugins/Economy](https://github.com/SwiftlyS2-Plugins/Economy) | **Required** — stores all Ammo Pack balances |
+| Dependency | Link |
+|------------|------|
+| **SwiftlyS2** (framework) | [swiftly-solution/swiftlys2](https://github.com/swiftly-solution/swiftlys2) |
+| **Economy plugin** (AP storage) | [SwiftlyS2-Plugins/Economy](https://github.com/SwiftlyS2-Plugins/Economy) |
 
-### Why Economy?
+**Why Economy?**  
+Ammo Packs are stored exclusively through the Economy plugin — no MySQL or database setup required. Balances survive reconnects, map changes, and server restarts, and can be shared with other Economy-compatible plugins.
 
-Ammo Packs are stored **exclusively** through the Economy plugin. This means:
-
-- ✅ Balances survive reconnects, map changes and server restarts automatically
-- ✅ No MySQL / database setup required for this plugin
-- ✅ Balances can be shared with other Economy-compatible plugins (e.g. shop, rewards)
-- ✅ Economy handles all persistence, loading and saving
-
-### Economy Setup
-
-1. Install the Economy plugin following its own README.
-2. In Economy's config, create a wallet kind named **`ammo`** (the name is set by `EconomyWalletKind` in `ZombieOutstandingCFG.jsonc` — default is `"ammo"`).
-3. That's it — the plugin registers the wallet kind automatically on startup if it doesn't already exist.
+**Economy quick-start:**
+1. Install the Economy plugin and follow its own README.
+2. The wallet kind `"ammo"` is registered automatically on first startup (name is set by `EconomyWalletKind` in `ZombieOutstandingCFG.jsonc`).
 
 ---
 
@@ -98,33 +123,34 @@ Ammo Packs are stored **exclusively** through the Economy plugin. This means:
 
 ## 🚀 Installation
 
+**Step-by-step:**
+
 ```
 1. Install SwiftlyS2 on your CS2 server.
-2. Install the Economy plugin and configure it (create wallet kind "ammo").
-3. Copy the plugin folder to:
+2. Install the Economy plugin.
+3. Copy the plugin folder:
        addons/swiftlys2/plugins/ZombieOutstandingCS2/
-4. (Optional) Subscribe to the Workshop assets above.
-5. Start / reload the server:  sw_reload
-6. Edit configs under:
+4. Subscribe to the Workshop assets above (optional but recommended).
+5. Start or reload the server:  sw_reload
+6. Edit configs in:
        configs/plugins/ZombieOutstandingCS2/
-7. Check the server console for any load errors.
+7. Check the server console for load errors.
 ```
 
-### File Layout
+**File layout:**
 
 ```
 addons/swiftlys2/plugins/
 └── ZombieOutstandingCS2/
     └── ZombieOutstandingCS2.dll
 
-configs/plugins/
-└── ZombieOutstandingCS2/
-    ├── ZombieOutstandingCFG.jsonc  ← Core settings, game modes, special classes, weapons, vox, mines
-    ├── ZombieClassesCFG.jsonc      ← Zombie class stats & sounds
-    └── ExtraItemsCFG.jsonc         ← Extra items shop, AP rewards, item prices
+configs/plugins/ZombieOutstandingCS2/
+├── ZombieOutstandingCFG.jsonc   ← Core settings, game modes, special classes, weapons, vox, mines
+├── ZombieClassesCFG.jsonc       ← Zombie class stats & sounds
+└── ExtraItemsCFG.jsonc          ← Shop items, prices, and AP reward rates
 
 translations/
-└── en.jsonc                      ← English strings (copy to translations folder)
+└── en.jsonc                     ← English strings
 ```
 
 ---
@@ -133,264 +159,236 @@ translations/
 
 ### Player Commands
 
-| Command | Chat Alias | Description |
-|---------|-----------|-------------|
+| Command | Chat Shortcut | Description |
+|---------|--------------|-------------|
 | `sw_zmenu` | `!zmenu` | Open the main game menu |
 | `sw_zextra` | `!zextra` | Open the Extra Items shop |
-| `sw_buyweapons` | `!buyweapons` | Open the weapon buy menu (alive CT only) |
+| `sw_buyweapons` | `!buyweapons` | Buy weapons before infection starts |
 | `sw_zclass` | `!zclass` | Choose your zombie class preference |
-| `sw_mine` | `!mine` | Open the mine menu to plant / manage mines |
+| `sw_mine` | `!mine` | Open the laser mine placement menu |
 
-> Command names can be changed freely in `ZombieOutstandingCFG.jsonc` under the command keys (`MainMenuCommand`, `ExtraItemsCommand`, etc.).
+> All command names are configurable in `ZombieOutstandingCFG.jsonc`.
 
 ### Admin Commands
 
-| Command | Description | Default Permission |
-|---------|-------------|-------------------|
-| `sw_zadmin` | Open the admin action menu | `hzp.adminmenu` |
+| Command | Permission | Description |
+|---------|-----------|-------------|
+| `sw_zadmin` | `hzp.adminmenu` | Admin action menu (infect, respawn, set roles, etc.) |
 
-> The required permission is set by `AdminMenuPermission` in `ZombieOutstandingCFG.jsonc`. Leave empty (`""`) to allow everyone.
+> Set `AdminMenuPermission` to `""` in `ZombieOutstandingCFG.jsonc` to allow all players.
 
 ---
 
 ## 🗺️ Game Modes
 
-All modes are configured in `ZombieOutstandingCFG.jsonc`. Each supports `Enable`, `Weight`, `ZombieCanReborn`, and `EnableInfiniteClipMode`.
+All modes are configured in `ZombieOutstandingCFG.jsonc`. Every mode supports `Enable`, `Weight` (random chance), `ZombieCanReborn`, and `EnableInfiniteClipMode`.
 
 | # | Mode | Description |
 |---|------|-------------|
-| 1 | 🧟 **Normal Infection** | 1 Mother Zombie infects the rest |
-| 2 | 🧟🧟 **Multi Infection** | Multiple Mother Zombies start at once |
-| 3 | 💀 **Nemesis** | 1 ultra-powerful Nemesis; no infection |
+| 1 | 🧟 **Normal Infection** | 1 Mother Zombie chosen — infects the rest |
+| 2 | 🧟🧟 **Multi Infection** | Multiple Mother Zombies at once |
+| 3 | 💀 **Nemesis** | 1 ultra-powerful Nemesis — no regular infection |
 | 4 | 🏹 **Survivor** | 1 human Survivor (XM1014) vs all zombies |
-| 5 | 🎯 **Sniper** | 1 human Sniper (AWP) vs all zombies |
-| 6 | 🌊 **Swarm** | Half the players become zombies instantly |
-| 7 | ☠️ **Plague** | Half zombies + 1 Nemesis + 1 Survivor |
-| 8 | 🥷 **Assassin** | 1 invisible Assassin zombie; no infection |
-| 9 | 🦸 **Hero** | Last X humans become Heroes with extreme stats |
-| 10 | ⚔️ **Assassin vs Sniper** | Assassin zombie vs Sniper human |
+| 5 | 🎯 **Sniper** | 1 human Sniper (AWP, one-shot) vs all zombies |
+| 6 | 🌊 **Swarm** | Half the server becomes zombies instantly |
+| 7 | ☠️ **Plague** | Half zombies + 1 Nemesis + 1 Survivor simultaneously |
+| 8 | 🥷 **Assassin** | 1 near-invisible Assassin zombie — no regular infection |
+| 9 | 🦸 **Hero** | Last humans alive become Heroes with extreme stats |
+| 10 | ⚔️ **Assassin vs Sniper** | Assassin zombie faces a Sniper human 1-on-1 |
+
+> Use `NormalRoundsInterval` in `ZombieOutstandingCFG.jsonc` to enforce a minimum number of normal rounds between special modes.
 
 ---
 
 ## 🧟 Zombie Classes
 
-Configured in `ZombieClassesCFG.jsonc`. Stats match the original **Zombie Outstanding (ZO) v7.1** class sources.
+Defined in `ZombieClassesCFG.jsonc`. Stats are based on the original **Zombie Outstanding v7.1** class balance.
 
-| Class | HP | Speed | Gravity | Special |
-|-------|----|-------|---------|---------|
-| 🧟 **Classic Zombie** | 6 000 | 1.16× | 0.60 | Balanced — the default class |
+| Class | HP | Speed | Gravity | Notes |
+|-------|----|-------|---------|-------|
+| 🧟 **Classic Zombie** | 6 000 | 1.16× | 0.60 | Balanced all-rounder |
 | 🦅 **Raptor** | 4 800 | 1.22× | 1.00 | Fastest zombie |
-| 🔒 **Tight Zombie** | 7 500 | 0.88× | 0.80 | High HP, double-jump |
-| 👾 **Mutant** | 6 250 | 0.98× | 1.00 | Extra health |
+| 🔒 **Tight Zombie** | 7 500 | 0.88× | 0.80 | Tanky, double-jump ability |
+| 👾 **Mutant** | 6 250 | 0.98× | 1.00 | Slightly above average HP |
 | 💙 **Predator Blue** | 5 600 | 1.12× | 0.80 | Powerful attacker |
 | 💉 **Regenerator** | 4 750 | 1.00× | 1.00 | Regenerates 350 HP every 5 s |
 
-> **Speed** is a multiplier relative to default human speed (250 u/s).  
-> **MotherZombieHealth** = class HP × 2.5 (from `zp_zombie_first_hp`).
+> Speed is a multiplier relative to the default CS2 walk speed (250 u/s).
 
 ---
 
 ## 👑 Special Classes
 
-Configured in `ZombieOutstandingCFG.jsonc` (under `ZOSpecialClassCFG` for model/sound/regen and under each game-mode section for HP).
+Configured under `ZOSpecialClassCFG` (models/sounds/regen) and each mode section (HP override).
 
 | Class | HP | Speed | Gravity | Damage | Used In |
 |-------|----|-------|---------|--------|---------|
 | 🧟 **Mother Zombie** | 15 000 | 1.16× | 0.60 | 150 | Normal / Multi Infection |
-| 💀 **Nemesis** | **75 000** | 1.00× | 0.50 | 250 | Nemesis / Plague |
+| 💀 **Nemesis** | 75 000 | 1.00× | 0.50 | 250 | Nemesis / Plague |
 | 🥷 **Assassin** | 24 000 | 3.50× | 0.50 | 357 | Assassin / AVS |
 
-> **HP balance (4-min round, ~270 effective DPS per human shooter):**  
-> Nemesis — 5 humans kill it in ~60 s · 10 humans in ~29 s · 100 HP/s regen adds ~6 000 extra effective HP.  
-> Assassin — 2 focused players kill it in ~45 s · compensated by near-invisibility and extreme speed.
-
-> HP shown is what the mode config sets at round start.  
-> `NemesisHealth` / `AssassinHealth` in `ZombieOutstandingCFG.jsonc` can be tuned freely; set to `0` to use the raw special-class HP from `ZOSpecialClassCFG`.
+> Set `NemesisHealth` / `AssassinHealth` to `0` in `ZombieOutstandingCFG.jsonc` to fall back to the raw class HP from `ZOSpecialClassCFG`.
 
 ---
 
 ## 🛒 Extra Items Shop
 
-Open with `!zextra` or via the main menu (`!zmenu`). Items are purchased with **Ammo Packs (AP)**.
+Open with `!zextra` or via the main menu (`!zmenu`). Everything is purchased with **Ammo Packs (AP)**.
 
-### Item Catalogue
+### Human Items
 
-| Item | Team | Price | Description |
-|------|------|-------|-------------|
-| 🛡️ **Armor** | Human | 3 AP | Grants 100 armor points |
-| 💥 **HE Grenade** | Human | 2 AP | Explosive grenade |
-| ⚡ **Flash Grenade** | Human | 2 AP | Flashbang / light grenade |
-| 💨 **Smoke Grenade** | Human | 2 AP | Freeze grenade |
-| 🔥 **Incendiary Bomb** | Human | 4 AP | Area fire damage |
-| 🌀 **Teleport Grenade** | Human | 3 AP | Decoy teleporter |
-| 🧪 **SCBA Suit** | Human | 5 AP | Absorbs one zombie infection |
-| 🦘 **Multi-Jump (+1 jump)** | Human | 4 AP | Stackable, up to `MultijumpMax` |
-| 🗡️ **Knife Blink (3 charges)** | Human | 5 AP | Teleport blink automatically on each knife swing |
-| 🚀 **Jetpack** | Human | 10 AP | CTRL+SPACE to fly; fuel depletes over time |
-| 💣 **Laser Mine** | Human | 6 AP | Opens mine menu — choose Laser Tripwire (6 AP) or Explosive Mine (10 AP) |
-| ❤️ **Revive Token** | Human | 8 AP | Auto-respawn once on death |
-| 🏹 **Become Survivor** | Human | 20 AP | Transform into Survivor for the rest of the round (no special role required) |
-| 🎯 **Become Sniper** | Human | 15 AP | Transform into Sniper for the rest of the round (no special role required) |
-| 💊 **Antidote** | Zombie | 8 AP | Converts zombie back to human |
-| 🛡️ **Zombie Madness** | Zombie | 6 AP | Temporary invulnerability (10 s) |
-| 🧬 **T-Virus Grenade** | Zombie | 6 AP | Infects humans in radius |
-| 💀 **Become Nemesis** | Zombie | 20 AP | Transform into Nemesis for the rest of the round (must be an active zombie) |
-| 🥷 **Become Assassin** | Zombie | 15 AP | Transform into Assassin for the rest of the round (must be an active zombie) |
+| Item | Price | Description |
+|------|-------|-------------|
+| 🛡️ **Armor** | 3 AP | 100 armor points |
+| 💥 **HE Grenade** | 2 AP | Standard explosive |
+| ⚡ **Flash Grenade** | 2 AP | Flashbang / light effect |
+| ❄️ **Freeze Grenade** | 2 AP | Freezes zombies in blast radius |
+| 🔥 **Incendiary Bomb** | 4 AP | Area fire damage |
+| 🌀 **Teleport Grenade** | 3 AP | Teleports the thrower on detonation |
+| 🧪 **SCBA Suit** | 5 AP | Blocks one zombie infection |
+| 🦘 **Multi-Jump** | 4 AP | +1 extra jump (stackable) |
+| 🗡️ **Knife Blink** | 5 AP | 3 charges — blink forward on each knife swing |
+| 🚀 **Jetpack** | 10 AP | CTRL+SPACE to fly; fuel resets each round |
+| 💣 **Laser Mine** | 6 AP | Opens mine menu — Tripwire or Explosive |
+| ❤️ **Revive Token** | 8 AP | Auto-respawn once if you die |
+| 🏹 **Become Survivor** | 20 AP | Transform into Survivor mid-round |
+| 🎯 **Become Sniper** | 15 AP | Transform into Sniper mid-round |
 
-> Role-buy items (`buy_nemesis`, `buy_assassin`, `buy_survivor`, `buy_sniper`) are disabled by default — enable them by setting `"Enable": true` in `ExtraItemsCFG.jsonc`.  
-> Players already holding a special role cannot purchase another role item.
+### Zombie Items
 
----
+| Item | Price | Description |
+|------|-------|-------------|
+| 💊 **Antidote** | 8 AP | Revert back to human |
+| 🛡️ **Zombie Madness** | 6 AP | Temporary invulnerability (10 s) |
+| 🧬 **T-Virus Grenade** | 6 AP | Infect nearby humans on detonation |
+| 💀 **Become Nemesis** | 20 AP | Transform into Nemesis mid-round |
+| 🥷 **Become Assassin** | 15 AP | Transform into Assassin mid-round |
 
-## 💣 Laser Trip Mines
+> Role-buy items are disabled by default. Enable them with `"Enable": true` in `ExtraItemsCFG.jsonc`.  
+> Players who already hold a special role cannot purchase another.
 
-Mines are configured in `ZombieOutstandingCFG.jsonc` (under `ZOMineCFG`). Open the mine menu with `!mine` after purchasing the **Laser Mine** item from the shop.
+### Jetpack Details
 
-### Mine Types
-
-| Type | Price | Behavior | Beam Color | Limit |
-|------|-------|----------|------------|-------|
-| 💚 **Laser Tripwire** | 6 AP | Continuously deals damage (10 dmg/tick, every 0.1 s) to any zombie crossing the beam | Blue | 2 per player |
-| 🔴 **Explosive Mine** | 10 AP | Explodes when beam is crossed (radius 360 u, up to 2 600 dmg) | Red | 2 per player |
-
-### Settings
-
-| Setting | Default |
-|---------|---------|
-| Plant / manage | `!mine` / `sw_mine` |
-| Max active per player per type | 2 |
-| Beam length | 300 units |
-| Explosion radius | 360 units |
-| Max explosion damage | 2 600 (linear falloff) |
-| Team restriction | CT only |
-
-Mine visuals (color, model, sounds) and all other settings → `ZombieOutstandingCFG.jsonc` (`ZOMineCFG` section).
-
----
-
-## 🚀 Jetpack Details
-
-- Hold **CTRL + SPACE** to fly (consumes fuel).
-- Existing horizontal velocity is preserved — only vertical thrust is applied.
-- Fuel resets every round.
+- Hold **CTRL + SPACE** to activate thrust (consumes fuel).
+- Horizontal velocity is preserved — only vertical force is applied.
 - Configure in `ExtraItemsCFG.jsonc`: `JetpackMaxFuel`, `JetpackThrustForce`, `JetpackFuelConsumeRate`.
 
+### Laser Trip Mines
+
+| Type | Price | Behavior | Limit |
+|------|-------|----------|-------|
+| 💚 **Laser Tripwire** | 6 AP | Continuous beam damage (10 dmg per 0.1 s tick) | 2 per player |
+| 🔴 **Explosive Mine** | 10 AP | Explodes on beam cross (radius 360 u, up to 2 600 dmg) | 2 per player |
+
+> Plant with `!mine` after purchasing. Visuals, colors, sounds, and limits are fully configurable in `ZombieOutstandingCFG.jsonc` (`ZOMineCFG` section).
+
 ---
 
-## 💣 Grenades
+## 💣 Grenades & Weapons
 
-Configured in `ZombieOutstandingCFG.jsonc`.
+All grenades are configured in `ZombieOutstandingCFG.jsonc`.
 
-| Grenade | Toggle | Auto-Give | Range | Duration | Effect |
-|---------|--------|-----------|-------|----------|--------|
-| 🔥 Incendiary | `FireGrenade` | `SpawnGiveFireGrenade` | 300 u | 5 s | 500 initial + 10/s burn |
-| ⚡ Light / Flash | `LightGrenade` | `SpawnGiveLightGrenade` | 1 000 u | 30 s | Blind / light effect |
-| ❄️ Freeze | `FreezeGrenade` | `SpawnGiveFreezeGrenade` | 300 u | 10 s | Freezes target |
-| 🌀 Teleport | `TelportGrenade` | `SpawnGiveTelportGrenade` | — | — | Teleports player |
-| 💣 Incendiary Bomb | — | `SpawnGiveIncGrenade` | — | — | Fire damage area |
+| Grenade | Enable Key | Auto-Give Key | Range | Duration | Effect |
+|---------|-----------|--------------|-------|----------|--------|
+| 🔥 Incendiary | `FireGrenade` | `SpawnGiveFireGrenade` | 300 u | 5 s | 500 burst + 10/s burn damage |
+| ⚡ Light / Flash | `LightGrenade` | `SpawnGiveLightGrenade` | 1 000 u | 30 s | Blind / illumination |
+| ❄️ Freeze | `FreezeGrenade` | `SpawnGiveFreezeGrenade` | 300 u | 10 s | Immobilizes target |
+| 🌀 Teleport | `TelportGrenade` | `SpawnGiveTelportGrenade` | — | — | Teleports thrower |
+| 💣 Incendiary Bomb | — | `SpawnGiveIncGrenade` | — | — | Fire area denial |
 | 🧬 T-Virus (Zombie) | — | — | 300 u | — | Infects humans in radius |
 
 ---
 
 ## 💰 Ammo Packs & Rewards
 
-Ammo Packs (AP) are the in-game currency used to buy Extra Items. All balances are stored and managed by the **Economy plugin** — no reconnect loss, no manual saves needed.
+Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances are managed by the **Economy plugin** — no reconnect loss, no manual saves.
 
 ### Earning AP
 
-| Source | Amount | Config Key |
-|--------|--------|-----------|
-| Survive a round as human | +3 | `RoundSurviveReward` |
-| Zombie kills / infects a human | +2 | `ZombieKillReward` |
-| Human deals N damage to zombies | +1 per threshold | `HumanDamageRewardThreshold` / `HumanDamageReward` |
-| Admin grant | any | Economy plugin admin commands |
+| Source | Default Amount | Config Key |
+|--------|---------------|-----------|
+| Survive the round as human | +3 | `RoundSurviveReward` |
+| Infect / kill a human (as zombie) | +2 | `ZombieKillReward` |
+| Deal N cumulative damage to zombies | +1 per threshold | `HumanDamageRewardThreshold` / `HumanDamageReward` |
 
-> The damage reward stacks: deal 2× the threshold → earn 2× the reward, etc.
-
-### Economy Wallet Kind
-
-AP balances live in a wallet kind configured by `EconomyWalletKind` in `ZombieOutstandingCFG.jsonc` (default: `"ammo"`). The plugin registers this wallet kind in Economy automatically on startup if it doesn't already exist.
+> Damage rewards stack: deal 2× the threshold in one round → earn 2× the reward.
 
 ---
 
 ## ⚙️ Configuration Reference
 
-### `ZombieOutstandingCFG.jsonc` — Core Settings
+<details>
+<summary><strong>ZombieOutstandingCFG.jsonc — Core settings</strong></summary>
 
 ```jsonc
 {
   "ZOMainCFG": {
-    // ── Round timing ────────────────────────────────────────────────────────
-    "RoundReadyTime": 22.0,       // Seconds before Mother Zombie appears
-    "RoundTime": 4.0,             // Round duration in minutes
+    "RoundReadyTime": 22.0,        // Seconds before Mother Zombie appears
+    "RoundTime": 4.0,              // Round duration in minutes
 
-    // ── Human base stats ────────────────────────────────────────────────────
     "HumanMaxHealth": 150,
     "HumanInitialSpeed": 1.0,
     "HumanInitialGravity": 1.0,
-
-    // ── Knockback ───────────────────────────────────────────────────────────
     "KnockZombieForce": 250.0,
     "StunZombieTime": 0.1,
 
-    // ── Grenades (each has a toggle + optional auto-give) ───────────────────
-    "FireGrenade": true,
-    "SpawnGiveFireGrenade": true,
-    "LightGrenade": true,
-    "SpawnGiveLightGrenade": true,
-    "FreezeGrenade": true,
-    "SpawnGiveFreezeGrenade": true,
-    "TelportGrenade": true,
-    "SpawnGiveTelportGrenade": false,
+    "EnableDamageHud": true,       // Show damage dealt in center screen
+    "EnableStatusHud": true,       // Permanent HUD: round type / class / AP
 
-    // ── Special features ────────────────────────────────────────────────────
+    "FireGrenade": true,           "SpawnGiveFireGrenade": true,
+    "LightGrenade": true,          "SpawnGiveLightGrenade": true,
+    "FreezeGrenade": true,         "SpawnGiveFreezeGrenade": true,
+    "TelportGrenade": true,        "SpawnGiveTelportGrenade": false,
+
     "CanUseScbaSuit": true,
     "TVirusCanInfectHero": true,
 
-    // ── Commands (change the trigger word here) ─────────────────────────────
-    "MainMenuCommand": "sw_zmenu",
-    "ExtraItemsCommand": "sw_zextra",
-    "ZombieClassCommand": "sw_zclass",
-    "AdminMenuItemCommand": "sw_zadmin",
-    "BuyWeaponsCommand": "sw_buyweapons",
-    "MineMenuCommand": "sw_mine",
+    "MainMenuCommand":     "sw_zmenu",
+    "ExtraItemsCommand":   "sw_zextra",
+    "ZombieClassCommand":  "sw_zclass",
+    "AdminMenuItemCommand":"sw_zadmin",
+    "BuyWeaponsCommand":   "sw_buyweapons",
+    "MineMenuCommand":     "sw_mine",
 
-    // ── Admin ───────────────────────────────────────────────────────────────
-    "AdminMenuPermission": "hzp.adminmenu",  // Empty = everyone; or "perm1,perm2"
+    "AdminMenuPermission": "hzp.adminmenu",  // Empty = allow everyone
+    "ChatPrefix":          "[red][INFO][default]",
+    "EconomyWalletKind":   "ammo",
 
-    // ── Chat ────────────────────────────────────────────────────────────────
-    "ChatPrefix": "[red][INFO][default]",
-
-    // ── Ammo Packs (Economy plugin) ─────────────────────────────────────────
-    "EconomyWalletKind": "ammo"
+    "NormalRoundsInterval": 0      // Min normal rounds between special modes (0 = disabled)
   }
 }
 ```
 
-### Special-class HP — mode config sections
+</details>
 
-Each special game mode has its own HP field. Set to `0` to fall back to the raw `Health` value in `ZOSpecialClassCFG`.
+<details>
+<summary><strong>ZombieOutstandingCFG.jsonc — Special class HP overrides</strong></summary>
 
 ```jsonc
-"Nemesis":   { "NemesisHealth":   75000 }   // ~60 s TTK for 5 players / ~29 s for 10
-"Survivor":  { "SurvivorHealth":   8000 }   // one human vs all zombies — durable but killable
-"Sniper":    { "SniperHealth":     5000 }   // glass-cannon: dies fast if zombies close the gap
-"Assassin":  { "AssassinHealth":  24000 }   // mid-tier: 2 focused players kill in ~45 s
+"Nemesis":  { "NemesisHealth":  75000 },  // ~60 s TTK for 5 players, ~29 s for 10
+"Survivor": { "SurvivorHealth":  8000 },  // Durable but killable by coordinated zombies
+"Sniper":   { "SniperHealth":    5000 },  // Glass-cannon; dies fast if zombies close in
+"Assassin": { "AssassinHealth": 24000 }   // ~45 s TTK for 2 focused players
 ```
 
-### `ZombieOutstandingCFG.jsonc` — Laser Mine Types
+> Set any value to `0` to use the raw HP from `ZOSpecialClassCFG` instead.
+
+</details>
+
+<details>
+<summary><strong>ZombieOutstandingCFG.jsonc — Laser mines (ZOMineCFG)</strong></summary>
 
 ```jsonc
 "ZOMineCFG": {
   "MineList": [
     {
-      "Name": "Laser Tripwire",  // Beam trap — continuous damage
+      "Name": "Laser Tripwire",
       "CanExplorer": false,
-      "Price": 6,   "Limit": 2,  "Team": "ct",
+      "Price": 6,  "Limit": 2,  "Team": "ct",
       "LaserRate": 0.1,  "LaserDamage": 10.0,  "LaserKnockBack": 100.0
     },
     {
-      "Name": "Explosive Mine",  // Explodes on beam cross
+      "Name": "Explosive Mine",
       "CanExplorer": true,
       "Price": 10,  "Limit": 2,  "Team": "ct",
       "ExplorerRadius": 360,  "ExplorerDamage": 2600
@@ -399,32 +397,33 @@ Each special game mode has its own HP field. Set to `0` to fall back to the raw 
 }
 ```
 
-### `ExtraItemsCFG.jsonc` — Items & AP Rewards
+</details>
+
+<details>
+<summary><strong>ExtraItemsCFG.jsonc — Shop items & AP rewards</strong></summary>
 
 ```jsonc
 "ZOExtraItemsCFG": {
-  "RoundSurviveReward": 3,           // AP for surviving a round as human
-  "ZombieKillReward": 2,             // AP per human kill / infection
-  "HumanDamageRewardThreshold": 600, // cumulative damage → +1 AP
+  "RoundSurviveReward": 3,
+  "ZombieKillReward": 2,
+  "HumanDamageRewardThreshold": 600,
   "HumanDamageReward": 1,
 
   "Items": [
-    // Human items
-    { "Key": "armor",            "Price": 3,  "Team": "Human" },
-    { "Key": "he_grenade",       "Price": 2,  "Team": "Human" },
-    { "Key": "flash_grenade",    "Price": 2,  "Team": "Human" },
-    { "Key": "smoke_grenade",    "Price": 2,  "Team": "Human" },
-    { "Key": "inc_grenade",      "Price": 4,  "Team": "Human" },
-    { "Key": "teleport_grenade", "Price": 3,  "Team": "Human" },
-    { "Key": "scba_suit",        "Price": 5,  "Team": "Human" },
-    { "Key": "multijump",        "Price": 4,  "Team": "Human" },
-    { "Key": "knife_blink",      "Price": 5,  "Team": "Human" },
-    { "Key": "jetpack",          "Price": 10, "Team": "Human" },
-    { "Key": "laser_mine",       "Price": 6,  "Team": "Human" },
-    { "Key": "revive_token",     "Price": 8,  "Team": "Human" },
+    { "Key": "armor",            "Price": 3,  "Team": "Human"  },
+    { "Key": "he_grenade",       "Price": 2,  "Team": "Human"  },
+    { "Key": "flash_grenade",    "Price": 2,  "Team": "Human"  },
+    { "Key": "smoke_grenade",    "Price": 2,  "Team": "Human"  },
+    { "Key": "inc_grenade",      "Price": 4,  "Team": "Human"  },
+    { "Key": "teleport_grenade", "Price": 3,  "Team": "Human"  },
+    { "Key": "scba_suit",        "Price": 5,  "Team": "Human"  },
+    { "Key": "multijump",        "Price": 4,  "Team": "Human"  },
+    { "Key": "knife_blink",      "Price": 5,  "Team": "Human"  },
+    { "Key": "jetpack",          "Price": 10, "Team": "Human"  },
+    { "Key": "laser_mine",       "Price": 6,  "Team": "Human"  },
+    { "Key": "revive_token",     "Price": 8,  "Team": "Human"  },
     { "Key": "buy_survivor",     "Price": 20, "Team": "Human",  "Enable": true },
     { "Key": "buy_sniper",       "Price": 15, "Team": "Human",  "Enable": true },
-    // Zombie items
     { "Key": "antidote",         "Price": 8,  "Team": "Zombie" },
     { "Key": "zombie_madness",   "Price": 6,  "Team": "Zombie" },
     { "Key": "t_virus_grenade",  "Price": 6,  "Team": "Zombie" },
@@ -434,7 +433,10 @@ Each special game mode has its own HP field. Set to `0` to fall back to the raw 
 }
 ```
 
-### `ZombieClassesCFG.jsonc` — Zombie Class Schema
+</details>
+
+<details>
+<summary><strong>ZombieClassesCFG.jsonc — Class schema example</strong></summary>
 
 ```jsonc
 "ZOZombieClassCFG": {
@@ -443,9 +445,9 @@ Each special game mode has its own HP field. Set to `0` to fall back to the raw 
       "Name": "Classic Zombie",
       "Enable": true,
       "Stats": {
-        "Health": 6000, "MotherZombieHealth": 15000,
-        "Speed": 1.16,  "Damage": 60.0, "Gravity": 0.6,
-        "Fov": 110, "EnableRegen": true, "HpRegenSec": 5.0, "HpRegenHp": 100
+        "Health": 6000,  "MotherZombieHealth": 15000,
+        "Speed": 1.16,   "Damage": 60.0,  "Gravity": 0.6,
+        "Fov": 110,  "EnableRegen": true,  "HpRegenSec": 5.0,  "HpRegenHp": 100
       },
       "Models": { "ModelPath": "characters/models/..." },
       "Sounds": { "SoundInfect": "han.human.mandeath", "SoundPain": "han.hl.zombie.pain" }
@@ -455,38 +457,34 @@ Each special game mode has its own HP field. Set to `0` to fall back to the raw 
 }
 ```
 
+</details>
+
 ---
 
 ## 🌐 Translations
 
-Translation files live in the `translations/` folder:
-
-```
-translations/
-└── en.jsonc    ← English (bundled)
-```
-
-Key strings:
+Translation files live in the `translations/` folder (`en.jsonc` is bundled). Copy additional language files to the same folder.
 
 | Key | Default (EN) |
 |-----|-------------|
-| `RoundStartAnnounce` | `New round begins. \| Your credits: {0} \| Players connected: {1}` |
 | `ServerGameHumanWin` | `Humans WIN !!!` |
 | `ServerGameZombieWin` | `Zombies WIN !!!` |
-| `APHumanDamageReward` | `You earned {0} Ammo Pack(s) for dealing damage to zombies!` |
-| `APZombieKillReward` | `You earned {0} Ammo Pack(s) for infecting a human! Total: {1}` |
-| `APRoundSurviveReward` | `You earned {0} Ammo Pack(s) for surviving the round! Total: {1}` |
+| `RoundStartAnnounce` | `New round begins! \| Your credits: {0} \| Players: {1}` |
+| `HudStatusRound` | `Round:` |
+| `HudStatusClass` | `Class:` |
+| `HudStatusAP` | `Ammo Packs:` |
+| `APRoundSurviveReward` | `You survived the round! +{0} Ammo Packs (total: {1}).` |
+| `APZombieKillReward` | `You infected a human! +{0} Ammo Packs (total: {1}).` |
+| `APHumanDamageReward` | `Damage bonus! +{0} Ammo Packs (total: {1}).` |
 | `ExtraItemsMenuAP` | `Your Ammo Packs: {0}` |
-| `ExtraItemsScbaSuitSuccess` | `You put on a Hazmat Suit and can resist one zombie attack!` |
-| `TripMinePlanted` | `Mine planted ({0}/{1} active). Zombies crossing the laser beam will trigger the explosion!` |
 
 ---
 
 ## 🔌 API
 
-`IZombieOutstandingAPI` is exposed as a SwiftlyS2 shared interface for external plugin integration.
+`IZombieOutstandingAPI` is exposed as a SwiftlyS2 shared interface so external plugins can integrate with the gamemode.
 
-### Registering
+**Registering the API:**
 
 ```csharp
 public override void UseSharedInterface(IInterfaceManager interfaceManager)
@@ -494,26 +492,26 @@ public override void UseSharedInterface(IInterfaceManager interfaceManager)
     if (interfaceManager.HasSharedInterface("ZombieOutstanding"))
     {
         var api = interfaceManager.GetSharedInterface<IZombieOutstandingAPI>("ZombieOutstanding");
-        // use api...
+        // hook events, query state, perform actions...
     }
 }
 ```
 
-### Capabilities
+**Capabilities:**
 
-| Category | Methods / Events |
-|----------|-----------------|
-| **Events** | `ZO_OnPlayerInfect`, `ZO_OnNemesisSelected`, `ZO_OnGameStart`, `ZO_OnHumanWin`, `ZO_OnZombieWin`, … |
-| **Player queries** | `IsZombie`, `IsNemesis`, `IsAssassin`, `IsSurvivor`, `CurrentMode`, … |
-| **Actions** | Force-set roles and classes, give/take Ammo Packs, set glow / FOV / god mode |
+| Category | Examples |
+|----------|---------|
+| **Events** | `ZO_OnPlayerInfect`, `ZO_OnNemesisSelected`, `ZO_OnGameStart`, `ZO_OnHumanWin`, `ZO_OnZombieWin` |
+| **Queries** | `IsZombie()`, `IsNemesis()`, `IsAssassin()`, `IsSurvivor()`, `CurrentMode` |
+| **Actions** | Force roles, give/take Ammo Packs, set glow / FOV / god mode |
 
-Full docs: [`src/IZombieOutstandingAPI/IZombieOutstandingAPI.cs`](src/IZombieOutstandingAPI/IZombieOutstandingAPI.cs)
+Full interface: [`src/IZombieOutstandingAPI/IZombieOutstandingAPI.cs`](src/IZombieOutstandingAPI/IZombieOutstandingAPI.cs)
 
 ---
 
 <div align="center">
 
-Remade with ❤️ — based on the original plugin by <em>[H-AN / Zombie PlagueS2](https://github.com/H-AN/HanZombiePlagueS2)</em>
+Remade with ❤️ — based on the original plugin by [H-AN / Zombie PlagueS2](https://github.com/H-AN/HanZombiePlagueS2)
 
 </div>
 
