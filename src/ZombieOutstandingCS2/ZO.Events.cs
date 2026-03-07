@@ -1961,6 +1961,27 @@ public partial class ZOEvents
 
         var modeName = _gameMode.GetTramslationsModeName();
 
+        // Pre-compute alive zombie/human counts for the remaining-players line.
+        int aliveZombieCount = 0;
+        int aliveHumanCount = 0;
+        IPlayer? lastZombiePlayer = null;
+        IPlayer? lastHumanPlayer = null;
+
+        if (_globals.GameStart && _globals.MotherZombieWasSelected)
+        {
+            foreach (var p in _core.PlayerManager.GetAlive())
+            {
+                if (p == null || !p.IsValid) continue;
+                var ctrl = p.Controller;
+                if (ctrl == null || !ctrl.IsValid || !ctrl.PawnIsAlive) continue;
+
+                var pId = p.PlayerID;
+                _globals.IsZombie.TryGetValue(pId, out bool isZ);
+                if (isZ) { aliveZombieCount++; lastZombiePlayer = p; }
+                else { aliveHumanCount++; lastHumanPlayer = p; }
+            }
+        }
+
         foreach (var player in _core.PlayerManager.GetAllPlayers())
         {
             if (!player.IsValid || player.IsFakeClient)
@@ -2012,6 +2033,25 @@ public partial class ZOEvents
                 $"<font color='yellow'>{localModeName}</font>" +
                 $"<font color='#888888'> · </font><font color='{classColor}'>{className}</font>" +
                 $"<font color='#888888'> · </font><font color='green'>{ap} AP</font>";
+
+            // Append the remaining-players line when the round is in progress.
+            if (aliveZombieCount == 1 && aliveHumanCount == 1
+                && lastZombiePlayer != null && lastHumanPlayer != null)
+            {
+                var hPawn = lastHumanPlayer.PlayerPawn;
+                var zPawn = lastZombiePlayer.PlayerPawn;
+                if (hPawn != null && hPawn.IsValid && zPawn != null && zPawn.IsValid)
+                {
+                    message += $"<br><font color='white'>{_helpers.T(player, "HudRemainingOneVsOne", lastHumanPlayer.Name, hPawn.Health, lastZombiePlayer.Name, zPawn.Health)}</font>";
+                }
+            }
+            else if (aliveZombieCount > 0 && aliveHumanCount > 0)
+            {
+                if (aliveZombieCount < aliveHumanCount && aliveZombieCount <= 8)
+                    message += $"<br><font color='red'>{_helpers.T(player, "HudRemainingZombies", aliveZombieCount)}</font>";
+                else if (aliveHumanCount < aliveZombieCount && aliveHumanCount <= 8)
+                    message += $"<br><font color='cyan'>{_helpers.T(player, "HudRemainingHumans", aliveHumanCount)}</font>";
+            }
 
             player.SendCenterHTML(message);
         }

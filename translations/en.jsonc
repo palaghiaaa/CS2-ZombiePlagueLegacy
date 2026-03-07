@@ -205,6 +205,11 @@
     "MineLimit": "You have reached the limit of [green]{0}[default] mine(s) of this type.",
     "NoMoney": "You do not have enough money to place this mine.",
 
+    // ── Remaining Players HUD ──────────────────────────────────────────────
+    "HudRemainingOneVsOne": "{0} ({1}HP) VS {2} ({3}HP)",
+    "HudRemainingZombies": "{0} zombie(s) remaining...",
+    "HudRemainingHumans": "{0} human(s) remaining...",
+
     // ── Admin Menu ────────────────────────────────────────────────────────
     "AdminMenuMakeZombieHuman": "Make Zombie/Human",
     "AdminMenuMakeNemesis": "Make Nemesis",
