@@ -16,8 +16,10 @@
 		<PackageReference Include="SwiftlyS2.CS2" Version="1.1.5-beta.27" />
 	</ItemGroup>
 	<ItemGroup>
-		<!-- ZombieOutstandingCS2 API contract (zombie-state queries + infect event) -->
-		<ProjectReference Include="../IZombieOutstandingAPI/IZombieOutstandingAPI.csproj" Private="false" />
+		<!-- ZombieOutstandingCS2 API contract (zombie-state queries + infect event).
+		     Private="true" (default) so ZombieOutstandingAPI.dll is copied to this
+		     plugin's output directory and can be resolved at runtime. -->
+		<ProjectReference Include="../IZombieOutstandingAPI/IZombieOutstandingAPI.csproj" />
 	</ItemGroup>
 	<!-- Bundle the plugin's own translation files -->
 	<ItemGroup>
