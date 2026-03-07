@@ -126,6 +126,10 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         return args.Length == 0 ? loc[key] : loc[key, args];
     }
 
+    /// <summary>Returns true when the player is a valid non-bot player with a non-zero SteamID.</summary>
+    private static bool IsValidRealPlayer(IPlayer? player)
+        => player != null && player.IsValid && !player.IsFakeClient && player.SteamID != 0;
+
     /// <summary>Returns true when the player is on the zombie side.</summary>
     private bool IsZombie(int playerId)
     {
@@ -144,23 +148,31 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         return s;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Score formula
+    // ─────────────────────────────────────────────────────────────────────────
+
     /// <summary>
-    /// Sorts the stat dictionary according to the configured SortMode.
-    /// Tiebreaker chain: kills → infections → assists → damage → deaths asc.
+    /// Computes the KDA-style score for a player:
+    /// <c>(Kills×KW + Infections×IW + Assists×AW + Damage/DD) / max(Deaths,1)</c>
     /// </summary>
+    private static double ComputeScore(PlayerStat s, ZORankCFG cfg)
+    {
+        double positive = s.Kills      * cfg.KillWeight
+                        + s.Infections * cfg.InfectionWeight
+                        + s.Assists    * cfg.AssistWeight
+                        + (cfg.DamageDivisor > 0 ? (double)s.Damage / cfg.DamageDivisor : 0.0);
+        return positive / Math.Max(s.Deaths, 1);
+    }
+
+    /// <summary>Returns all stats sorted by score descending.</summary>
     private List<KeyValuePair<ulong, PlayerStat>> BuildSortedList()
     {
-        var mode = (_cfg!.CurrentValue.SortMode ?? "kills").ToLowerInvariant();
-        IOrderedEnumerable<KeyValuePair<ulong, PlayerStat>> ordered = mode switch
-        {
-            "infections" => _stats.OrderByDescending(x => x.Value.Infections)
-                                  .ThenByDescending(x => x.Value.Kills),
-            "damage"     => _stats.OrderByDescending(x => x.Value.Damage)
-                                  .ThenByDescending(x => x.Value.Kills),
-            _            => _stats.OrderByDescending(x => x.Value.Kills)
-                                  .ThenByDescending(x => x.Value.Infections),
-        };
-        return ordered
+        var cfg = _cfg!.CurrentValue;
+        return _stats
+            .OrderByDescending(x => ComputeScore(x.Value, cfg))
+            .ThenByDescending(x => x.Value.Kills)
+            .ThenByDescending(x => x.Value.Infections)
             .ThenByDescending(x => x.Value.Assists)
             .ThenByDescending(x => x.Value.Damage)
             .ThenBy(x => x.Value.Deaths)
@@ -175,38 +187,23 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         // ── Victim: record death ──────────────────────────────────────────────
         var victim = @event.UserIdPlayer;
-        if (victim != null && victim.IsValid && !victim.IsFakeClient)
-        {
-            ulong vSteam = victim.SteamID;
-            if (vSteam != 0)
-                GetOrCreate(vSteam, victim.Name).Deaths++;
-        }
+        if (IsValidRealPlayer(victim))
+            GetOrCreate(victim!.SteamID, victim.Name).Deaths++;
 
         // ── Attacker: record kill (human kills only; infections via ZO event) ─
         var attacker = @event.AttackerPlayer;
-        if (attacker != null && attacker.IsValid && !attacker.IsFakeClient)
+        if (IsValidRealPlayer(attacker))
         {
-            ulong aSteam = attacker.SteamID;
+            ulong aSteam = attacker!.SteamID;
             ulong vSteam = victim?.SteamID ?? 0;
-            // Only count as a "kill" when a human kills a human (PvP)
-            // or when ZO API is absent (fall back to counting every kill).
-            if (aSteam != 0 && aSteam != vSteam)
-            {
-                bool attackerIsZombie = IsZombie(attacker.PlayerID);
-                // Infections are handled by ZO_OnPlayerInfect; don't double-count.
-                if (!attackerIsZombie)
-                    GetOrCreate(aSteam, attacker.Name).Kills++;
-            }
+            if (aSteam != vSteam && !IsZombie(attacker.PlayerID))
+                GetOrCreate(aSteam, attacker.Name).Kills++;
         }
 
         // ── Assister ─────────────────────────────────────────────────────────
         var assister = @event.AssisterPlayer;
-        if (assister != null && assister.IsValid && !assister.IsFakeClient)
-        {
-            ulong sSteam = assister.SteamID;
-            if (sSteam != 0)
-                GetOrCreate(sSteam, assister.Name).Assists++;
-        }
+        if (IsValidRealPlayer(assister))
+            GetOrCreate(assister!.SteamID, assister.Name).Assists++;
 
         return HookResult.Continue;
     }
@@ -215,12 +212,10 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
     /// Fired by IZombieOutstandingAPI when a zombie player infects a human.
     /// Counts one infection for the attacker.
     /// </summary>
-    private void OnZOPlayerInfect(IPlayer attacker, IPlayer victim, bool grenade, string zombieClass)
+    private void OnZOPlayerInfect(IPlayer attacker, IPlayer _victim, bool _grenade, string _zombieClass)
     {
-        if (attacker == null || !attacker.IsValid || attacker.IsFakeClient) return;
-        ulong aSteam = attacker.SteamID;
-        if (aSteam == 0) return;
-        GetOrCreate(aSteam, attacker.Name).Infections++;
+        if (!IsValidRealPlayer(attacker)) return;
+        GetOrCreate(attacker.SteamID, attacker.Name).Infections++;
     }
 
     /// <summary>
@@ -241,10 +236,9 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         if (attackerCtrl == null || !attackerCtrl.IsValid) return;
 
         var attackerPlayer = Core.PlayerManager.GetPlayerFromController(attackerCtrl);
-        if (attackerPlayer == null || !attackerPlayer.IsValid || attackerPlayer.IsFakeClient) return;
+        if (!IsValidRealPlayer(attackerPlayer)) return;
 
-        ulong aSteam = attackerPlayer.SteamID;
-        if (aSteam == 0) return;
+        ulong aSteam = attackerPlayer!.SteamID;
 
         // Skip self-damage.
         var victimCtrl = victimPawn.Controller.Value?.As<CCSPlayerController>();
@@ -267,22 +261,23 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
     private void OnRankCommand(ICommandContext context)
     {
         var player = context.Sender;
-        if (player == null || !player.IsValid || player.IsFakeClient) return;
+        if (!IsValidRealPlayer(player)) return;
+        var p = player!;
 
-        ulong steamId = player.SteamID;
-        if (steamId == 0) return;
-
-        var myStat = GetOrCreate(steamId, player.Name);
+        ulong steamId = p.SteamID;
+        var myStat = GetOrCreate(steamId, p.Name);
         var sorted = BuildSortedList();
         int rank  = sorted.FindIndex(kvp => kvp.Key == steamId) + 1;
         int total = sorted.Count;
 
-        var cfg  = _cfg!.CurrentValue;
-        string body = T(player, "RankMessage",
+        var cfg   = _cfg!.CurrentValue;
+        double score = ComputeScore(myStat, cfg);
+        string body = T(p, "RankMessage",
             myStat.Name, rank, total,
             myStat.Kills, myStat.Deaths,
-            myStat.Infections, myStat.Assists, myStat.Damage);
-        player.SendMessage(MessageType.Chat, $" \x04{cfg.ChatTag}\x01 {body}");
+            myStat.Infections, myStat.Assists, myStat.Damage,
+            score.ToString("F2"));
+        p.SendMessage(MessageType.Chat, $" \x04{cfg.ChatTag}\x01 {body}");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -297,14 +292,15 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     private void OpenTopMenu(IPlayer? player, int limit)
     {
-        if (player == null || !player.IsValid || player.IsFakeClient) return;
+        if (!IsValidRealPlayer(player)) return;
+        var p = player!;
 
         var cfg    = _cfg!.CurrentValue;
         var sorted = BuildSortedList().Take(limit).ToList();
 
         var menuConfig = new MenuConfiguration
         {
-            Title           = HtmlGradient.GenerateGradientText(T(player, "TopMenuTitle", limit), Color.Gold),
+            Title           = HtmlGradient.GenerateGradientText(T(p, "TopMenuTitle", limit), Color.Gold),
             FreezePlayer    = false,
             MaxVisibleItems = cfg.TopMenuVisibleRows,
             PlaySound       = true,
@@ -322,9 +318,11 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             for (int i = 0; i < sorted.Count; i++)
             {
-                var s     = sorted[i].Value;
+                var s      = sorted[i].Value;
+                double sc  = ComputeScore(s, cfg);
                 string lbl = T(player, "TopMenuEntry",
                     i + 1, s.Name,
+                    sc.ToString("F2"),
                     s.Kills, s.Deaths,
                     s.Infections, s.Assists, s.Damage);
                 menu.AddOption(new TextMenuOption(lbl));

@@ -10,39 +10,47 @@
     "ChatTag": "[ZO Rank]",
 
     // ── Commands ─────────────────────────────────────────────────────────────
-    // Console / chat command that shows the caller's rank.
-    "RankCommand": "rank",
-
-    // Console / chat command that opens the default top-players menu.
-    "TopCommand": "top",
-
-    // Alias that always opens the top-15 menu.
+    "RankCommand":  "rank",
+    "TopCommand":   "top",
     "Top15Command": "top15",
-
-    // Alias that always opens the top-10 menu.
     "Top10Command": "top10",
 
-    // ── Sorting ───────────────────────────────────────────────────────────────
-    // Primary stat used to rank players.
-    //   "kills"      – most human kills first (PvP / last-man-standing focus).
-    //   "infections" – most zombie infections first (classic Zombie Plague focus).
-    //   "damage"     – most total damage dealt first.
-    // Tiebreakers are always applied: kills → infections → assists → damage → deaths asc.
-    "SortMode": "kills",
+    // ── Score formula ─────────────────────────────────────────────────────────
+    // Players are sorted by a single KDA-style score:
+    //
+    //   Score = (Kills × KillWeight
+    //            + Infections × InfectionWeight
+    //            + Assists    × AssistWeight
+    //            + Damage     / DamageDivisor)
+    //           / max(Deaths, 1)
+    //
+    // Adjust weights to shift the focus of your server:
+    //   - Pure PvP server    → lower InfectionWeight (e.g. 0)
+    //   - Zombie Plague focus → raise InfectionWeight (e.g. 3.0)
+    //   - Damage matters      → lower DamageDivisor  (e.g. 50)
+
+    // Points awarded per human kill.
+    "KillWeight": 2.0,
+
+    // Points awarded per zombie infection.
+    "InfectionWeight": 2.0,
+
+    // Points awarded per kill assist.
+    "AssistWeight": 1.0,
+
+    // Every this many damage points = 1 score point.
+    // Set to 0 to exclude damage from the score entirely.
+    "DamageDivisor": 100.0,
 
     // ── Top menu ─────────────────────────────────────────────────────────────
-    // Number of players shown by !top (the default top command).
-    // !top10 and !top15 always show 10 and 15 respectively.
+    // Number of players shown by !top.  !top10 / !top15 always use 10 / 15.
     "TopListSize": 15,
 
-    // Number of rows visible at once in the scrollable top menu.
+    // Rows visible at once in the scrollable menu.
     "TopMenuVisibleRows": 5,
 
     // ── Feature toggles ───────────────────────────────────────────────────────
-    // Set to false to disable the !rank command.
     "EnableRankCommand": true,
-
-    // Set to false to disable all !top / !top10 / !top15 commands.
     "EnableTopCommands": true
   }
 }

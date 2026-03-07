@@ -3,9 +3,10 @@
     // {0}, {1} … are positional arguments filled in at runtime.
 
     // !rank command – sent to the player who typed it.
-    // {0} = player name, {1} = rank position, {2} = total ranked players,
-    // {3} = kills, {4} = deaths, {5} = infections, {6} = assists, {7} = damage dealt
-    "RankMessage": "Player {0}'s rank is {1}/{2} | Kills: {3} | Deaths: {4} | Infections: {5} | Assists: {6} | Damage: {7}",
+    // {0} = player name,  {1} = rank position,  {2} = total ranked players,
+    // {3} = kills,  {4} = deaths,  {5} = infections,  {6} = assists,
+    // {7} = damage dealt,  {8} = KDA score (2 decimal places)
+    "RankMessage": "Player {0}'s rank is {1}/{2} | Score: {8} | K:{3} D:{4} I:{5} A:{6} DMG:{7}",
 
     // Top menu title. {0} = number of entries shown (10, 15 …)
     "TopMenuTitle": "TOP {0}",
@@ -14,7 +15,7 @@
     "TopMenuNoStats": "No stats available yet.",
 
     // One row inside the top menu.
-    // {0} = rank number, {1} = player name, {2} = kills, {3} = deaths,
-    // {4} = infections, {5} = assists, {6} = damage dealt
-    "TopMenuEntry": "#{0}  {1}  [K:{2} D:{3} I:{4} A:{5} DMG:{6}]"
+    // {0} = rank number,  {1} = player name,  {2} = KDA score (2 decimal places),
+    // {3} = kills,  {4} = deaths,  {5} = infections,  {6} = assists,  {7} = damage dealt
+    "TopMenuEntry": "#{0}  {1}  Score:{2}  [K:{3} D:{4} I:{5} A:{6} DMG:{7}]"
 }

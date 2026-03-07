@@ -26,17 +26,28 @@ public class ZORankCFG
     /// <summary>Alias that always opens the top-10 menu.</summary>
     public string Top10Command { get; set; } = "top10";
 
-    // ── Sorting ───────────────────────────────────────────────────────────────
+    // ── Score formula ─────────────────────────────────────────────────────────
+    //
+    // Score = (Kills × KillWeight + Infections × InfectionWeight
+    //          + Assists × AssistWeight + Damage / DamageDivisor)
+    //         / max(Deaths, 1)
+    //
+    // This is used as the single sort key for !rank position and all !top menus.
+
+    /// <summary>Points awarded per human kill.</summary>
+    public double KillWeight { get; set; } = 2.0;
+
+    /// <summary>Points awarded per zombie infection.</summary>
+    public double InfectionWeight { get; set; } = 2.0;
+
+    /// <summary>Points awarded per kill assist.</summary>
+    public double AssistWeight { get; set; } = 1.0;
 
     /// <summary>
-    /// Primary stat used to rank players.
-    /// "kills"      – most human kills first (PvP / last-man-standing focus).
-    /// "infections" – most zombie infections first (classic Zombie Plague focus).
-    /// "damage"     – most total damage dealt first.
-    /// Tiebreakers are always applied in the order: kills → infections → assists →
-    /// damage → deaths ascending.
+    /// Every this many points of damage dealt add 1 score point.
+    /// Set to 0 to exclude damage from the score.
     /// </summary>
-    public string SortMode { get; set; } = "kills";
+    public double DamageDivisor { get; set; } = 100.0;
 
     // ── Top menu ──────────────────────────────────────────────────────────────
 
