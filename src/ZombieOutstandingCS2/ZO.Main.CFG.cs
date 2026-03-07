@@ -165,6 +165,7 @@ public class ZOMainCFG
     public string HumandefaultModel { get; set; } = string.Empty;
     public int HumanMaxHealth { get; set; } = 225;
     public bool EnableDamageHud { get; set; } = true;
+    public bool EnableStatusHud { get; set; } = true;
     public float HumanInitialSpeed { get; set; } = 1.0f;
     public float HumanInitialGravity { get; set; } = 0.8f;
     public float HumanKnockBackHeadMultiply { get; set; } = 2.0f;
