@@ -737,6 +737,8 @@ public partial class ZOServices
         string customname = isSurvivor ? config.Survivor.CustomWeaponName : config.Sniper.CustomWeaponName;
         ws.DropWeaponBySlot(gear_slot_t.GEAR_SLOT_RIFLE);
         var weapon = Is.GiveItem<CCSWeaponBase>(classname);
+        if (weapon == null || !weapon.IsValid)
+            return;
         ushort DefinitionIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
         weapon.AcceptInput("ChangeSubclass", classname);
         weapon.AttributeManager.Item.Initialized = true;
