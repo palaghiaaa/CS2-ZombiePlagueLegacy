@@ -610,15 +610,18 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static void AddLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(text));
+        => menu.AddOption(new TextMenuOption(text, updateIntervalMs: 600, pauseIntervalMs: 100)
+            { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
 
-    /// <summary>Adds a benefit line (plain text; colors come from translation tags).</summary>
+    /// <summary>Adds a benefit line with left-scrolling marquee text.</summary>
     private static void AddBenefitLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(text));
+        => menu.AddOption(new TextMenuOption(text, updateIntervalMs: 600, pauseIntervalMs: 100)
+            { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
 
-    /// <summary>Adds a status line (plain text; colors come from translation tags).</summary>
+    /// <summary>Adds a status line with left-scrolling marquee text.</summary>
     private static void AddColoredLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(text));
+        => menu.AddOption(new TextMenuOption(text, updateIntervalMs: 600, pauseIntervalMs: 100)
+            { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
 
     private bool IsHappyHour()
     {

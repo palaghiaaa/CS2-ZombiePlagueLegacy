@@ -390,7 +390,9 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         if (sorted.Count == 0)
         {
-            menu.AddOption(new TextMenuOption(T(p, "TopMenuNoStats")));
+            menu.AddOption(new TextMenuOption(T(p, "TopMenuNoStats"),
+                updateIntervalMs: 600, pauseIntervalMs: 100)
+                { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
         }
         else
         {
@@ -404,7 +406,9 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
                     s.Kills, s.Deaths,
                     s.Infections, s.Assists, s.Damage);
 
-                menu.AddOption(new TextMenuOption(lbl));
+                menu.AddOption(new TextMenuOption(lbl,
+                    updateIntervalMs: 600, pauseIntervalMs: 100)
+                    { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
             }
         }
 
