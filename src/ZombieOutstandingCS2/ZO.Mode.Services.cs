@@ -133,11 +133,12 @@ public partial class ZOServices
         if (allplayers.Count == 0) 
             return;
 
-        var target = PickRandomPlayer(allplayers);
+        var target = PickPreferredPlayer(allplayers);
         if(target == null || !target.IsValid)
             return;
 
         SetupNemesis(target);
+        if (target.SteamID != 0) _globals.SpecialRoleThisRound.Add(target.SteamID);
         
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
     }
@@ -148,7 +149,7 @@ public partial class ZOServices
         if (allplayers.Count == 0) return;
 
         // 选择幸存者
-        var survivor = PickRandomPlayer(allplayers);
+        var survivor = PickPreferredPlayer(allplayers);
         if (survivor == null || !survivor.IsValid)
             return;
 
@@ -162,6 +163,7 @@ public partial class ZOServices
 
         // 设置幸存者属性
         SetupSurvivor(survivor);
+        if (survivor.SteamID != 0) _globals.SpecialRoleThisRound.Add(survivor.SteamID);
 
         
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
@@ -251,11 +253,12 @@ public partial class ZOServices
         if (allplayers.Count == 0) 
             return;
 
-        var target = PickRandomPlayer(allplayers);
+        var target = PickPreferredPlayer(allplayers);
         if (target == null || !target.IsValid) 
             return;
 
         SetupAssassin(target);
+        if (target.SteamID != 0) _globals.SpecialRoleThisRound.Add(target.SteamID);
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
         
     }
@@ -263,7 +266,7 @@ public partial class ZOServices
     public void SniperMode()
     {
         var allplayers = GetValidPlayers();
-        var sniper = PickRandomPlayer(allplayers);
+        var sniper = PickPreferredPlayer(allplayers);
 
         if (sniper == null || !sniper.IsValid)
             return;
@@ -278,6 +281,7 @@ public partial class ZOServices
 
         // 设置狙击手属性
         SetupSniper(sniper);
+        if (sniper.SteamID != 0) _globals.SpecialRoleThisRound.Add(sniper.SteamID);
 
         
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
@@ -854,6 +858,24 @@ public partial class ZOServices
                 result.Add(p);
         }
         return result;
+    }
+
+    /// <summary>
+    /// Like <see cref="PickRandomPlayer"/> but prefers players who did NOT have a
+    /// special role last round.  Falls back to the full candidate list only when
+    /// every candidate was a special role last round (e.g. only 1 player online).
+    /// </summary>
+    private IPlayer? PickPreferredPlayer(List<IPlayer> candidates)
+    {
+        if (candidates.Count == 0) return null;
+
+        var lastRound = _globals.SpecialRoleLastRound;
+        var preferred = candidates
+            .Where(p => p.SteamID == 0 || !lastRound.Contains(p.SteamID))
+            .ToList();
+
+        var pool = preferred.Count > 0 ? preferred : candidates;
+        return pool[Random.Shared.Next(pool.Count)];
     }
 
 }

@@ -38,21 +38,25 @@ public class ZOGameMode
             return GameModeType.NormalInfection;
         }
 
-        var modes = new List<(GameModeType type, int weight, bool enable)>
+        var modes = new List<(GameModeType type, int weight, bool enable, int minPlayers)>
     {
-        (GameModeType.NormalInfection, config.NormalInfection.Weight, config.NormalInfection.Enable),
-        (GameModeType.MultiInfection, config.MultiInfection.Weight, config.MultiInfection.Enable),
-        (GameModeType.Nemesis, config.Nemesis.Weight, config.Nemesis.Enable),
-        (GameModeType.Survivor, config.Survivor.Weight, config.Survivor.Enable),
-        (GameModeType.Swarm, config.Swarm.Weight, config.Swarm.Enable),
-        (GameModeType.Plague, config.Plague.Weight, config.Plague.Enable),
-        (GameModeType.Assassin, config.Assassin.Weight, config.Assassin.Enable),
-        (GameModeType.Sniper, config.Sniper.Weight, config.Sniper.Enable),
-        (GameModeType.AVS, config.AVS.Weight, config.AVS.Enable),
-        (GameModeType.Hero, config.Hero.Weight, config.Hero.Enable)
+        (GameModeType.NormalInfection, config.NormalInfection.Weight, config.NormalInfection.Enable, config.NormalInfection.MinPlayers),
+        (GameModeType.MultiInfection, config.MultiInfection.Weight, config.MultiInfection.Enable, config.MultiInfection.MinPlayers),
+        (GameModeType.Nemesis, config.Nemesis.Weight, config.Nemesis.Enable, config.Nemesis.MinPlayers),
+        (GameModeType.Survivor, config.Survivor.Weight, config.Survivor.Enable, config.Survivor.MinPlayers),
+        (GameModeType.Swarm, config.Swarm.Weight, config.Swarm.Enable, config.Swarm.MinPlayers),
+        (GameModeType.Plague, config.Plague.Weight, config.Plague.Enable, config.Plague.MinPlayers),
+        (GameModeType.Assassin, config.Assassin.Weight, config.Assassin.Enable, config.Assassin.MinPlayers),
+        (GameModeType.Sniper, config.Sniper.Weight, config.Sniper.Enable, config.Sniper.MinPlayers),
+        (GameModeType.AVS, config.AVS.Weight, config.AVS.Enable, config.AVS.MinPlayers),
+        (GameModeType.Hero, config.Hero.Weight, config.Hero.Enable, config.Hero.MinPlayers)
     };
 
-        var enabledModes = modes.Where(m => m.enable).ToList();
+        // Count real (non-bot) connected players for the MinPlayers check.
+        int currentPlayerCount = _core.PlayerManager.GetAllPlayers()
+            .Count(p => p != null && p.IsValid && !p.IsFakeClient);
+
+        var enabledModes = modes.Where(m => m.enable && currentPlayerCount >= m.minPlayers).ToList();
 
         if (enabledModes.Count == 0)
         {

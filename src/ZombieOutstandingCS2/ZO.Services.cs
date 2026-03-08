@@ -80,18 +80,25 @@ public partial class ZOServices
         if (candidates.Count < cfg.MinPlayersForInfection)
             return;
 
-        // 随机打乱候选列表
-        Random.Shared.Shuffle(CollectionsMarshal.AsSpan(candidates));
+        // Build a preferred pool that excludes players who were a special role last
+        // round (anti-repeat).  Fall back to the full candidate list only if the
+        // preferred pool doesn't have enough players.
+        var lastRound = _globals.SpecialRoleLastRound;
+        var preferred = candidates
+            .Where(p => p.SteamID == 0 || !lastRound.Contains(p.SteamID))
+            .ToList();
+        var pool = preferred.Count >= count ? preferred : candidates;
+        Random.Shared.Shuffle(CollectionsMarshal.AsSpan(pool));
 
         // 确保不超过候选人数
-        int actualCount = Math.Min(count, candidates.Count);
+        int actualCount = Math.Min(count, pool.Count);
 
         var zombieConfig = _zombieClassCFG.CurrentValue;
         var zombieClasses = zombieConfig.ZombieClassList;
 
         for (int i = 0; i < actualCount; i++)
         {
-            var target = candidates[i];
+            var target = pool[i];
             if (target == null || !target.IsValid)
                 continue;
 
@@ -99,6 +106,9 @@ public partial class ZOServices
             _globals.MotherZombieWasSelected = true;
             _helpers.SendChatToAllT("GameInfoBecomeMother", target.Name);
 
+            // Record for next round's anti-repeat
+            if (target.SteamID != 0)
+                _globals.SpecialRoleThisRound.Add(target.SteamID);
         }
     }
 
@@ -151,6 +161,18 @@ public partial class ZOServices
                 posszombie(victim, selectedClass, false);
                 CreateFakeKill(attacker, victim, grenade);
                 CheckRoundWinConditions();
+
+                // Give the attacker HP for successfully infecting a human.
+                int hpReward = CFG.ZombieInfectHealthReward;
+                if (hpReward > 0)
+                {
+                    var attackerPawn = attacker.PlayerPawn;
+                    if (attackerPawn != null && attackerPawn.IsValid)
+                    {
+                        attackerPawn.Health = Math.Min(attackerPawn.Health + hpReward, attackerPawn.MaxHealth);
+                        attackerPawn.HealthUpdated();
+                    }
+                }
 
                 if (_api != null)
                     _api.NotifyInfect(attacker, victim, grenade, selectedClass.Name);

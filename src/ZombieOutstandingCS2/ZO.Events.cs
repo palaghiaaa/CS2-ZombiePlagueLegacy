@@ -102,6 +102,7 @@ public partial class ZOEvents
         _core.Event.OnTick += Event_OnTickNoRecoil;
         _core.Event.OnTick += Event_OnTickMultijump;
         _core.Event.OnTick += Event_OnTickJetpack;
+        _core.Event.OnTick += Event_OnTickLeap;
 
         _core.GameEvent.HookPre<EventWeaponFire>(OnHumanWeaponFire);
         _core.Event.OnEntityTakeDamage += Event_OnHumanTakeDamage;
@@ -275,6 +276,14 @@ public partial class ZOEvents
         _globals.AdminForcedModeThisRound = false;
         _globals.MotherZombieWasSelected = false;
         _gameMode.ResetMode();
+
+        // Rotate anti-repeat tracking: this round's selections become "last round"
+        // so that PickPreferredPlayer / SelectMotherZombie can deprioritise them.
+        _globals.SpecialRoleLastRound.Clear();
+        foreach (var sid in _globals.SpecialRoleThisRound)
+            _globals.SpecialRoleLastRound.Add(sid);
+        _globals.SpecialRoleThisRound.Clear();
+
         var CFG = _mainCFG.CurrentValue;
         float configDist = CFG.Assassin.InvisibilityDist;
         _core.Scheduler.DelayBySeconds(1.0f, () =>
@@ -355,10 +364,13 @@ public partial class ZOEvents
                 _globals.KnifeBlinkCooldownEnd.Remove(id);
                 _globals.ZombieMadnessActive.Remove(id);
                 _globals.PrevJumpPressed.Remove(id);
+                _globals.PrevOnGround.Remove(id);
                 _globals.DamageAccumulator.Remove(id);
                 _globals.InfiniteClipState.Remove(id);
                 _globals.ExtraNoRecoilState.Remove(id);
                 _globals.TryderState.Remove(id);
+                _globals.SpawnProtectionEndTime.Remove(id);
+                _globals.LeapCooldownEnd.Remove(id);
                 // Jetpack / Revive Token
                 _extraItemsMenu.CleanupJetpack(id);
                 _globals.HasReviveToken.Remove(id);
@@ -556,6 +568,15 @@ public partial class ZOEvents
 
             _globals.IsZombie.TryGetValue(Id, out bool IsZombie);
 
+            // Apply spawn protection: make the player temporarily invulnerable so
+            // they cannot be killed the instant they appear (mirrors zp_spawn_protection).
+            float protectionTime = _mainCFG.CurrentValue.SpawnProtectionTime;
+            if (protectionTime > 0)
+            {
+                _globals.SpawnProtectionEndTime[Id] =
+                    Environment.TickCount64 + (long)(protectionTime * 1000);
+            }
+
             if (IsZombie)
             {
                 _core.Scheduler.NextWorldUpdate(() =>
@@ -669,6 +690,8 @@ public partial class ZOEvents
         _globals.ScbaSuit.Remove(Id);
         _globals.GodState.Remove(Id);
         _globals.InfiniteAmmoState.Remove(Id);
+        _globals.SpawnProtectionEndTime.Remove(Id);
+        _globals.LeapCooldownEnd.Remove(Id);
 
         // Extra items: reset per-death state for the victim
         _globals.ExtraJumps.Remove(Id);
@@ -1079,6 +1102,14 @@ public partial class ZOEvents
         _globals.ScbaSuit.TryGetValue(victimId, out bool IsHaveScbaSuit);
         _globals.GodState.TryGetValue(victimId, out bool IsGodState);
 
+        // Block all incoming damage during spawn protection.
+        if (_globals.SpawnProtectionEndTime.TryGetValue(victimId, out long protEnd)
+            && Environment.TickCount64 < protEnd)
+        {
+            @event.Info.Damage = 0;
+            return;
+        }
+
         // Cross-check with actual team to resolve any IsZombie state mismatches.
         // Zombies are always on Team.T and humans on Team.CT.
         if (AttackerController.Team == Team.T) attackerIsZombie = true;
@@ -1206,6 +1237,9 @@ public partial class ZOEvents
         _globals.HasReviveToken.Remove(id);
 
         _globals.InSwing[id] = false;
+        _globals.SpawnProtectionEndTime.Remove(id);
+        _globals.LeapCooldownEnd.Remove(id);
+        _globals.PrevOnGround.Remove(id);
 
         _core.Scheduler.DelayBySeconds(1.0f, () =>
         {
@@ -1404,6 +1438,86 @@ public partial class ZOEvents
             if (isZombie) continue;
 
             _extraItemsMenu.TryExecuteJetpackThrust(player);
+        }
+    }
+
+    private void Event_OnTickLeap()
+    {
+        if (!_globals.GameStart) return;
+
+        var cfg = _mainCFG.CurrentValue;
+
+        foreach (var player in _core.PlayerManager.GetAlive())
+        {
+            if (!player.IsValid) continue;
+
+            int id = player.PlayerID;
+            _globals.IsZombie.TryGetValue(id, out bool isZombie);
+            if (!isZombie) continue;
+
+            // Determine which leap settings apply to this zombie.
+            _globals.IsNemesis.TryGetValue(id, out bool isNemesis);
+            _globals.IsAssassin.TryGetValue(id, out bool isAssassin);
+
+            bool leapEnabled;
+            float leapForce, leapHeight, leapCooldown;
+
+            if (isNemesis)
+            {
+                leapEnabled  = cfg.LeapNemesisEnabled;
+                leapForce    = cfg.LeapNemesisForce;
+                leapHeight   = cfg.LeapNemesisHeight;
+                leapCooldown = cfg.LeapNemesisCooldown;
+            }
+            else if (isAssassin)
+            {
+                leapEnabled  = cfg.LeapAssassinEnabled;
+                leapForce    = cfg.LeapAssassinForce;
+                leapHeight   = cfg.LeapAssassinHeight;
+                leapCooldown = cfg.LeapAssassinCooldown;
+            }
+            else
+            {
+                leapEnabled  = cfg.LeapZombiesEnabled;
+                leapForce    = cfg.LeapZombiesForce;
+                leapHeight   = cfg.LeapZombiesHeight;
+                leapCooldown = cfg.LeapZombiesCooldown;
+            }
+
+            if (!leapEnabled) continue;
+
+            var pawn = player.PlayerPawn;
+            if (pawn == null || !pawn.IsValid) continue;
+
+            bool onGround = pawn.GroundEntity.IsValid;
+            bool jumpPressed = (player.PressedButtons & GameButtonFlags.Space) != 0;
+
+            _globals.PrevOnGround.TryGetValue(id, out bool prevOnGround);
+            _globals.PrevOnGround[id] = onGround;
+
+            // Leap triggers on the first tick the player is airborne after a fresh jump
+            // from the ground (i.e., prevOnGround = true, onGround = false, jump pressed).
+            // This avoids fighting with multijump (which fires for humans only) and lets
+            // the game engine handle the vertical velocity; we add forward impulse on top.
+            bool freshLeap = prevOnGround && !onGround && jumpPressed;
+            if (!freshLeap) continue;
+
+            // Check cooldown.
+            _globals.LeapCooldownEnd.TryGetValue(id, out long cooldownEndMs);
+            if (Environment.TickCount64 < cooldownEndMs) continue;
+
+            // Get the player's forward direction from eye angles.
+            // In CS2/Source2, QAngle.Y is the yaw (left/right horizontal rotation).
+            SwiftlyS2.Shared.Natives.QAngle eyeAngles = pawn.EyeAngles;
+            float yawRad = eyeAngles.Y * MathF.PI / 180f;
+            float vx = leapForce * MathF.Cos(yawRad);
+            float vy = leapForce * MathF.Sin(yawRad);
+
+            // Preserve existing Z velocity (the jump) and add the configured height boost.
+            float vz = pawn.AbsVelocity.Z + leapHeight;
+            pawn.Teleport(null, null, new SwiftlyS2.Shared.Natives.Vector(vx, vy, vz));
+
+            _globals.LeapCooldownEnd[id] = Environment.TickCount64 + (long)(leapCooldown * 1000);
         }
     }
 
