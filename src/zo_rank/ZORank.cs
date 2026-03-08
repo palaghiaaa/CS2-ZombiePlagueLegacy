@@ -377,7 +377,7 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
             HideFooter      = false
         };
 
-        IMenuAPI menu = Core.MenusAPI.CreateMenu(menuConfig, default);
+        IMenuAPI menu = Core.MenusAPI.CreateMenu(menuConfig, default, null, MenuOptionScrollStyle.LinearScroll);
 
         if (sorted.Count == 0)
         {
@@ -394,7 +394,17 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
                     FormatScore(sc),
                     s.Kills, s.Deaths,
                     s.Infections, s.Assists, s.Damage);
-                menu.AddOption(new TextMenuOption(lbl));
+
+                // Tiered colours: gold → #1, silver → #2, bronze → #3, blue → rest.
+                (Color startColor, Color endColor) = i switch
+                {
+                    0 => (Color.Gold,      Color.Orange),
+                    1 => (Color.Silver,    Color.LightGray),
+                    2 => (Color.Peru,      Color.SandyBrown),
+                    _ => (Color.LightBlue, Color.CornflowerBlue)
+                };
+
+                menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(lbl, startColor, endColor)));
             }
         }
 

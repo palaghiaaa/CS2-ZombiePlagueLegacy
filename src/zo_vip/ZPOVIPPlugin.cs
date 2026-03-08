@@ -492,8 +492,8 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             FreezePlayer = false,
             MaxVisibleItems = 8,
             PlaySound    = false,
-            AutoIncreaseVisibleItems = true,
-            HideFooter   = true
+            AutoIncreaseVisibleItems = false,
+            HideFooter   = false
         };
 
         IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default, null, MenuOptionScrollStyle.LinearScroll);
@@ -530,11 +530,11 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         }
 
         // Status footer — coloured, no separator row needed.
-        AddStatusLine(menu,
+        AddColoredLine(menu,
             isVip ? T(player, "VipMenuIsVip") : T(player, "VipMenuNotVip"),
             isVip ? Color.LimeGreen : Color.OrangeRed);
         if (_config.HappyHourEnabled && happyNow)
-            AddStatusLine(menu, T(player, "VipMenuHappyHourActive"), Color.Gold);
+            AddColoredLine(menu, T(player, "VipMenuHappyHourActive"), Color.Gold);
 
         Core.MenusAPI.OpenMenuForPlayer(player, menu);
     }
@@ -556,8 +556,8 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             FreezePlayer = false,
             MaxVisibleItems = 8,
             PlaySound    = false,
-            AutoIncreaseVisibleItems = true,
-            HideFooter   = true
+            AutoIncreaseVisibleItems = false,
+            HideFooter   = false
         };
 
         IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default, null, MenuOptionScrollStyle.LinearScroll);
@@ -584,8 +584,8 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     private static void AddBenefitLine(IMenuAPI menu, string text)
         => menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(text, Color.Gold, Color.Orange)));
 
-    /// <summary>Adds a status line rendered in a single solid colour.</summary>
-    private static void AddStatusLine(IMenuAPI menu, string text, Color color)
+    /// <summary>Adds a line rendered in a single solid colour (start and end colour are identical).</summary>
+    private static void AddColoredLine(IMenuAPI menu, string text, Color color)
         => menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(text, color, color)));
 
     private bool IsHappyHour()
