@@ -46,6 +46,15 @@
     // 5 = at least 5 normal rounds must pass between special rounds.
     "NormalRoundsInterval": 5,
 
+    // Global minimum number of connected (non-bot) players required before any
+    // custom game mode (MultiInfection, Nemesis, Survivor, Swarm, Plague,
+    // Assassin, Sniper, AVS, Hero) is eligible for random selection.
+    // When the player count is below this value the round always falls back to
+    // Normal Infection regardless of per-mode weights.
+    // 0  = no global minimum (rely on per-mode MinPlayers values only).
+    // 10 = custom modes only start when at least 10 real players are connected.
+    "MinPlayersForCustomMode": 10,
+
     // Minimum alive humans required before infection starts.
     // The check is: if (humanCandidates < this value) skip infection entirely.
     //
