@@ -3,3 +3,9 @@ bin
 obj
 net*/
 build
+
+# Crash dump files — do not commit server crash artifacts
+crashinfo.json
+managedtrace.txt
+minidump.dmp
+*.dmp

@@ -348,6 +348,14 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     private void OnClientDisconnected(IOnClientDisconnectedEvent @event)
     {
         int id = @event.PlayerId;
+
+        // Close any open menu immediately so SwiftlyS2's per-player render timer
+        // cannot fire on an already-freed native player controller and crash the
+        // server with SIGSEGV (BuildMenuHtml null-dereference).
+        var player = Core.PlayerManager.GetPlayer(id);
+        if (player != null && player.IsValid)
+            Core.MenusAPI.CloseActiveMenu(player);
+
         _damageAccumulator.Remove(id);
         _extraJumpsRemaining.Remove(id);
         _prevJumpPressed.Remove(id);
