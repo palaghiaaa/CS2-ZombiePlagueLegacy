@@ -93,7 +93,6 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         _logger.LogInformation("[ZPOVIP] Loaded. Commands: !{V} / !{VS}",
             _config.VipMenuCommand, _config.VipsListCommand);
     }
-    }
 
     /// <summary>
     /// Called by SwiftlyS2 after all plugins have loaded their shared interfaces.
