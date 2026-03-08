@@ -6,7 +6,7 @@
     // {0} = player name,  {1} = rank position,  {2} = total ranked players,
     // {3} = kills,  {4} = deaths,  {5} = infections,  {6} = assists,
     // {7} = damage dealt,  {8} = KDA score (2 decimal places)
-    "RankMessage": "Player {0}'s rank is {1}/{2} | Score: {8} | K:{3} D:{4} I:{5} A:{6} DMG:{7}",
+    "RankMessage": "[gold]{0}[default] rank: [green]{1}[default]/{2} | Score: [gold]{8}[default] | K:[green]{3}[default] D:[red]{4}[default] I:[lime]{5}[default] A:[blue]{6}[default] DMG:[orange]{7}",
 
     // Top menu title. {0} = number of entries shown (10, 15 …)
     "TopMenuTitle": "TOP {0}",

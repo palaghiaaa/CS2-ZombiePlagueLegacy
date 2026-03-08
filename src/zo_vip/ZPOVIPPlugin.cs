@@ -45,8 +45,6 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     private readonly Dictionary<int, int> _extraJumpsRemaining = new();
     // Whether SPACE was pressed last tick (rising-edge detection), keyed by PlayerID.
     private readonly Dictionary<int, bool> _prevJumpPressed = new();
-    // Players whose join-announce has already been broadcast this round.
-    private readonly HashSet<int> _announcedThisRound = new();
 
     // ── Plugin lifecycle ──────────────────────────────────────────────────────
 
@@ -85,6 +83,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.GameEvent.HookPre<EventRoundEnd>(OnRoundEnd);
         Core.Event.OnEntityTakeDamage += OnEntityTakeDamage;
         Core.Event.OnTick += OnTick;
+        Core.Event.OnClientConnected += OnClientConnected;
         Core.Event.OnClientDisconnected += OnClientDisconnected;
 
         // Register chat commands.
@@ -93,6 +92,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         _logger.LogInformation("[ZPOVIP] Loaded. Commands: !{V} / !{VS}",
             _config.VipMenuCommand, _config.VipsListCommand);
+    }
     }
 
     /// <summary>
@@ -247,13 +247,6 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             // ── Multi-jump allowance ───────────────────────────────────────────
             if (_config.ExtraJumps > 0)
                 _extraJumpsRemaining[id] = _config.ExtraJumps;
-
-            // ── Join announce (once per round per VIP) ─────────────────────────
-            if (_config.JoinAnnounceEnabled && _announcedThisRound.Add(id))
-            {
-                string name = controller.PlayerName ?? player.Name ?? "Player";
-                BroadcastChat($" \x04{_config.ChatPrefix}\x01 {T(player, "VipJoinAnnounce", name)}");
-            }
         });
 
         return HookResult.Continue;
@@ -314,8 +307,38 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         _damageAccumulator.Clear();
         _extraJumpsRemaining.Clear();
         _prevJumpPressed.Clear();
-        _announcedThisRound.Clear();
         return HookResult.Continue;
+    }
+
+    // ── Event: client connected ───────────────────────────────────────────────
+
+    /// <summary>
+    /// Broadcasts a join announcement to all players when a VIP connects.
+    /// Fires once per server connection (not every round).
+    /// </summary>
+    private void OnClientConnected(IOnClientConnectedEvent @event)
+    {
+        if (!_config.JoinAnnounceEnabled) return;
+
+        int playerId = @event.PlayerId;
+
+        // Defer one tick so the player object and permissions are fully initialised.
+        Core.Scheduler.NextWorldUpdate(() =>
+        {
+            var player = Core.PlayerManager.GetPlayer(playerId);
+            if (!IsValidRealPlayer(player)) return;
+            if (!IsVIP(player)) return;
+
+            string name = player.Controller?.PlayerName ?? player.Name ?? "Player";
+
+            // Send to each connected player using their own locale.
+            foreach (var p in Core.PlayerManager.GetAllPlayers())
+            {
+                if (p == null || !p.IsValid || p.IsFakeClient) continue;
+                p.SendMessage(MessageType.Chat,
+                    $" {_config.ChatPrefix} {T(p, "VipJoinAnnounce", name)}");
+            }
+        });
     }
 
     // ── Event: client disconnected ────────────────────────────────────────────
@@ -326,7 +349,6 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         _damageAccumulator.Remove(id);
         _extraJumpsRemaining.Remove(id);
         _prevJumpPressed.Remove(id);
-        _announcedThisRound.Remove(id);
     }
 
     // ── Event: entity take damage ─────────────────────────────────────────────
@@ -499,7 +521,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             Title        = HtmlGradient.GenerateGradientText(_config.VipMenuTitle, Color.Gold, Color.Orange),
             FreezePlayer = false,
-            MaxVisibleItems = 8,
+            MaxVisibleItems = 5,
             PlaySound    = false,
             AutoIncreaseVisibleItems = false,
             HideFooter   = false
@@ -538,12 +560,11 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             }
         }
 
-        // Status footer — coloured, no separator row needed.
+        // Status footer — colours come from translation tags.
         AddColoredLine(menu,
-            isVip ? T(player, "VipMenuIsVip") : T(player, "VipMenuNotVip"),
-            isVip ? Color.LimeGreen : Color.OrangeRed);
+            isVip ? T(player, "VipMenuIsVip") : T(player, "VipMenuNotVip"));
         if (_config.HappyHourEnabled && happyNow)
-            AddColoredLine(menu, T(player, "VipMenuHappyHourActive"), Color.Gold);
+            AddColoredLine(menu, T(player, "VipMenuHappyHourActive"));
 
         Core.MenusAPI.OpenMenuForPlayer(player, menu);
     }
@@ -563,7 +584,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             Title        = HtmlGradient.GenerateGradientText(T(caller, "VipsMenuTitle", vipNames.Count), Color.Gold, Color.Orange),
             FreezePlayer = false,
-            MaxVisibleItems = 8,
+            MaxVisibleItems = 5,
             PlaySound    = false,
             AutoIncreaseVisibleItems = false,
             HideFooter   = false
@@ -578,7 +599,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         else
         {
             foreach (var name in vipNames)
-                AddLine(menu, HtmlGradient.GenerateGradientText(T(caller, "VipsMenuEntry", name), Color.Gold, Color.Orange));
+                AddLine(menu, T(caller, "VipsMenuEntry", name));
         }
 
         Core.MenusAPI.OpenMenuForPlayer(caller, menu);
@@ -589,13 +610,13 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     private static void AddLine(IMenuAPI menu, string text)
         => menu.AddOption(new TextMenuOption(text));
 
-    /// <summary>Adds a benefit line with a gold-to-orange gradient.</summary>
+    /// <summary>Adds a benefit line (plain text; colors come from translation tags).</summary>
     private static void AddBenefitLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(text, Color.Gold, Color.Orange)));
+        => menu.AddOption(new TextMenuOption(text));
 
-    /// <summary>Adds a line rendered in a single solid colour (start and end colour are identical).</summary>
-    private static void AddColoredLine(IMenuAPI menu, string text, Color color)
-        => menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(text, color, color)));
+    /// <summary>Adds a status line (plain text; colors come from translation tags).</summary>
+    private static void AddColoredLine(IMenuAPI menu, string text)
+        => menu.AddOption(new TextMenuOption(text));
 
     private bool IsHappyHour()
     {
@@ -609,7 +630,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     }
 
     private void SendChat(IPlayer player, string msg)
-        => player.SendMessage(MessageType.Chat, $" \x04{_config.ChatPrefix}\x01 {msg}");
+        => player.SendMessage(MessageType.Chat, $" {_config.ChatPrefix} {msg}");
 
     private void BroadcastChat(string msg)
     {

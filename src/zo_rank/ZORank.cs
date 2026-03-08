@@ -380,7 +380,7 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             Title           = HtmlGradient.GenerateGradientText(T(p, "TopMenuTitle", limit), Color.Gold),
             FreezePlayer    = false,
-            MaxVisibleItems = cfg.TopMenuVisibleRows,
+            MaxVisibleItems = Math.Clamp(cfg.TopMenuVisibleRows, 1, 5),
             PlaySound       = true,
             AutoIncreaseVisibleItems = false,
             HideFooter      = false
@@ -404,19 +404,7 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
                     s.Kills, s.Deaths,
                     s.Infections, s.Assists, s.Damage);
 
-                // Tiered colours: gold → #1, silver → #2, bronze → #3, blue → rest.
-                // Use a solid colour per tier (one <font> tag per item) instead of
-                // per-character gradient tags. The gradient form generates hundreds
-                // of bytes of HTML for a 50-char label and causes menu truncation.
-                Color tierColor = i switch
-                {
-                    0 => Color.Gold,
-                    1 => Color.Silver,
-                    2 => Color.Peru,
-                    _ => Color.LightBlue
-                };
-
-                menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(lbl, tierColor)));
+                menu.AddOption(new TextMenuOption(lbl));
             }
         }
 
