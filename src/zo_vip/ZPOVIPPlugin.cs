@@ -146,6 +146,9 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     // ── VIP & zombie-state helpers ────────────────────────────────────────────
 
+    private static bool IsValidRealPlayer(IPlayer? player)
+        => player != null && player.IsValid && !player.IsFakeClient && player.SteamID != 0;
+
     private bool IsVIP(IPlayer player)
     {
         if (player == null || !player.IsValid) return false;
@@ -326,7 +329,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             var player = Core.PlayerManager.GetPlayer(playerId);
             if (!IsValidRealPlayer(player)) return;
-            if (!IsVIP(player)) return;
+            if (!IsVIP(player!)) return;
 
             string name = player.Controller?.PlayerName ?? player.Name ?? "Player";
 
@@ -607,15 +610,18 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static void AddLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(text));
+        => menu.AddOption(new TextMenuOption(text, updateIntervalMs: 600, pauseIntervalMs: 100)
+            { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
 
-    /// <summary>Adds a benefit line (plain text; colors come from translation tags).</summary>
+    /// <summary>Adds a benefit line with left-scrolling marquee text.</summary>
     private static void AddBenefitLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(text));
+        => menu.AddOption(new TextMenuOption(text, updateIntervalMs: 600, pauseIntervalMs: 100)
+            { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
 
-    /// <summary>Adds a status line (plain text; colors come from translation tags).</summary>
+    /// <summary>Adds a status line with left-scrolling marquee text.</summary>
     private static void AddColoredLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(text));
+        => menu.AddOption(new TextMenuOption(text, updateIntervalMs: 600, pauseIntervalMs: 100)
+            { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
 
     private bool IsHappyHour()
     {
