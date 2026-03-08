@@ -1212,6 +1212,10 @@ public partial class ZOEvents
         var player = _core.PlayerManager.GetPlayer(id);
         if (player != null && player.IsValid)
         {
+            // Close any open menu immediately so SwiftlyS2's per-player render
+            // timer cannot fire on an already-freed native player controller and
+            // crash the server with SIGSEGV (BuildMenuHtml null-dereference).
+            _core.MenusAPI.CloseActiveMenu(player);
             _helpers.RemoveGlow(player);
         }
     }

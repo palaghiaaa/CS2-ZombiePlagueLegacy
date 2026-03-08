@@ -244,7 +244,15 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         // since the player object may already be invalid at this point.
         // The cleanest approach is to look up by PlayerId from PlayerManager first.
         var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
-        ulong? sid = (player != null && player.IsValid) ? player.SteamID : null;
+        bool isValid = player != null && player.IsValid;
+
+        // Close any open menu immediately so SwiftlyS2's per-player render timer
+        // cannot fire on an already-freed native player controller and crash the
+        // server with SIGSEGV (BuildMenuHtml null-dereference).
+        if (isValid)
+            Core.MenusAPI.CloseActiveMenu(player!);
+
+        ulong? sid = isValid ? player!.SteamID : null;
 
         // Fall back: scan _stats for the first entry whose Name matches if needed.
         // This is not needed when the PlayerManager still holds the reference.
