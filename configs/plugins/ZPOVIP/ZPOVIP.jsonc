@@ -13,7 +13,9 @@
     // Comma-separated Swiftly permission flags that grant VIP status.
     // A player matching ANY flag is considered VIP.
     // Leave empty ("") to treat every player as VIP (testing only).
-    "VIPPermission": "@zpovip/vip",
+    // Must match the permission string assigned to VIP players in the core
+    // permissions config (e.g. "zpo.vip" inside a PermissionGroup).
+    "VIPPermission": "zpo.vip",
 
     // ── Commands ─────────────────────────────────────────────────────────────
     // Players type e.g. !vip or /vip in chat to open the VIP benefits menu.

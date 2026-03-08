@@ -1,5 +1,6 @@
 using System.Drawing;
 using Economy.Contract;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -49,10 +50,18 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     // ── Plugin lifecycle ──────────────────────────────────────────────────────
 
+    private const string ConfigFile = "ZPOVIP.jsonc";
+
     public override void Load(bool hotReload)
     {
         // Bind config from configs/plugins/ZPOVIP/ZPOVIP.jsonc.
-        Core.Configuration.InitializeJsonWithModel<ZPOVIPConfig>("ZPOVIP.jsonc", "ZPOVIP");
+        // reloadOnChange: true ensures IOptionsMonitor reflects edits made to
+        // the file at runtime (chat prefix, permissions, perk values, etc.).
+        Core.Configuration.InitializeJsonWithModel<ZPOVIPConfig>(ConfigFile, "ZPOVIP")
+            .Configure(builder =>
+            {
+                builder.AddJsonFile(ConfigFile, false, true);
+            });
 
         var services = new ServiceCollection();
         services.AddSwiftly(Core);

@@ -1,4 +1,5 @@
 using System.Drawing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -49,10 +50,18 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
     //  Plugin lifecycle
     // ─────────────────────────────────────────────────────────────────────────
 
+    private const string ConfigFile = "ZORankCFG.jsonc";
+
     public override void Load(bool hotReload)
     {
         // Bind config from configs/plugins/ZORank/ZORankCFG.jsonc
-        Core.Configuration.InitializeJsonWithModel<ZORankCFG>("ZORankCFG.jsonc", "ZORankCFG");
+        // reloadOnChange: true ensures IOptionsMonitor reflects edits made to
+        // the file at runtime (chat tag, weights, top list size, etc.).
+        Core.Configuration.InitializeJsonWithModel<ZORankCFG>(ConfigFile, "ZORankCFG")
+            .Configure(builder =>
+            {
+                builder.AddJsonFile(ConfigFile, false, true);
+            });
 
         var collection = new ServiceCollection();
         collection.AddSwiftly(Core);
@@ -396,15 +405,18 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
                     s.Infections, s.Assists, s.Damage);
 
                 // Tiered colours: gold → #1, silver → #2, bronze → #3, blue → rest.
-                (Color startColor, Color endColor) = i switch
+                // Use a solid colour per tier (one <font> tag per item) instead of
+                // per-character gradient tags. The gradient form generates hundreds
+                // of bytes of HTML for a 50-char label and causes menu truncation.
+                Color tierColor = i switch
                 {
-                    0 => (Color.Gold,      Color.Orange),
-                    1 => (Color.Silver,    Color.LightGray),
-                    2 => (Color.Peru,      Color.SandyBrown),
-                    _ => (Color.LightBlue, Color.CornflowerBlue)
+                    0 => Color.Gold,
+                    1 => Color.Silver,
+                    2 => Color.Peru,
+                    _ => Color.LightBlue
                 };
 
-                menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(lbl, startColor, endColor)));
+                menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(lbl, tierColor)));
             }
         }
 
