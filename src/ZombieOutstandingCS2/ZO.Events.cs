@@ -16,6 +16,13 @@ namespace ZombieOutstandingCS2;
 
 public partial class ZOEvents
 {
+    /// <summary>
+    /// Extra seconds to wait before the second fog-application retry on map load.
+    /// Provides a longer window for slow-loading or workshop maps whose entity
+    /// system may not be ready within the initial 1.5-second delay.
+    /// </summary>
+    private const float FogSecondRetryDelaySec = 3.0f;
+
     private readonly ILogger<ZOEvents> _logger;
     private readonly ISwiftlyCore _core;
     private readonly ZOGlobals _globals;
@@ -146,6 +153,14 @@ public partial class ZOEvents
                 return HookResult.Continue;
 
             _globals.SafeRoundStart = false;
+
+            // Fog reliability pass: re-apply fog if the controller is no longer
+            // valid. This handles the case where the OnMapLoad scheduler callbacks
+            // fire before the entity system is fully ready (common after a map
+            // change), leaving the server without a fog controller.
+            var fogCfg = _mainCFG.CurrentValue.Fog;
+            if (fogCfg.Enable && !_globals.GlobalFogController.IsValid)
+                _helpers.ApplyFog(fogCfg);
 
             _helpers.SwitchAllPlayerTeam();
             _commands.RoundCvar();
@@ -1002,6 +1017,13 @@ public partial class ZOEvents
         // Delayed retry for workshop maps whose entity system may not be fully
         // initialised by the time the first NextWorldUpdate fires.
         _core.Scheduler.DelayBySeconds(1.5f, () =>
+        {
+            _helpers.ApplyFog(cfg.Fog);
+        });
+
+        // Second delayed retry with a longer window for slow-loading maps.
+        // OnRoundFreezeEnd also provides a final per-round fallback.
+        _core.Scheduler.DelayBySeconds(FogSecondRetryDelaySec, () =>
         {
             _helpers.ApplyFog(cfg.Fog);
         });
