@@ -63,6 +63,8 @@ public class ZOZombieClassMenu
         RandomButton.Click += async (_, args) =>
         {
             var clicker = args.Player;
+            var clickerPlayerId = clicker.PlayerID;
+            var clickerSteamId = clicker.SteamID;
 
             _core.Scheduler.NextTick(() =>
             {
@@ -70,7 +72,7 @@ public class ZOZombieClassMenu
                     return;
 
                 if (_api != null)
-                    _api.NotifyUpdatePreferenceFromMenu(clicker.PlayerID, clicker.SteamID, null);
+                    _api.NotifyUpdatePreferenceFromMenu(clickerPlayerId, clickerSteamId, null);
 
                 _helpers.SendChatT(clicker, "ZClassMenuRandomSelectInfo");
             });
@@ -97,6 +99,8 @@ public class ZOZombieClassMenu
                 Button.Click += async (_, args) =>
                 {
                     var clicker = args.Player;
+                    var clickerPlayerId = clicker.PlayerID;
+                    var clickerSteamId = clicker.SteamID;
 
                     _core.Scheduler.NextTick(() =>
                     {
@@ -104,7 +108,7 @@ public class ZOZombieClassMenu
                             return;
 
                         if (_api != null)
-                            _api.NotifyUpdatePreferenceFromMenu(clicker.PlayerID, clicker.SteamID, Cfg.Name);
+                            _api.NotifyUpdatePreferenceFromMenu(clickerPlayerId, clickerSteamId, Cfg.Name);
 
                         clicker.SendMessage(MessageType.Chat, _helpers.ChatMsg($"{_helpers.T(clicker, "ZClassMenuSelectInfo")} {Cfg.Name}"));
 

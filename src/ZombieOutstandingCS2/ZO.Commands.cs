@@ -206,6 +206,7 @@ public class ZOCommands
                 player.SwitchTeam(Team.CT);
                 _core.Scheduler.DelayBySeconds(1.0f, () =>
                 {
+                    if (!player.IsValid) return;
                     _services.JoinTeamCheck(player);
                 });
             }
@@ -214,6 +215,7 @@ public class ZOCommands
                 player.SwitchTeam(Team.CT);
                 _core.Scheduler.DelayBySeconds(1.0f, () =>
                 {
+                    if (!player.IsValid) return;
                     _services.JoinTeamCheck(player);
                 });
 
@@ -223,6 +225,7 @@ public class ZOCommands
                 player.SwitchTeam(Team.CT);
                 _core.Scheduler.DelayBySeconds(1.0f, () =>
                 {
+                    if (!player.IsValid) return;
                     _services.JoinTeamCheck(player);
                 });
                 return HookResult.Stop;

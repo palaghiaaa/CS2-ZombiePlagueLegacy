@@ -496,28 +496,28 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             HideFooter   = false
         };
 
-        IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default);
+        IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default, null, MenuOptionScrollStyle.LinearScroll);
 
         var lines = _config.BenefitLines;
         if (lines == null || lines.Count == 0)
         {
             // Auto-generate benefit lines from config values.
-            AddLine(menu, T(player, "VipAutoLineArmor", _config.ArmorAmount));
-            AddLine(menu, T(player, "VipAutoLineJumps", _config.ExtraJumps));
+            AddBenefitLine(menu, T(player, "VipAutoLineArmor", _config.ArmorAmount));
+            AddBenefitLine(menu, T(player, "VipAutoLineJumps", _config.ExtraJumps));
             string fallState = _config.NoFallDamage
                 ? T(player, "VipAutoLineFallDmgDisabled")
                 : T(player, "VipAutoLineFallDmgNormal");
-            AddLine(menu, T(player, "VipAutoLineFallDmg", fallState));
-            AddLine(menu, T(player, "VipAutoLineDmgMult", _config.DamageMultiplier.ToString("F1")));
+            AddBenefitLine(menu, T(player, "VipAutoLineFallDmg", fallState));
+            AddBenefitLine(menu, T(player, "VipAutoLineDmgMult", _config.DamageMultiplier.ToString("F1")));
             if (_config.KillRewardAmount > 0)
-                AddLine(menu, T(player, "VipAutoLineKillReward", _config.KillRewardAmount));
+                AddBenefitLine(menu, T(player, "VipAutoLineKillReward", _config.KillRewardAmount));
             if (_config.DamageRewardThreshold > 0)
-                AddLine(menu, T(player, "VipAutoLineDmgReward", _config.DamageRewardAmount, _config.DamageRewardThreshold));
+                AddBenefitLine(menu, T(player, "VipAutoLineDmgReward", _config.DamageRewardAmount, _config.DamageRewardThreshold));
             if (_config.HappyHourEnabled)
             {
                 string tag = happyNow ? T(player, "VipAutoLineHappyHourActiveTag") : string.Empty;
-                AddLine(menu, T(player, "VipAutoLineHappyHour", _config.HappyHourStart, _config.HappyHourEnd, tag));
-                AddLine(menu, T(player, "VipAutoLineHappyHourBonus", _config.HappyHourBonusAP, _config.HappyHourBonusFrags));
+                AddBenefitLine(menu, T(player, "VipAutoLineHappyHour", _config.HappyHourStart, _config.HappyHourEnd, tag));
+                AddBenefitLine(menu, T(player, "VipAutoLineHappyHourBonus", _config.HappyHourBonusAP, _config.HappyHourBonusFrags));
             }
         }
         else
@@ -525,15 +525,16 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             foreach (var line in lines)
             {
                 if (!string.IsNullOrWhiteSpace(line))
-                    AddLine(menu, line);
+                    AddBenefitLine(menu, line);
             }
         }
 
-        // Status footer.
-        AddLine(menu, T(player, "VipMenuSeparator"));
-        AddLine(menu, isVip ? T(player, "VipMenuIsVip") : T(player, "VipMenuNotVip"));
+        // Status footer — coloured, no separator row needed.
+        AddColoredLine(menu,
+            isVip ? T(player, "VipMenuIsVip") : T(player, "VipMenuNotVip"),
+            isVip ? Color.LimeGreen : Color.OrangeRed);
         if (_config.HappyHourEnabled && happyNow)
-            AddLine(menu, T(player, "VipMenuHappyHourActive"));
+            AddColoredLine(menu, T(player, "VipMenuHappyHourActive"), Color.Gold);
 
         Core.MenusAPI.OpenMenuForPlayer(player, menu);
     }
@@ -559,7 +560,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             HideFooter   = false
         };
 
-        IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default);
+        IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default, null, MenuOptionScrollStyle.LinearScroll);
 
         if (vipNames.Count == 0)
         {
@@ -578,6 +579,14 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     private static void AddLine(IMenuAPI menu, string text)
         => menu.AddOption(new TextMenuOption(text));
+
+    /// <summary>Adds a benefit line with a gold-to-orange gradient.</summary>
+    private static void AddBenefitLine(IMenuAPI menu, string text)
+        => menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(text, Color.Gold, Color.Orange)));
+
+    /// <summary>Adds a line rendered in a single solid colour (start and end colour are identical).</summary>
+    private static void AddColoredLine(IMenuAPI menu, string text, Color color)
+        => menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(text, color, color)));
 
     private bool IsHappyHour()
     {
