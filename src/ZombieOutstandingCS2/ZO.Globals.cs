@@ -90,6 +90,14 @@ public class ZOGlobals
     /// </summary>
     public Dictionary<int, int> DamageAccumulator = new Dictionary<int, int>();
 
+    /// <summary>
+    /// How many times each player has purchased each extra item this round.
+    /// Outer key = PlayerID, inner key = item Key string.
+    /// Used to enforce per-item PurchaseLimit (zp_extra_*_limit equivalent).
+    /// Reset at round start and on disconnect.
+    /// </summary>
+    public Dictionary<int, Dictionary<string, int>> ItemPurchaseCount = new Dictionary<int, Dictionary<string, int>>();
+
     // ── Multijump ─────────────────────────────────────────────────────────────
     /// <summary>Number of extra jumps currently available to the player this round.</summary>
     public Dictionary<int, int> ExtraJumps = new Dictionary<int, int>();

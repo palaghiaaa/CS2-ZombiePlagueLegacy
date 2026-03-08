@@ -102,14 +102,18 @@
         "Name": "Antidote (cure to human)",
         "Price": 8,
         "Enable": true,
-        "Team": "Zombie"
+        "Team": "Zombie",
+        // Maximum purchases per round per player (mirrors zp_extra_antidote_limit from ZP 1.6).
+        "PurchaseLimit": 3
       },
       {
         "Key": "zombie_madness",
         "Name": "Zombie Madness (10s invulnerability)",
         "Price": 6,
         "Enable": true,
-        "Team": "Zombie"
+        "Team": "Zombie",
+        // Maximum purchases per round per player (mirrors zp_extra_madness_limit from ZP 1.6).
+        "PurchaseLimit": 5
       },
       {
         "Key": "multijump",
@@ -152,7 +156,9 @@
         "Name": "T-Virus Grenade (infects humans in range)",
         "Price": 6,
         "Enable": true,
-        "Team": "Zombie"
+        "Team": "Zombie",
+        // Maximum purchases per round per player (mirrors zp_extra_infbomb_limit from ZP 1.6).
+        "PurchaseLimit": 3
       },
       {
         "Key": "inc_grenade",

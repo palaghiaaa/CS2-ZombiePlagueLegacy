@@ -189,30 +189,57 @@ public partial class ZOServices
         if (allplayers.Count == 0)
             return;
 
+        var plagueCfg = _mainCFG.CurrentValue.Plague;
+
         Random.Shared.Shuffle(CollectionsMarshal.AsSpan(allplayers));
 
-        // 50% 变成丧尸
+        // Infect roughly half the players as regular mother-zombies.
         int zombieCount = allplayers.Count / 2;
         for (int i = 0; i < zombieCount; i++)
         {
             InfectMotherPlayer(allplayers[i], true);
         }
 
-        // 选择幸存者（确保索引存在）
-        if (allplayers.Count > zombieCount)
+        // Remaining players become survivors (up to SurvivorCount).
+        int survivorCount = Math.Max(1, plagueCfg.SurvivorCount);
+        for (int s = 0; s < survivorCount; s++)
         {
-            var survivor = allplayers[Math.Min(zombieCount, allplayers.Count - 1)];
-            SetupSurvivor(survivor);
+            int idx = zombieCount + s;
+            if (idx < allplayers.Count)
+            {
+                SetupSurvivor(allplayers[idx]);
+                // Apply optional HP multiplier (LNJ/Armageddon style).
+                if (plagueCfg.SurvivorHPMultiplier > 0f && Math.Abs(plagueCfg.SurvivorHPMultiplier - 1.0f) > 0.001f)
+                {
+                    var pawn = allplayers[idx].PlayerPawn;
+                    if (pawn != null && pawn.IsValid)
+                    {
+                        int scaledHp = Math.Max(1, (int)(pawn.Health * plagueCfg.SurvivorHPMultiplier));
+                        pawn.MaxHealth = scaledHp;
+                        pawn.Health = scaledHp;
+                    }
+                }
+            }
         }
 
-        // 选择复仇女神（从丧尸中选一个）
-        if (zombieCount > 0)
+        // Promote some of the infect-side players to Nemesis (up to NemesisCount).
+        int nemesisCount = Math.Max(1, plagueCfg.NemesisCount);
+        for (int n = 0; n < nemesisCount && n < zombieCount; n++)
         {
-            var nemesis = allplayers[0];
-            SetupNemesis(nemesis);
+            SetupNemesis(allplayers[n]);
+            // Apply optional HP multiplier (LNJ/Armageddon style).
+            if (plagueCfg.NemesisHPMultiplier > 0f && Math.Abs(plagueCfg.NemesisHPMultiplier - 1.0f) > 0.001f)
+            {
+                var pawn = allplayers[n].PlayerPawn;
+                if (pawn != null && pawn.IsValid)
+                {
+                    int scaledHp = Math.Max(1, (int)(pawn.Health * plagueCfg.NemesisHPMultiplier));
+                    pawn.MaxHealth = scaledHp;
+                    pawn.Health = scaledHp;
+                }
+            }
         }
 
-        
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
     }
 
@@ -414,6 +441,19 @@ public partial class ZOServices
                 }
             };
             posszombie(player, zombieClass, true);
+
+            // Apply mother-zombie HP multiplier (zp_zombie_first_hp equivalent).
+            float hpMulti = _mainCFG.CurrentValue.MotherZombieHPMultiplier;
+            if (hpMulti > 1.0f)
+            {
+                var pawn = player.PlayerPawn;
+                if (pawn != null && pawn.IsValid)
+                {
+                    int boostedHp = (int)(pawn.Health * hpMulti);
+                    pawn.MaxHealth = boostedHp;
+                    pawn.Health = boostedHp;
+                }
+            }
 
             if (_api != null)
                 _api.NotifyMotherZombieSelected(player);

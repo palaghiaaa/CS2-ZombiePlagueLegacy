@@ -100,6 +100,16 @@
 		"MinPlayers": 0,
 		"NemesisNames": "Nemesis",
 		"SurvivorNames": "Survivor",
+		// Number of Nemesis promoted in Plague mode (mirrors zp_plague_nem_number).
+		"NemesisCount": 1,
+		// Number of Survivors appointed in Plague mode (mirrors zp_plague_surv_number).
+		"SurvivorCount": 1,
+		// HP multiplier for Nemesis in this mode (1.0 = full HP, 0.5 = half HP / Armageddon style).
+		// Mirrors zp_lnj_nem_hp_multi from ZombiePlague CS 1.6 Armageddon mode.
+		"NemesisHPMultiplier": 1.0,
+		// HP multiplier for Survivors in this mode (1.0 = full HP, 0.5 = half HP / Armageddon style).
+		// Mirrors zp_lnj_surv_hp_multi from ZombiePlague CS 1.6 Armageddon mode.
+		"SurvivorHPMultiplier": 1.0,
 		"EnableInfiniteClipMode": true,
 		// Zombies do NOT respawn in Plague mode — the Nemesis(es) must eliminate all humans alone.
 		"ZombieCanReborn": false
@@ -202,6 +212,13 @@
 	// Recommended: 2 (protects solo / test sessions while normal multi-player
 	// rounds are completely unaffected).
 	"MinPlayersForInfection": 2,
+
+	// ── Mother zombie HP multiplier ───────────────────────────────────────────
+	// HP multiplier applied to the first (mother) zombie each round.
+	// 2.5 = the mother zombie gets 2.5× the normal zombie class HP.
+	// Mirrors zp_zombie_first_hp from ZombiePlague CS 1.6 (their default was 2.0).
+	// Set to 1.0 to disable (mother zombie gets normal HP).
+	"MotherZombieHPMultiplier": 2.5,
 
 	// ── Human settings ───────────────────────────────────────────────────────
 	"HumandefaultModel": "characters/models/ctm_st6/ctm_st6_variante.vmdl",

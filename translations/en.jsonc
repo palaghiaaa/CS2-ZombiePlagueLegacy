@@ -150,6 +150,10 @@
     "ExtraItemsMultijumpMax": "You already have the maximum of [green]{0}[default] extra jumps.",
     "ExtraItemsMultijumpSuccess": "Multi-Jump upgraded to [green]{0}[default] extra jumps. Ammo Packs remaining: [green]{1}[default].",
 
+    // ── Purchase limit ─────────────────────────────────────────────────────
+    // {0} = item display name, {1} = per-round purchase limit
+    "ExtraItemsPurchaseLimit": "You have reached the purchase limit ([green]{1}x[default]) for [green]{0}[default] this round.",
+
     // ── Knife Blink ───────────────────────────────────────────────────────
     "ExtraItemsKnifeBlinkSuccess": "Received [green]{0}[default] Knife Blink charges (total: [green]{1}[default]). Ammo Packs remaining: [green]{2}[default].",
     "ExtraItemsKnifeBlinkUsed": "Blinked! Charges remaining: [green]{0}[default] (cooldown: [green]{1}[default]s).",

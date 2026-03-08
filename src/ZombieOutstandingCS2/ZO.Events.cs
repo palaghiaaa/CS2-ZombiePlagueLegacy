@@ -371,6 +371,7 @@ public partial class ZOEvents
                 _globals.TryderState.Remove(id);
                 _globals.SpawnProtectionEndTime.Remove(id);
                 _globals.LeapCooldownEnd.Remove(id);
+                _globals.ItemPurchaseCount.Remove(id);
                 // Jetpack / Revive Token
                 _extraItemsMenu.CleanupJetpack(id);
                 _globals.HasReviveToken.Remove(id);
@@ -1228,6 +1229,7 @@ public partial class ZOEvents
         _globals.InfiniteClipState.Remove(id);
         _globals.ExtraNoRecoilState.Remove(id);
         _globals.TryderState.Remove(id);
+        _globals.ItemPurchaseCount.Remove(id);
         // Jetpack / Revive Token
         _extraItemsMenu.CleanupJetpack(id);
         // Cleanup mines for disconnecting player

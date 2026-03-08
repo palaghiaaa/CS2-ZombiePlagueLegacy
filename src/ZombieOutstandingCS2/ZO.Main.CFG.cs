@@ -130,6 +130,28 @@ public class PlagueModeConfig : GameModeConfig
     public override bool ZombieCanReborn { get; set; } = false;
     public string NemesisNames { get; set; } = string.Empty;
     public string SurvivorNames { get; set; } = string.Empty;
+    /// <summary>
+    /// How many Nemesis zombies to promote in Plague mode.
+    /// Mirrors <c>zp_plague_nem_number</c> from ZombiePlague CS 1.6 (default: 1).
+    /// </summary>
+    public int NemesisCount { get; set; } = 1;
+    /// <summary>
+    /// How many Survivors to appoint in Plague mode.
+    /// Mirrors <c>zp_plague_surv_number</c> from ZombiePlague CS 1.6 (default: 1).
+    /// </summary>
+    public int SurvivorCount { get; set; } = 1;
+    /// <summary>
+    /// HP multiplier applied to each Nemesis selected in this mode.
+    /// 1.0 = use normal Nemesis HP; 0.5 = half HP (LNJ/Armageddon style).
+    /// Mirrors <c>zp_lnj_nem_hp_multi</c> from ZombiePlague CS 1.6.
+    /// </summary>
+    public float NemesisHPMultiplier { get; set; } = 1.0f;
+    /// <summary>
+    /// HP multiplier applied to each Survivor selected in this mode.
+    /// 1.0 = use normal Survivor HP; 0.5 = half HP (LNJ/Armageddon style).
+    /// Mirrors <c>zp_lnj_surv_hp_multi</c> from ZombiePlague CS 1.6.
+    /// </summary>
+    public float SurvivorHPMultiplier { get; set; } = 1.0f;
 }
 
 public class SwarmModeConfig : GameModeConfig
@@ -283,6 +305,14 @@ public class ZOMainCFG
     ///   1 — effectively disables the guard (same as the old behaviour).
     /// </summary>
     public int MinPlayersForInfection { get; set; } = 2;
+
+    // ── Mother zombie HP multiplier ───────────────────────────────────────────
+    /// <summary>
+    /// HP multiplier applied to the very first (mother) zombie selected each round.
+    /// 1.0 = no change (default), 2.5 = 2.5× the normal mother-zombie HP.
+    /// Mirrors <c>zp_zombie_first_hp</c> from ZombiePlague CS 1.6 (default there was 2.0).
+    /// </summary>
+    public float MotherZombieHPMultiplier { get; set; } = 2.5f;
 
     // ── Spawn protection ─────────────────────────────────────────────────────
     /// <summary>

@@ -24,6 +24,13 @@ public class ExtraItemEntry
     public bool Enable { get; set; } = true;
     /// <summary>Which team can purchase this item.</summary>
     public ExtraItemTeam Team { get; set; } = ExtraItemTeam.Human;
+    /// <summary>
+    /// Maximum number of times this item can be purchased per round.
+    /// 0 (default) means unlimited.
+    /// Mirrors zp_extra_antidote_limit / zp_extra_madness_limit / zp_extra_infbomb_limit
+    /// from ZombiePlague CS 1.6.
+    /// </summary>
+    public int PurchaseLimit { get; set; } = 0;
 }
 
 /// <summary>Root configuration model for the extra items system.</summary>
