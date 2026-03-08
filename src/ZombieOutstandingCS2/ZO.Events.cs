@@ -718,6 +718,10 @@ public partial class ZOEvents
             var specialClasses = _SpecialClassCFG.CurrentValue.SpecialClassList;
             _core.Scheduler.DelayBySeconds(1.0f, () =>
             {
+                // Don't respawn if the round has already ended (e.g. win condition
+                // triggered immediately after the kill). Calling Respawn() during a
+                // round transition can crash the server.
+                if (!_globals.GameStart) return;
                 var p = _core.PlayerManager.GetPlayer(Id);
                 if (p == null || !p.IsValid) return;
                 _zombieState.ClearSpecialAndSetPlayerZombie(p, zombieClasses, specialClasses);
@@ -778,6 +782,10 @@ public partial class ZOEvents
                 var player = _core.PlayerManager.GetPlayer(Id);
                 if (player == null || !player.IsValid)
                     return;
+
+                // Don't respawn if the round has already ended. Calling Respawn()
+                // during a round transition can crash the server.
+                if (!_globals.GameStart) return;
 
                 player.Respawn();
 

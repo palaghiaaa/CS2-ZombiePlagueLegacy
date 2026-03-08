@@ -26,6 +26,10 @@ public class GameModeConfig
 
 public class NemesisModeConfig : GameModeConfig
 {
+    // In Nemesis mode, killing the Nemesis should immediately end the round (human win).
+    // Allowing the Nemesis to respawn conflicts with the win-condition check and is
+    // unintuitive; disable it by default so the mode plays as designed.
+    public new bool ZombieCanReborn { get; set; } = false;
     public string NemesisNames { get; set; } = string.Empty;
     /// <summary>
     /// HP assigned to the Nemesis at round start.
@@ -49,6 +53,9 @@ public class MultiInfectionModeConfig : GameModeConfig
 
 public class SurvivorModeConfig : GameModeConfig
 {
+    // In Survivor mode the survivor is the only human; zombies filling the other slots
+    // should NOT respawn so that the survivor can end the round by eliminating them all.
+    public new bool ZombieCanReborn { get; set; } = false;
     public string SurvivorNames { get; set; } = string.Empty;
     /// <summary>
     /// HP assigned to the Survivor at round start.
@@ -67,6 +74,10 @@ public class SurvivorModeConfig : GameModeConfig
 
 public class AssassinModeConfig : GameModeConfig
 {
+    // Killing the Assassin should end the round immediately (human win). Respawning
+    // the Assassin would conflict with the win-condition logic introduced to handle
+    // special modes correctly.
+    public new bool ZombieCanReborn { get; set; } = false;
     public string AssassinNames { get; set; } = string.Empty;
     /// <summary>
     /// HP assigned to the Assassin at round start.
@@ -81,6 +92,10 @@ public class AssassinModeConfig : GameModeConfig
 
 public class SniperModeConfig : GameModeConfig
 {
+    // Zombies should NOT respawn in Sniper mode so that the sniper has a clear path
+    // to victory by eliminating all zombies. Keeping ZombieCanReborn = true (the base
+    // default) would make it impossible for the sniper to win via elimination.
+    public new bool ZombieCanReborn { get; set; } = false;
     public string SniperNames { get; set; } = string.Empty;
     /// <summary>
     /// HP assigned to the Sniper at round start.
@@ -105,12 +120,25 @@ public class SniperModeConfig : GameModeConfig
 
 public class PlagueModeConfig : GameModeConfig
 {
+    // Plague mode already starts with a mixed team (zombies + survivor + nemesis).
+    // Respawning zombies would imbalance the mode; default to no respawns.
+    public new bool ZombieCanReborn { get; set; } = false;
     public string NemesisNames { get; set; } = string.Empty;
     public string SurvivorNames { get; set; } = string.Empty;
 }
 
+public class SwarmModeConfig : GameModeConfig
+{
+    // Swarm mode starts with equal-ish zombie/human counts. Allowing zombie respawns
+    // would give the zombie team an unfair advantage; disable by default.
+    public new bool ZombieCanReborn { get; set; } = false;
+}
+
 public class AVSConfig : GameModeConfig
 {
+    // Assassin vs Sniper: both sides start with equal-ish numbers; respawning zombies
+    // (Assassins) would give the zombie team an unfair advantage. Default to no respawns.
+    public new bool ZombieCanReborn { get; set; } = false;
     public string AssassinNames { get; set; } = string.Empty;
     public string SniperNames { get; set; } = string.Empty;
 }
@@ -155,7 +183,7 @@ public class ZOMainCFG
     public MultiInfectionModeConfig MultiInfection { get; set; } = new();
     public NemesisModeConfig Nemesis { get; set; } = new();
     public SurvivorModeConfig Survivor { get; set; } = new();
-    public GameModeConfig Swarm { get; set; } = new();
+    public SwarmModeConfig Swarm { get; set; } = new();
     public PlagueModeConfig Plague { get; set; } = new();
     public AssassinModeConfig Assassin { get; set; } = new();
     public SniperModeConfig Sniper { get; set; } = new();
