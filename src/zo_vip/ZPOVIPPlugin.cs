@@ -331,7 +331,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             if (!IsValidRealPlayer(player)) return;
             if (!IsVIP(player!)) return;
 
-            string name = player.Controller?.PlayerName ?? player.Name ?? "Player";
+            string name = player!.Controller?.PlayerName ?? player.Name ?? "Player";
 
             // Send to each connected player using their own locale.
             foreach (var p in Core.PlayerManager.GetAllPlayers())
