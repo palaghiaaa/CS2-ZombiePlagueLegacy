@@ -30,7 +30,8 @@ public class ZOMenuHelper
             HideFooter = false
         };
 
-        return _core.MenusAPI.CreateMenu(configuration, default);
+        var menu = _core.MenusAPI.CreateMenu(configuration, default, null, MenuOptionScrollStyle.LinearScroll);
+        return menu;
     }
 
 }
