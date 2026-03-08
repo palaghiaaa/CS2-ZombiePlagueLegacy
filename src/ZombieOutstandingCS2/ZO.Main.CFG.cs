@@ -20,12 +20,21 @@ public class GameModeConfig
     public string Name { get; set; } = string.Empty;
     public int Weight { get; set; } = 100;
     public bool EnableInfiniteClipMode { get; set; } = true;
-    public bool ZombieCanReborn { get; set; } = true;
-    
+    public virtual bool ZombieCanReborn { get; set; } = true;
+    /// <summary>
+    /// Minimum number of connected (non-fake) players required for this game mode to
+    /// be eligible for random selection.  Set to 0 (default) to impose no minimum.
+    /// This mirrors the <c>zp_*_min_players</c> cvars from ZombiePlague CS 1.6.
+    /// </summary>
+    public int MinPlayers { get; set; } = 0;
 }
 
 public class NemesisModeConfig : GameModeConfig
 {
+    // In Nemesis mode, killing the Nemesis should immediately end the round (human win).
+    // Allowing the Nemesis to respawn conflicts with the win-condition check and is
+    // unintuitive; disable it by default so the mode plays as designed.
+    public override bool ZombieCanReborn { get; set; } = false;
     public string NemesisNames { get; set; } = string.Empty;
     /// <summary>
     /// HP assigned to the Nemesis at round start.
@@ -49,6 +58,9 @@ public class MultiInfectionModeConfig : GameModeConfig
 
 public class SurvivorModeConfig : GameModeConfig
 {
+    // In Survivor mode the survivor is the only human; zombies filling the other slots
+    // should NOT respawn so that the survivor can end the round by eliminating them all.
+    public override bool ZombieCanReborn { get; set; } = false;
     public string SurvivorNames { get; set; } = string.Empty;
     /// <summary>
     /// HP assigned to the Survivor at round start.
@@ -67,6 +79,10 @@ public class SurvivorModeConfig : GameModeConfig
 
 public class AssassinModeConfig : GameModeConfig
 {
+    // Killing the Assassin should end the round immediately (human win). Respawning
+    // the Assassin would conflict with the win-condition logic introduced to handle
+    // special modes correctly.
+    public override bool ZombieCanReborn { get; set; } = false;
     public string AssassinNames { get; set; } = string.Empty;
     /// <summary>
     /// HP assigned to the Assassin at round start.
@@ -81,6 +97,10 @@ public class AssassinModeConfig : GameModeConfig
 
 public class SniperModeConfig : GameModeConfig
 {
+    // Zombies should NOT respawn in Sniper mode so that the sniper has a clear path
+    // to victory by eliminating all zombies. Keeping ZombieCanReborn = true (the base
+    // default) would make it impossible for the sniper to win via elimination.
+    public override bool ZombieCanReborn { get; set; } = false;
     public string SniperNames { get; set; } = string.Empty;
     /// <summary>
     /// HP assigned to the Sniper at round start.
@@ -105,12 +125,47 @@ public class SniperModeConfig : GameModeConfig
 
 public class PlagueModeConfig : GameModeConfig
 {
+    // Plague mode already starts with a mixed team (zombies + survivor + nemesis).
+    // Respawning zombies would imbalance the mode; default to no respawns.
+    public override bool ZombieCanReborn { get; set; } = false;
     public string NemesisNames { get; set; } = string.Empty;
     public string SurvivorNames { get; set; } = string.Empty;
+    /// <summary>
+    /// How many Nemesis zombies to promote in Plague mode.
+    /// Mirrors <c>zp_plague_nem_number</c> from ZombiePlague CS 1.6 (default: 1).
+    /// </summary>
+    public int NemesisCount { get; set; } = 1;
+    /// <summary>
+    /// How many Survivors to appoint in Plague mode.
+    /// Mirrors <c>zp_plague_surv_number</c> from ZombiePlague CS 1.6 (default: 1).
+    /// </summary>
+    public int SurvivorCount { get; set; } = 1;
+    /// <summary>
+    /// HP multiplier applied to each Nemesis selected in this mode.
+    /// 1.0 = use normal Nemesis HP; 0.5 = half HP (LNJ/Armageddon style).
+    /// Mirrors <c>zp_lnj_nem_hp_multi</c> from ZombiePlague CS 1.6.
+    /// </summary>
+    public float NemesisHPMultiplier { get; set; } = 1.0f;
+    /// <summary>
+    /// HP multiplier applied to each Survivor selected in this mode.
+    /// 1.0 = use normal Survivor HP; 0.5 = half HP (LNJ/Armageddon style).
+    /// Mirrors <c>zp_lnj_surv_hp_multi</c> from ZombiePlague CS 1.6.
+    /// </summary>
+    public float SurvivorHPMultiplier { get; set; } = 1.0f;
+}
+
+public class SwarmModeConfig : GameModeConfig
+{
+    // Swarm mode starts with equal-ish zombie/human counts. Allowing zombie respawns
+    // would give the zombie team an unfair advantage; disable by default.
+    public override bool ZombieCanReborn { get; set; } = false;
 }
 
 public class AVSConfig : GameModeConfig
 {
+    // Assassin vs Sniper: both sides start with equal-ish numbers; respawning zombies
+    // (Assassins) would give the zombie team an unfair advantage. Default to no respawns.
+    public override bool ZombieCanReborn { get; set; } = false;
     public string AssassinNames { get; set; } = string.Empty;
     public string SniperNames { get; set; } = string.Empty;
 }
@@ -155,7 +210,7 @@ public class ZOMainCFG
     public MultiInfectionModeConfig MultiInfection { get; set; } = new();
     public NemesisModeConfig Nemesis { get; set; } = new();
     public SurvivorModeConfig Survivor { get; set; } = new();
-    public GameModeConfig Swarm { get; set; } = new();
+    public SwarmModeConfig Swarm { get; set; } = new();
     public PlagueModeConfig Plague { get; set; } = new();
     public AssassinModeConfig Assassin { get; set; } = new();
     public SniperModeConfig Sniper { get; set; } = new();
@@ -251,6 +306,62 @@ public class ZOMainCFG
     /// </summary>
     public int MinPlayersForInfection { get; set; } = 2;
 
+    // ── Mother zombie HP multiplier ───────────────────────────────────────────
+    /// <summary>
+    /// HP multiplier applied to the very first (mother) zombie selected each round.
+    /// 1.0 = no change (default), 2.5 = 2.5× the normal mother-zombie HP.
+    /// Mirrors <c>zp_zombie_first_hp</c> from ZombiePlague CS 1.6 (default there was 2.0).
+    /// </summary>
+    public float MotherZombieHPMultiplier { get; set; } = 2.5f;
+
+    // ── Spawn protection ─────────────────────────────────────────────────────
+    /// <summary>
+    /// Seconds of spawn invulnerability granted to every player (human and zombie)
+    /// immediately after they spawn.  Set to 0 to disable.
+    /// Mirrors <c>zp_spawn_protection</c> from ZombiePlague CS 1.6.
+    /// </summary>
+    public float SpawnProtectionTime { get; set; } = 2.0f;
+
+    // ── Zombie infection health reward ───────────────────────────────────────
+    /// <summary>
+    /// HP given to a zombie attacker each time they successfully infect a human.
+    /// Set to 0 to disable.
+    /// Mirrors <c>zp_zombie_infect_health</c> from ZombiePlague CS 1.6.
+    /// </summary>
+    public int ZombieInfectHealthReward { get; set; } = 500;
+
+    // ── Zombie leap ──────────────────────────────────────────────────────────
+    /// <summary>
+    /// When true, zombies (including Nemesis/Assassin) can perform a ground leap:
+    /// pressing Jump while on the ground applies a burst of horizontal + vertical
+    /// velocity.  Mirrors the <c>zp_leap_*</c> family of cvars from ZombiePlague CS 1.6.
+    /// </summary>
+    public bool LeapZombiesEnabled { get; set; } = true;
+    /// <summary>Horizontal impulse (units/s) for a regular zombie leap.</summary>
+    public float LeapZombiesForce { get; set; } = 500f;
+    /// <summary>Vertical impulse (units/s) for a regular zombie leap.</summary>
+    public float LeapZombiesHeight { get; set; } = 300f;
+    /// <summary>Cooldown in seconds between two consecutive leaps for a regular zombie.</summary>
+    public float LeapZombiesCooldown { get; set; } = 1.5f;
+
+    /// <summary>When true, Nemesis can perform the leap.</summary>
+    public bool LeapNemesisEnabled { get; set; } = true;
+    /// <summary>Horizontal impulse for the Nemesis leap.</summary>
+    public float LeapNemesisForce { get; set; } = 1000f;
+    /// <summary>Vertical impulse for the Nemesis leap.</summary>
+    public float LeapNemesisHeight { get; set; } = 700f;
+    /// <summary>Cooldown in seconds between two consecutive leaps for the Nemesis.</summary>
+    public float LeapNemesisCooldown { get; set; } = 2.0f;
+
+    /// <summary>When true, Assassin can perform the leap.</summary>
+    public bool LeapAssassinEnabled { get; set; } = true;
+    /// <summary>Horizontal impulse for the Assassin leap.</summary>
+    public float LeapAssassinForce { get; set; } = 700f;
+    /// <summary>Vertical impulse for the Assassin leap.</summary>
+    public float LeapAssassinHeight { get; set; } = 650f;
+    /// <summary>Cooldown in seconds between two consecutive leaps for the Assassin.</summary>
+    public float LeapAssassinCooldown { get; set; } = 1.5f;
+
     // ── Debug / chat settings ────────────────────────────────────────────────
     /// <summary>Prefix prepended to chat messages sent by the plugin.</summary>
     public string ChatPrefix { get; set; } = "[ZO]";
@@ -280,5 +391,13 @@ public class ZOMainCFG
     /// Leave empty ("") to keep the map's default skybox.
     /// </summary>
     public string Skybox { get; set; } = string.Empty;
+
+    // ── Per-weapon knockback table ────────────────────────────────────────────
+    /// <summary>
+    /// Maps a weapon's DesignerName (e.g. "weapon_awp") to its base knockback
+    /// force (units/s). Weapons not listed fall back to <see cref="KnockZombieForce"/>.
+    /// Set a weapon's value to 0 to completely disable knockback for that weapon.
+    /// </summary>
+    public Dictionary<string, float> WeaponKnockbackTable { get; set; } = new();
 
 }

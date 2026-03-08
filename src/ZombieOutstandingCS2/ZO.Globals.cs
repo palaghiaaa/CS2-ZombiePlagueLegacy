@@ -90,6 +90,14 @@ public class ZOGlobals
     /// </summary>
     public Dictionary<int, int> DamageAccumulator = new Dictionary<int, int>();
 
+    /// <summary>
+    /// How many times each player has purchased each extra item this round.
+    /// Outer key = PlayerID, inner key = item Key string.
+    /// Used to enforce per-item PurchaseLimit (zp_extra_*_limit equivalent).
+    /// Reset at round start and on disconnect.
+    /// </summary>
+    public Dictionary<int, Dictionary<string, int>> ItemPurchaseCount = new Dictionary<int, Dictionary<string, int>>();
+
     // ── Multijump ─────────────────────────────────────────────────────────────
     /// <summary>Number of extra jumps currently available to the player this round.</summary>
     public Dictionary<int, int> ExtraJumps = new Dictionary<int, int>();
@@ -109,6 +117,29 @@ public class ZOGlobals
     // ── Multijump input tracking ──────────────────────────────────────────────
     /// <summary>True if the player had the jump (Space) button pressed in the previous tick.</summary>
     public Dictionary<int, bool> PrevJumpPressed = new Dictionary<int, bool>();
+    /// <summary>True if the player was on the ground in the previous tick (used for leap detection).</summary>
+    public Dictionary<int, bool> PrevOnGround = new Dictionary<int, bool>();
+
+    // ── Zombie Leap ───────────────────────────────────────────────────────────
+    /// <summary>Environment.TickCount64 (ms) at which the player's leap cooldown expires.</summary>
+    public Dictionary<int, long> LeapCooldownEnd = new Dictionary<int, long>();
+
+    // ── Spawn Protection ─────────────────────────────────────────────────────
+    /// <summary>Environment.TickCount64 (ms) until which a freshly-spawned player is invulnerable.</summary>
+    public Dictionary<int, long> SpawnProtectionEndTime = new Dictionary<int, long>();
+
+    // ── Anti-repeat special-role tracking ────────────────────────────────────
+    /// <summary>
+    /// SteamIDs of players who held a special role (mother zombie, nemesis, survivor,
+    /// sniper, assassin) in the PREVIOUS round.  These players are deprioritised when
+    /// picking special roles this round so the same player is not selected twice in a row.
+    /// </summary>
+    public HashSet<ulong> SpecialRoleLastRound = new HashSet<ulong>();
+    /// <summary>
+    /// SteamIDs of players who have been assigned a special role THIS round.
+    /// Copied into <see cref="SpecialRoleLastRound"/> at the start of the next round.
+    /// </summary>
+    public HashSet<ulong> SpecialRoleThisRound = new HashSet<ulong>();
 
     // ── Jetpack ───────────────────────────────────────────────────────────────
     /// <summary>True if the player currently owns a jetpack.</summary>

@@ -276,6 +276,24 @@ public class ZOExtraItemsMenu
             return;
         }
 
+        // Per-item purchase limit check (zp_extra_*_limit equivalent).
+        if (item.PurchaseLimit > 0)
+        {
+            if (!_globals.ItemPurchaseCount.TryGetValue(playerId, out var counts))
+            {
+                counts = new Dictionary<string, int>();
+                _globals.ItemPurchaseCount[playerId] = counts;
+            }
+            counts.TryGetValue(item.Key, out int timesUsed);
+            if (timesUsed >= item.PurchaseLimit)
+            {
+                AddAmmoPacks(playerId, item.Price);
+                _helpers.SendChatT(player, "ExtraItemsPurchaseLimit", item.Name, item.PurchaseLimit);
+                return;
+            }
+            counts[item.Key] = timesUsed + 1;
+        }
+
         int newAp = GetAmmoPacks(playerId);
 
         switch (item.Key)

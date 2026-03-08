@@ -54,6 +54,13 @@ public partial class ZOServices
     public void SwitchMode()
     {
         _globals.InfectionStartedThisRound = true;
+        // Mark that the infection/game phase has started for ALL modes, not just
+        // Normal/Multi/Hero (which go through SelectMotherZombie where this flag
+        // used to be set).  Without this, CheckRoundWinConditions() returns early
+        // for every special mode (Nemesis, Survivor, Sniper, Assassin, AVS, Swarm,
+        // Plague) because it guards on MotherZombieWasSelected, so those rounds
+        // only ever ended via the natural round timer.
+        _globals.MotherZombieWasSelected = true;
         var mode = _gameMode.CurrentMode;
         switch (mode)
         {
@@ -126,11 +133,12 @@ public partial class ZOServices
         if (allplayers.Count == 0) 
             return;
 
-        var target = PickRandomPlayer(allplayers);
+        var target = PickPreferredPlayer(allplayers);
         if(target == null || !target.IsValid)
             return;
 
         SetupNemesis(target);
+        if (target.SteamID != 0) _globals.SpecialRoleThisRound.Add(target.SteamID);
         
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
     }
@@ -141,7 +149,7 @@ public partial class ZOServices
         if (allplayers.Count == 0) return;
 
         // 选择幸存者
-        var survivor = PickRandomPlayer(allplayers);
+        var survivor = PickPreferredPlayer(allplayers);
         if (survivor == null || !survivor.IsValid)
             return;
 
@@ -155,6 +163,7 @@ public partial class ZOServices
 
         // 设置幸存者属性
         SetupSurvivor(survivor);
+        if (survivor.SteamID != 0) _globals.SpecialRoleThisRound.Add(survivor.SteamID);
 
         
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
@@ -180,30 +189,57 @@ public partial class ZOServices
         if (allplayers.Count == 0)
             return;
 
+        var plagueCfg = _mainCFG.CurrentValue.Plague;
+
         Random.Shared.Shuffle(CollectionsMarshal.AsSpan(allplayers));
 
-        // 50% 变成丧尸
+        // Infect roughly half the players as regular mother-zombies.
         int zombieCount = allplayers.Count / 2;
         for (int i = 0; i < zombieCount; i++)
         {
             InfectMotherPlayer(allplayers[i], true);
         }
 
-        // 选择幸存者（确保索引存在）
-        if (allplayers.Count > zombieCount)
+        // Remaining players become survivors (up to SurvivorCount).
+        int survivorCount = Math.Max(1, plagueCfg.SurvivorCount);
+        for (int s = 0; s < survivorCount; s++)
         {
-            var survivor = allplayers[Math.Min(zombieCount, allplayers.Count - 1)];
-            SetupSurvivor(survivor);
+            int idx = zombieCount + s;
+            if (idx < allplayers.Count)
+            {
+                SetupSurvivor(allplayers[idx]);
+                // Apply optional HP multiplier (LNJ/Armageddon style).
+                if (plagueCfg.SurvivorHPMultiplier > 0f && Math.Abs(plagueCfg.SurvivorHPMultiplier - 1.0f) > 0.001f)
+                {
+                    var pawn = allplayers[idx].PlayerPawn;
+                    if (pawn != null && pawn.IsValid)
+                    {
+                        int scaledHp = Math.Max(1, (int)(pawn.Health * plagueCfg.SurvivorHPMultiplier));
+                        pawn.MaxHealth = scaledHp;
+                        pawn.Health = scaledHp;
+                    }
+                }
+            }
         }
 
-        // 选择复仇女神（从丧尸中选一个）
-        if (zombieCount > 0)
+        // Promote some of the infect-side players to Nemesis (up to NemesisCount).
+        int nemesisCount = Math.Max(1, plagueCfg.NemesisCount);
+        for (int n = 0; n < nemesisCount && n < zombieCount; n++)
         {
-            var nemesis = allplayers[0];
-            SetupNemesis(nemesis);
+            SetupNemesis(allplayers[n]);
+            // Apply optional HP multiplier (LNJ/Armageddon style).
+            if (plagueCfg.NemesisHPMultiplier > 0f && Math.Abs(plagueCfg.NemesisHPMultiplier - 1.0f) > 0.001f)
+            {
+                var pawn = allplayers[n].PlayerPawn;
+                if (pawn != null && pawn.IsValid)
+                {
+                    int scaledHp = Math.Max(1, (int)(pawn.Health * plagueCfg.NemesisHPMultiplier));
+                    pawn.MaxHealth = scaledHp;
+                    pawn.Health = scaledHp;
+                }
+            }
         }
 
-        
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
     }
 
@@ -244,11 +280,12 @@ public partial class ZOServices
         if (allplayers.Count == 0) 
             return;
 
-        var target = PickRandomPlayer(allplayers);
+        var target = PickPreferredPlayer(allplayers);
         if (target == null || !target.IsValid) 
             return;
 
         SetupAssassin(target);
+        if (target.SteamID != 0) _globals.SpecialRoleThisRound.Add(target.SteamID);
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
         
     }
@@ -256,7 +293,7 @@ public partial class ZOServices
     public void SniperMode()
     {
         var allplayers = GetValidPlayers();
-        var sniper = PickRandomPlayer(allplayers);
+        var sniper = PickPreferredPlayer(allplayers);
 
         if (sniper == null || !sniper.IsValid)
             return;
@@ -271,6 +308,7 @@ public partial class ZOServices
 
         // 设置狙击手属性
         SetupSniper(sniper);
+        if (sniper.SteamID != 0) _globals.SpecialRoleThisRound.Add(sniper.SteamID);
 
         
         _helpers.SendCenterToAllT(_gameMode.GetTramslationsModeName());
@@ -403,6 +441,19 @@ public partial class ZOServices
                 }
             };
             posszombie(player, zombieClass, true);
+
+            // Apply mother-zombie HP multiplier (zp_zombie_first_hp equivalent).
+            float hpMulti = _mainCFG.CurrentValue.MotherZombieHPMultiplier;
+            if (hpMulti > 1.0f)
+            {
+                var pawn = player.PlayerPawn;
+                if (pawn != null && pawn.IsValid)
+                {
+                    int boostedHp = (int)(pawn.Health * hpMulti);
+                    pawn.MaxHealth = boostedHp;
+                    pawn.Health = boostedHp;
+                }
+            }
 
             if (_api != null)
                 _api.NotifyMotherZombieSelected(player);
@@ -847,6 +898,24 @@ public partial class ZOServices
                 result.Add(p);
         }
         return result;
+    }
+
+    /// <summary>
+    /// Like <see cref="PickRandomPlayer"/> but prefers players who did NOT have a
+    /// special role last round.  Falls back to the full candidate list only when
+    /// every candidate was a special role last round (e.g. only 1 player online).
+    /// </summary>
+    private IPlayer? PickPreferredPlayer(List<IPlayer> candidates)
+    {
+        if (candidates.Count == 0) return null;
+
+        var lastRound = _globals.SpecialRoleLastRound;
+        var preferred = candidates
+            .Where(p => p.SteamID == 0 || !lastRound.Contains(p.SteamID))
+            .ToList();
+
+        var pool = preferred.Count > 0 ? preferred : candidates;
+        return pool[Random.Shared.Next(pool.Count)];
     }
 
 }
