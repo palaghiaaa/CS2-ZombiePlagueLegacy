@@ -1,0 +1,69 @@
+{
+  "DefaultIntervalSeconds": 60,
+  "Messages": [
+    {
+      "Message": "{MP_PREFIX} Vulgar language will be punished with [red]GAG [default]/ [red]Mute[default]!",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} To become a [green]ADMIN [default], you need [red]5 [default]hours.",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} All players must be familiar with the [green]server rules[default].",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} To become a [green]MODERATOR [default], you need [red]20 [default]hours.",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} IP Address [green]93.114.82.165:27015[default].",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Any attempt at [green]cheating [default]will be punished with a [red]permanent ban[default].",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Do you want to join our [red]Discord[default] group? Then type [green]/discord",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Visit our website [green]www.LEAGUECS.ro[default] for forum, bans & news!",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Want to apply for [green]STAFF[default]? Submit your application on [green]www.LEAGUECS.ro[default]!",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} You can open [red]complaints[default] or [yellow]unban requests[default] on our website!",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Suggest new features or report bugs on [green]www.LEAGUECS.ro[default]!",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Open the [green]Main Menu[default] by typing [yellow]!zmenu[default] in chat!",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Choose your [green]Zombie Class[default] by typing [yellow]!zclass[default] in chat!",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Buy your [green]Weapons[default] by typing [yellow]!buyweapons[default] in chat!",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Spend your [green]Ammo Packs[default] in the [green]Extra Items[default] shop — type [yellow]!zextra[default] in chat!",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Place [green]Laser Mines[default] to defend against zombies — type [yellow]!mine[default] in chat!",
+      "Interval": 60
+    }
+  ]
+}
