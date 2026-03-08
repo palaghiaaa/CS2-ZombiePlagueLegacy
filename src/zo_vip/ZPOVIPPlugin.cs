@@ -146,6 +146,9 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     // ── VIP & zombie-state helpers ────────────────────────────────────────────
 
+    private static bool IsValidRealPlayer(IPlayer? player)
+        => player != null && player.IsValid && !player.IsFakeClient && player.SteamID != 0;
+
     private bool IsVIP(IPlayer player)
     {
         if (player == null || !player.IsValid) return false;
@@ -326,7 +329,7 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             var player = Core.PlayerManager.GetPlayer(playerId);
             if (!IsValidRealPlayer(player)) return;
-            if (!IsVIP(player)) return;
+            if (!IsVIP(player!)) return;
 
             string name = player.Controller?.PlayerName ?? player.Name ?? "Player";
 
