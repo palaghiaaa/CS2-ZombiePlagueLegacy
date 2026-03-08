@@ -1,185 +1,195 @@
-# Changelog — ZombieOutstandingCS2 vs h-an/zombieplaguecs2
+# ZombieOutstandingCS2 — Changelog
 
 > Toate modificările, funcționalitățile noi și bug-fix-urile față de versiunea originală a lui [H-AN/HanZombiePlagueS2](https://github.com/H-AN/HanZombiePlagueS2).
 
+**Plugin:** ZombieOutstandingCS2  
+**Bazat pe:** [HanZombiePlagueS2](https://github.com/H-AN/HanZombiePlagueS2) de H-AN  
+**Extins de:** [DeadPoolCS2](https://github.com/DeadPoolCS2)
+
 ---
 
-## ✨ Funcționalități Noi (Features)
+Salut tuturor! Mai jos găsiți o listă completă cu tot ce s-a adăugat, modificat și rezolvat față de plugin-ul original. Conținut nou, ajustări de echilibru și optimizări de experiență pe toată linia.
 
-### 🗺️ Game Mode-uri noi
-| Mod | Descriere |
-|-----|-----------|
-| 🦸 **Hero** | Ultimii oameni în viață devin Eroi cu statistici extreme (HP, viteză, gravitație configurabile). |
-| ⚔️ **Assassin vs Sniper (AVS)** | Zombie Assassin vs un singur Sniper uman — 1 vs 1. |
+---
 
-### 🛒 Extra Items Shop — articole noi
-**Articole pentru oameni (Human):**
-| Articol | Descriere |
-|---------|-----------|
-| 🧪 **SCBA Suit** | Blochează o singură infecție de zombie. |
-| 🦘 **Multi-Jump** | +1 săritură extra (stivuibilă, max configurabil). |
-| 🗡️ **Knife Blink** | 3 încărcături — teleportare înainte la fiecare lovitură de cuțit. |
-| 🚀 **Jetpack** | CTRL+SPACE pentru a zbura; combustibil limitat, se resetează la fiecare rundă. |
-| 💣 **Laser Mine** | Deschide meniu de plasare mine — Tripwire sau Explosive. |
-| ❤️ **Revive Token** | Respawn automat o singură dată după moarte. |
-| 🏹 **Become Survivor** | Transformă jucătorul în Survivor în mijlocul rundei. |
-| 🎯 **Become Sniper** | Transformă jucătorul în Sniper în mijlocul rundei. |
-| ♾️ **Unlimited Clip** | Muniție infinită în încărcătorul activ. |
-| 🎯 **No Recoil** | Elimină recoil-ul armei. |
-| ⚡ **Tryder** | HP și armură masivă + glow configurat — rol de tank. |
+## ✨ Ce este nou
 
-**Articole pentru zombie (Zombie):**
-| Articol | Descriere |
-|---------|-----------|
-| 💊 **Antidote** | Revine la echipa umană (dezinfecție). |
-| 🛡️ **Zombie Madness** | Invulnerabilitate temporară (10 s implicit). |
-| 🧬 **T-Virus Grenade** | Grenadă care infectează oamenii din raza de explozie. |
-| 💀 **Become Nemesis** | Transformă zombie-ul în Nemesis în mijlocul rundei. |
-| 🥷 **Become Assassin** | Transformă zombie-ul în Assassin în mijlocul rundei. |
+### Game Mode-uri noi
 
-### 💣 Sistem Laser Trip Mines
+- 🦸 **Hero** — Ultimii oameni în viață devin Eroi cu statistici extreme. HP, viteză și gravitație sunt complet configurabile.
+- ⚔️ **Assassin vs Sniper (AVS)** — Un Zombie Assassin se confruntă față în față cu un singur Sniper uman. Pur 1v1.
+
+### Articole noi în Shop
+
+**Pentru oameni:**
+
+- 🧪 **SCBA Suit** — Blochează automat o singură infecție de zombie.
+- 🦘 **Multi-Jump** — Acordă +1 săritură extra. Stivuibil, cu un maxim configurabil.
+- 🗡️ **Knife Blink** — 3 încărcături. Fiecare lovitură de cuțit te teleportează înainte.
+- 🚀 **Jetpack** — Ține CTRL+SPACE pentru a zbura. Combustibilul este limitat și se resetează la fiecare rundă.
+- 💣 **Laser Mine** — Deschide meniul de plasare mine. Alege Tripwire sau Explosive.
+- ❤️ **Revive Token** — Te respawnează automat o singură dată după moarte.
+- 🏹 **Become Survivor** — Transformă-te în Survivor în mijlocul rundei.
+- 🎯 **Become Sniper** — Transformă-te în Sniper în mijlocul rundei.
+- ♾️ **Unlimited Clip** — Muniție infinită în încărcătorul activ.
+- 🎯 **No Recoil** — Elimină complet recoil-ul armei.
+- ⚡ **Tryder** — HP și armură masivă cu un glow configurat. Rol complet de tank.
+
+**Pentru zombie:**
+
+- 💊 **Antidote** — Te întoarce în echipa umană.
+- 🛡️ **Zombie Madness** — Invulnerabilitate temporară (10 secunde implicit).
+- 🧬 **T-Virus Grenade** — Infectează oamenii din apropiere la detonare.
+- 💀 **Become Nemesis** — Transformă-te în Nemesis în mijlocul rundei.
+- 🥷 **Become Assassin** — Transformă-te în Assassin în mijlocul rundei.
+
+### Sistem Laser Trip Mines
+
 Integrat din [H-AN/HanLaserTripmineS2](https://github.com/H-AN/HanLaserTripmineS2):
-- **Laser Tripwire** — Daune continue (beam), configurabile per tick.
-- **Explosive Mine** — Explozie la traversarea fasciculului.
-- Limite per jucător, culori glow/laser, sunete, permissions — toate configurabile.
+
+- **Laser Tripwire** — Daune continue prin beam, configurabile per tick.
+- **Explosive Mine** — Explodează când cineva traversează fasciculul.
+- Limite per jucător, culori glow/laser, sunete și permisiuni sunt complet configurabile.
 - Meniu `!mine` dedicat pentru plasare.
 
-### 💰 Sistem Economy (Ammo Packs fără bază de date)
+### Sistem Economy (Ammo Packs — fără bază de date)
+
 - Ammo Packs stocate prin **Economy plugin** — fără MySQL, fără configurare DB.
-- Recompense configurabile: supraviețuire rundă, ucidere zombie, prag de damage.
+- Recompense configurabile pentru supraviețuire rundă, ucideri zombie și praguri de damage.
 - `EconomyWalletKind` configurabil pentru compatibilitate cu alte plugin-uri Economy.
-- Balanțele persistă între restartul hărții și al serverului.
+- Balanțele persistă între schimbările de hartă și restarturile serverului.
 
-### 📊 Status HUD Permanent
-- Un singur rând compact în centrul ecranului: **Mod · Clasă · Ammo Packs**.
-- Actualizat live; poate fi dezactivat via `EnableStatusHud`.
+### Status HUD Permanent
 
-### 🌑 Sistem Fog (Ceață)
-- Fog aplicat automat la orice hartă la fiecare load și pentru fiecare jucător care apare (spawn).
-- Configurabil: culoare (RGB), distanță start/end, densitate maximă, exponent.
+- Un rând compact în centrul ecranului: **Mod · Clasă · Ammo Packs**.
+- Actualizat live. Poate fi dezactivat prin `EnableStatusHud`.
+
+### Sistem Fog (Ceață)
+
+- Fog aplicat automat la fiecare încărcare de hartă și pentru fiecare jucător la spawn.
+- Complet configurabil: culoare (RGB), distanță start/end, densitate maximă și exponent.
 - Poate fi dezactivat complet cu `"Enable": false` în `FogConfig`.
 
-### 🔫 Weapons Menu
-- Comandă `!buyweapons` / `sw_buyweapons` — jucătorii pot cumpăra arme înainte de infecție.
+### Weapons Menu
+
+- `!buyweapons` / `sw_buyweapons` — jucătorii pot cumpăra arme înainte de începerea infecției.
 - Vizibil doar în fereastra de cumpărare (prima parte a rundei).
 
-### 🎯 One-Shot Kill pentru Sniper Mode
-- Opțiunea `OneShotKill: true` — orice tir de sniper omoară instant orice zombie, indiferent de HP (comportament CS 1.6).
+### One-Shot Kill pentru Sniper Mode
 
-### 🔌 API complet — `IZombieOutstandingAPI`
-- Interfață shared pentru plugin-uri externe.
+- `OneShotKill: true` — orice tir de sniper omoară instant orice zombie, indiferent de HP. Comportamentul clasic din CS 1.6.
+
+### API complet — `IZombieOutstandingAPI`
+
+- Interfață shared pentru plugin-uri externe care se integrează cu gamemode-ul.
 - Interogare stare: `IsZombie()`, `IsNemesis()`, `IsAssassin()`, `IsSurvivor()`, `IsHero()`, `CurrentMode`.
 - Acțiuni: forțare roluri, give/take Ammo Packs, set glow / FOV / god mode.
 - Evenimente: `ZO_OnPlayerInfect`, `ZO_OnNemesisSelected`, `ZO_OnGameStart`, `ZO_OnHumanWin`, `ZO_OnZombieWin`.
 
 ---
 
-## 🔧 Configurații Noi
+## ⚙️ Configurații noi
 
-| Cheie | Valoare implicită | Descriere |
-|-------|------------------|-----------|
-| `MinPlayersForInfection` | `2` | Numărul minim de oameni pentru a începe infecția. Protecție la joc solo. |
-| `NormalRoundsInterval` | `0` | Numărul minim de runde normale între moduri speciale. `0` = dezactivat (implicit). |
-| `KnockZombieForce` | `250` | Forța knockback aplicată zombie-ilor la lovire. |
-| `StunZombieTime` | `0.1` | Durata stun-ului zombie după knockback. |
-| `HumanKnockBackHeadMultiply` | `2.0` | Multiplicator knockback pentru lovitură în cap. |
-| `HumanKnockBackBodyMultiply` | `1.0` | Multiplicator knockback pentru lovitură în corp. |
-| `HumanKnockBackGroundMultiply` | `1.0` | Multiplicator knockback când zombie-ul e pe sol. |
-| `HumanKnockBackAirMultiply` | `0.5` | Multiplicator knockback când zombie-ul e în aer. |
-| `HumanHeroKnockBackMultiply` | `1.0` | Multiplicator knockback separat pentru jucătorii Hero. |
-| `ChatPrefix` | `"[ZO]"` | Prefix vizibil înaintea mesajelor de chat ale plugin-ului. |
-| `EconomyWalletKind` | `"ammo"` | Tipul de portofel Economy folosit pentru Ammo Packs. |
-| `EnableCommandDebugLogs` | `false` | Loghează comenzile în consola serverului. |
-| `EnableCommandDebugChatReply` | `false` | Răspunde în chat la invocarea comenzilor (debug). |
-| `Fog` (secțiune) | — | Configurare fog server-wide (culoare, distanță, densitate). |
-| `Skybox` | `""` | Override skybox per-hartă (lasă gol pentru skybox-ul default). |
-| `NemesisHealth` | `75000` | HP static pentru Nemesis (0 = fallback la valoarea din clasă). |
-| `AssassinHealth` | `24000` | HP static pentru Assassin (0 = fallback la valoarea din clasă). |
-| `SurvivorHealth` | `8000` | HP static pentru Survivor (0 = HP uman de bază). |
-| `SniperHealth` | `5000` | HP static pentru Sniper (0 = HP uman de bază). |
-| `OneShotKill` *(Sniper)* | `true` | Un singur tir omoară instant orice zombie. |
-| `InvisibilityDist` *(Assassin)* | `200.0` | Distanța (unități) de la care Assassin devine vizibil. |
-| `TVirusCanInfectHero` | `true` | Dacă T-Virus Grenade poate infecta jucătorii Hero. |
-| `AmbSound` | `""` | Sunet ambient în buclă pe tot parcursul hărții. |
-| `AmbSoundLoopTime` | `60.0` | Intervalul de repetiție a sunetului ambient (secunde). |
-| `AmbSoundVolume` | `0.6` | Volumul sunetului ambient. |
+- `MinPlayersForInfection` *(implicit: 2)* — Numărul minim de jucători necesar pentru a declanșa infecția. Previne problemele la joc solo.
+- `NormalRoundsInterval` *(implicit: 0)* — Numărul minim de runde normale între moduri speciale. `0` = dezactivat.
+- `KnockZombieForce` *(implicit: 250)* — Forța knockback aplicată zombie-ilor la lovire.
+- `StunZombieTime` *(implicit: 0.1)* — Durata stun-ului după knockback.
+- `HumanKnockBackHeadMultiply` *(implicit: 2.0)* — Multiplicator knockback pentru lovitură în cap.
+- `HumanKnockBackBodyMultiply` *(implicit: 1.0)* — Multiplicator knockback pentru lovitură în corp.
+- `HumanKnockBackGroundMultiply` *(implicit: 1.0)* — Multiplicator knockback când zombie-ul e pe sol.
+- `HumanKnockBackAirMultiply` *(implicit: 0.5)* — Multiplicator knockback când zombie-ul e în aer.
+- `HumanHeroKnockBackMultiply` *(implicit: 1.0)* — Multiplicator knockback separat pentru jucătorii Hero.
+- `ChatPrefix` *(implicit: "[ZO]")* — Prefix afișat înaintea mesajelor de chat ale plugin-ului.
+- `EconomyWalletKind` *(implicit: "ammo")* — Tipul de portofel Economy folosit pentru Ammo Packs.
+- `EnableCommandDebugLogs` *(implicit: false)* — Loghează comenzile în consola serverului.
+- `EnableCommandDebugChatReply` *(implicit: false)* — Răspunde în chat la invocarea comenzilor (debug).
+- Secțiunea `Fog` — Configurare fog la nivel de server (culoare, distanță, densitate).
+- `Skybox` *(implicit: "")* — Override skybox per-hartă. Lasă gol pentru skybox-ul implicit al hărții.
+- `NemesisHealth` *(implicit: 75000)* — HP static pentru Nemesis. Setează `0` pentru fallback la valoarea din clasă.
+- `AssassinHealth` *(implicit: 24000)* — HP static pentru Assassin. Setează `0` pentru fallback la valoarea din clasă.
+- `SurvivorHealth` *(implicit: 8000)* — HP static pentru Survivor. Setează `0` pentru HP-ul uman de bază.
+- `SniperHealth` *(implicit: 5000)* — HP static pentru Sniper. Setează `0` pentru HP-ul uman de bază.
+- `OneShotKill` *(Sniper, implicit: true)* — Un singur tir omoară instant orice zombie.
+- `InvisibilityDist` *(Assassin, implicit: 200.0)* — Distanța (unități) de la care Assassin devine vizibil.
+- `TVirusCanInfectHero` *(implicit: true)* — Dacă T-Virus Grenade poate infecta jucătorii Hero.
+- `AmbSound` *(implicit: "")* — Sunet ambient în buclă pe tot parcursul hărții.
+- `AmbSoundLoopTime` *(implicit: 60.0)* — Intervalul de repetiție al sunetului ambient în secunde.
+- `AmbSoundVolume` *(implicit: 0.6)* — Volumul sunetului ambient.
 
 ---
 
-## 🆕 Plugin-uri Standalone Noi
+## 🔌 Plugin-uri Standalone Noi
 
 ### 🏅 zo_rank — Rank & Top
+
 Un plugin de ranking lightweight cu persistență SQLite:
-- Comenzi: `!rank` (rank personal), `!top` / `!top10` / `!top15` (top jucători).
-- Stats tracked: kills, deaths, ratio KDA.
-- Eliminare boți și sinucideri din statistici.
-- Configurabil: dimensiune top list, rânduri vizibile în meniu, hot-reload complet.
-- Toate mesajele în fișier de traducere separat.
+
+- Comenzi: `!rank` (rank personal), `!top` / `!top10` / `!top15` (clasament).
+- Urmărește eliminări, decese și ratio K/D.
+- Boții și sinuciderile sunt excluse din statistici.
+- Dimensiunea clasamentului, rândurile vizibile în meniu și suport complet pentru hot-reload sunt configurabile.
+- Toate mesajele se află într-un fișier de traducere separat.
 
 ### 👑 zo_vip — VIP Perks
-Plugin de VIP integrat cu `IZombieOutstandingAPI` și Economy plugin:
-| Perk | Cheie config |
-|------|-------------|
-| Armură la spawn | `ArmorAmount` |
-| Multi-jump | `ExtraJumps` / `JumpVelocity` |
-| Fără damage la cădere | `NoFallDamage` |
-| Multiplicator damage vs zombie | `DamageMultiplier` |
-| Recompensă AP per damage | `DamageRewardThreshold` / `DamageRewardAmount` |
-| Recompensă AP per kill zombie | `KillRewardAmount` |
-| Happy Hour (AP bonus + frags) | `HappyHour*` |
-| Recompensă infecție (VIP zombie) | `InfectRewardsEnabled` |
-| Meniu `!vip` cu linii configurabile | `BenefitLines` |
-| Meniu `!vips` cu VIP-ii online | `VipsListCommand` |
-| Anunț la join VIP | `JoinAnnounceEnabled` |
+
+Plugin VIP complet integrat cu `IZombieOutstandingAPI` și Economy plugin:
+
+- Armură la spawn (`ArmorAmount`)
+- Multi-jump (`ExtraJumps` / `JumpVelocity`)
+- Fără damage la cădere (`NoFallDamage`)
+- Multiplicator damage vs zombie (`DamageMultiplier`)
+- Recompensă AP per damage (`DamageRewardThreshold` / `DamageRewardAmount`)
+- Recompensă AP per kill zombie (`KillRewardAmount`)
+- Happy Hour — bonus AP + frags (`HappyHour*`)
+- Recompensă infecție pentru zombie VIP (`InfectRewardsEnabled`)
+- Meniu `!vip` cu linii de beneficii configurabile (`BenefitLines`)
+- Meniu `!vips` cu VIP-ii online (`VipsListCommand`)
+- Anunț la conectare VIP (`JoinAnnounceEnabled`)
 
 ---
 
-## 🐛 Bugfix-uri
+## 🐛 Bug Fix-uri
 
-| Fix | Descriere |
-|-----|-----------|
-| **Null reference la join** | `OnClientConnected` — operator null-forgiving pe `player` previne crash la conectare. |
-| **Round-end instant în solo** | Adăugat flag `MotherZombieWasSelected`; `CheckRoundWinConditions()` nu mai încheie runda dacă nu a existat infecție. |
-| **Fog pe hărți workshop** | Fog nu se aplica pe hărțile workshop din cauza ordinii evenimentelor; rezolvat cu hook dedicat. |
-| **MaxVisibleItems crash** | Meniurile aruncau excepție când numărul de iteme depășea limita vizibilă; fix ScrollableMenu. |
-| **ObjectDisposedException async** | Accesarea `SteamID` al jucătorului în callback-uri async după deconectare; fix prin capturarea valorii înainte. |
-| **Thread-unsafe entity ops** | Operațiunile pe entități în afara thread-ului principal; mutate în `NextWorldUpdate`. |
-| **MinPlayersForInfection default greșit** | Valoarea default era `1` (nefuncțional ca protecție); corectată la `2`. |
-| **Cheie API shared interface greșită** | Cheia `"HanZombiePlague"` redenumită în `"ZombieOutstanding"` în toată baza de cod. |
-| **Config server CS2 greșit** | Configurații greșite pentru friendly-fire, solid teammates, boți și round restart delay; corectate. |
-| **Duplicate closing brace build** | Eliminată acolada duplicată în `ZPOVIPPlugin.cs` care bloca compilarea. |
-| **Chat prefix hot-reload** | Prefix-ul de chat nu se actualiza la schimbarea fișierului config fără restart; fix prin `IOptionsMonitor`. |
-| **VIP detection greșit** | Permisiunea VIP nu era verificată corect; corectat cu `IsValidRealPlayer`. |
-| **Fog lipsă la schimbare hartă** | Fog-ul nu persista la schimbarea hărții; aplicat din nou în evenimentul `OnMapStart`. |
-| **Meniu top truncat** | Numele lungi depășeau limita de caractere a meniului; trunchiate la afișare. |
+- **Null reference la join** — `OnClientConnected`: operatorul null-forgiving pe `player` previne un crash la conectare.
+- **Round-end instant în solo** — Adăugat flag `MotherZombieWasSelected`. `CheckRoundWinConditions()` nu mai încheie runda dacă nu a avut loc nicio infecție.
+- **Fog lipsă pe hărți workshop** — Fog-ul nu se aplica pe hărțile workshop din cauza ordinii evenimentelor. Rezolvat cu un hook dedicat.
+- **MaxVisibleItems crash** — Meniurile aruncau excepție când numărul de iteme depășea limita vizibilă. Rezolvat gestionarea ScrollableMenu.
+- **ObjectDisposedException în async** — `SteamID` era accesat în callback-uri async după deconectare. Rezolvat prin capturarea valorii înainte.
+- **Operațiuni de entități thread-unsafe** — Operațiunile pe entități se întâmplau în afara thread-ului principal. Mutate în `NextWorldUpdate`.
+- **Default greșit pentru MinPlayersForInfection** — Default-ul era `1` (fără protecție reală). Corectat la `2`.
+- **Cheie API shared greșită** — Cheia `"HanZombiePlague"` redenumită în `"ZombieOutstanding"` în întreaga bază de cod.
+- **Config server CS2 greșit** — Setări incorecte pentru friendly-fire, solid teammates, boți și round restart delay. Toate corectate.
+- **Eroare de build acoladă duplicată** — Eliminată o acoladă duplicată în `ZPOVIPPlugin.cs` care bloca compilarea.
+- **Chat prefix fără hot-reload** — Prefix-ul de chat nu se actualiza la schimbarea fișierului config fără restart complet. Rezolvat cu `IOptionsMonitor`.
+- **Detectare VIP greșită** — Permisiunea VIP nu era verificată corect. Rezolvat cu `IsValidRealPlayer`.
+- **Fog lipsă după schimbare hartă** — Fog-ul nu persista la schimbarea hărții. Aplicat din nou în evenimentul `OnMapStart`.
+- **Nume tăiate în meniul top** — Numele lungi depășeau limita de caractere a meniului. Acum trunchiate corect la afișare.
 
 ---
 
-## ♻️ Modificări & Refactorizări
+## ♻️ Modificări & Îmbunătățiri
 
-- **HP statice pentru clase speciale** — Nemesis, Assassin, Survivor, Sniper au HP fixe echilibrate în loc de calcul dinamic.
-- **Jetpack: only upward thrust** — Push-ul orizontal tip rachetă a fost eliminat; jetpack-ul aplică doar forță verticală.
-- **Knockback sistem granular** — Multiplicatori separați per locație de lovire și per stare (sol/aer) în loc de valoare globală unică.
-- **Meniu scrollable** — Toate meniurile folosesc `LinearScroll`; footer-ul rămâne fix în jos.
-- **Marquee text** — Text scrolling animat în meniurile VIP și Top pentru afișaj mai estetic.
-- **API key redenumit** — `"HanZombiePlague"` → `"ZombieOutstanding"` pentru consistență cu noul brand.
-- **Cheie de navigare meniu standardizată** — Toate plugin-urile folosesc keybind-urile implicite SwiftlyS2 (nu mai sunt hard-codate).
-- **CI/CD GitHub Actions** — Job-uri separate de build pentru `zo_vip` (ZPOVIP) și `zo_rank` (ZORank) pe lângă plugin-ul principal.
+- **HP statice pentru clasele speciale** — Nemesis, Assassin, Survivor și Sniper folosesc acum valori HP fixe și echilibrate în loc de calcule dinamice.
+- **Jetpack: forță doar în sus** — Push-ul orizontal de tip rachetă a fost eliminat. Jetpack-ul aplică acum doar forță verticală.
+- **Sistem knockback granular** — Multiplicatori separați per locație de lovire (cap/corp) și starea zombie (sol/aer) în loc de o singură valoare globală.
+- **Meniuri scrollable** — Toate meniurile folosesc `LinearScroll`. Footer-ul rămâne fixat în jos.
+- **Text marquee** — Text animat cu scroll în meniurile VIP și Top pentru un aspect mai îngrijit.
+- **Cheie API redenumită** — `"HanZombiePlague"` → `"ZombieOutstanding"` pentru consistență cu noul brand.
+- **Navigare meniu standardizată** — Toate plugin-urile folosesc acum keybind-urile implicite SwiftlyS2. Fără mai multe chei hard-codate.
+- **CI/CD cu GitHub Actions** — Job-uri de build separate pentru `zo_vip` (ZPOVIP) și `zo_rank` (ZORank) alături de plugin-ul principal.
 
 ---
 
-## 📁 Fișiere Configurare Noi
+## 📁 Fișiere de Configurare Noi
 
-| Fișier | Descriere |
-|--------|-----------|
-| `configs/plugins/ZombieOutstandingCS2/ZombieOutstandingCFG.jsonc` | Config principal (extins față de original). |
-| `configs/plugins/ZombieOutstandingCS2/ZombieClassesCFG.jsonc` | Statistici clase zombie. |
-| `configs/plugins/ZombieOutstandingCS2/ExtraItemsCFG.jsonc` | Prețuri shop, recompense AP. |
-| `configs/plugins/ZPOVIP/ZPOVIP.jsonc` | Config plugin VIP. |
-| `configs/plugins/ZORank/ZORankCFG.jsonc` | Config plugin Rank/Top. |
-| `gamemode_casual.cfg` | Config gamemode CS2 (friendly-fire, solid teammates, boți). |
-| `gamemode_casual_server.cfg` | Config server specific gamemode. |
-| `server.cfg` | Config general server. |
+- `configs/plugins/ZombieOutstandingCS2/ZombieOutstandingCFG.jsonc` — Config principal, extins față de original.
+- `configs/plugins/ZombieOutstandingCS2/ZombieClassesCFG.jsonc` — Statistici clase zombie.
+- `configs/plugins/ZombieOutstandingCS2/ExtraItemsCFG.jsonc` — Prețuri shop și recompense AP.
+- `configs/plugins/ZPOVIP/ZPOVIP.jsonc` — Config plugin VIP.
+- `configs/plugins/ZORank/ZORankCFG.jsonc` — Config plugin Rank/Top.
+- `gamemode_casual.cfg` — Config gamemode CS2 (friendly-fire, solid teammates, boți).
+- `gamemode_casual_server.cfg` — Config server specific gamemode.
+- `server.cfg` — Config general server.
 
 ---
 
