@@ -54,6 +54,13 @@ public partial class ZOServices
     public void SwitchMode()
     {
         _globals.InfectionStartedThisRound = true;
+        // Mark that the infection/game phase has started for ALL modes, not just
+        // Normal/Multi/Hero (which go through SelectMotherZombie where this flag
+        // used to be set).  Without this, CheckRoundWinConditions() returns early
+        // for every special mode (Nemesis, Survivor, Sniper, Assassin, AVS, Swarm,
+        // Plague) because it guards on MotherZombieWasSelected, so those rounds
+        // only ever ended via the natural round timer.
+        _globals.MotherZombieWasSelected = true;
         var mode = _gameMode.CurrentMode;
         switch (mode)
         {
