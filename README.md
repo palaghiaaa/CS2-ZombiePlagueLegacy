@@ -115,9 +115,7 @@ Ammo Packs are stored exclusively through the Economy plugin — no MySQL or dat
 
 | Asset | Workshop ID |
 |-------|-------------|
-| 🔊 Sound pack | [3644652779](https://steamcommunity.com/sharedfiles/filedetails/?id=3644652779) |
-| 🧟 Zombie models | [3170427476](https://steamcommunity.com/sharedfiles/filedetails/?id=3170427476) |
-| 💣 Laser mine model | [3618032051](https://steamcommunity.com/workshop/filedetails/?id=3618032051) |
+| 🔊 Sounds + Models + Lasemine | [3678630823](https://steamcommunity.com/sharedfiles/filedetails/?id=3678630823) |
 
 ---
 
