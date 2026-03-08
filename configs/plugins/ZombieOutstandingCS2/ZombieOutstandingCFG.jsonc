@@ -21,6 +21,8 @@
 		"MotherZombieNames": "Mother Zombie",
 		"MotherZombieCount": 1,
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		"MinPlayers": 0,
 		"EnableInfiniteClipMode": false,
 		"ZombieCanReborn": false
 	},
@@ -31,6 +33,8 @@
 		"MotherZombieNames": "Mother Zombie",
 		"MotherZombieCount": 5,
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		"MinPlayers": 0,
 		"EnableInfiniteClipMode": true,
 		"ZombieCanReborn": true
 	},
@@ -40,6 +44,9 @@
 		"Name": "Nemesis Mode",
 		"NemesisNames": "Nemesis",
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		// Set to 0 to impose no minimum.
+		"MinPlayers": 0,
 		// HP assigned to the Nemesis at round start.
 		// Balance rationale (round = 4 min, human weapon DPS ~270 effective):
 		//   5 humans  → ~60 s to kill  (half the round — fair for small servers)
@@ -48,13 +55,16 @@
 		// Set to 0 to fall back to the special-class HP in ZOSpecialClassCFG.
 		"NemesisHealth": 75000,
 		"EnableInfiniteClipMode": true,
-		"ZombieCanReborn": true
+		// Zombies do NOT respawn in Nemesis mode — the single Nemesis must survive alone.
+		"ZombieCanReborn": false
 	},
 	"Survivor":
 	{
 		"Enable": true,
 		"Name": "Survivor Mode",
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		"MinPlayers": 0,
 		"SurvivorNames": "Survivor",
 		// HP assigned to the Survivor when it spawns. 8 000 HP lets one human
 		// endure sustained zombie pressure for most of the round without being
@@ -67,6 +77,7 @@
 		"CustomWeaponName": "Survivor XM1014",
 		"ModelsPath": "characters/models/tm_phoenix_heavy/tm_phoenix_heavy.vmdl",
 		"EnableInfiniteClipMode": false,
+		// Zombies do NOT respawn in Survivor mode — eliminating all zombies is a win path.
 		"ZombieCanReborn": false
 	},
 	"Swarm":
@@ -74,7 +85,10 @@
 		"Enable": true,
 		"Name": "Swarm Mode",
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		"MinPlayers": 0,
 		"EnableInfiniteClipMode": true,
+		// Zombies do NOT respawn in Swarm mode — humans win by eliminating all zombies.
 		"ZombieCanReborn": false
 	},
 	"Plague":
@@ -82,16 +96,21 @@
 		"Enable": true,
 		"Name": "Plague Mode",
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		"MinPlayers": 0,
 		"NemesisNames": "Nemesis",
 		"SurvivorNames": "Survivor",
 		"EnableInfiniteClipMode": true,
-		"ZombieCanReborn": true
+		// Zombies do NOT respawn in Plague mode — the Nemesis(es) must eliminate all humans alone.
+		"ZombieCanReborn": false
 	},
 	"Assassin":
 	{
 		"Enable": true,
 		"Name": "Assassin Mode",
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		"MinPlayers": 0,
 		"AssassinNames": "Assassin",
 		// HP assigned to the Assassin when it spawns. 24 000 HP places it
 		// between a normal zombie and the Nemesis — dangerous enough to be a
@@ -101,13 +120,16 @@
 		// Distance (units) within which the Assassin becomes visible to humans.
 		"InvisibilityDist": 200.0,
 		"EnableInfiniteClipMode": false,
-		"ZombieCanReborn": true
+		// Zombies do NOT respawn in Assassin mode — the Assassin wins by eliminating all humans.
+		"ZombieCanReborn": false
 	},
 	"Sniper":
 	{
 		"Enable": true,
 		"Name": "Sniper Mode",
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		"MinPlayers": 0,
 		"SniperNames": "Sniper",
 		// HP assigned to the Sniper when it spawns. 5 000 HP is intentionally
 		// lower than the Survivor — glass-cannon role: extreme damage output but
@@ -123,23 +145,29 @@
 		"CustomWeaponName": "Sniper AWP",
 		"ModelsPath": "characters/models/tm_professional/tm_professional_varf4.vmdl",
 		"EnableInfiniteClipMode": false,
-		"ZombieCanReborn": true
+		// Zombies do NOT respawn in Sniper mode — the Sniper wins by eliminating all zombies.
+		"ZombieCanReborn": false
 	},
 	"AVS":
 	{
 		"Enable": true,
 		"Name": "Assassin vs Sniper",
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		"MinPlayers": 0,
 		"AssassinNames": "Assassin",
 		"SniperNames": "Sniper",
 		"EnableInfiniteClipMode": true,
-		"ZombieCanReborn": true
+		// Zombies do NOT respawn in AVS mode — eliminating the opposing special role wins.
+		"ZombieCanReborn": false
 	},
 	"Hero":
 	{
 		"Enable": true,
 		"Name": "Hero Mode",
 		"Weight": 50,
+		// Minimum connected (non-bot) players for this mode to be eligible.
+		"MinPlayers": 0,
 		"HeroCount": 3,
 		"HeroNames": "Hero",
 		"HeroHealth": 1500,
@@ -148,6 +176,7 @@
 		"HeroDamage": 50.0,
 		"ModelsPath": "characters/models/ctm_heavy/ctm_heavy.vmdl",
 		"EnableInfiniteClipMode": false,
+		// Zombies CAN respawn in Hero mode — heroes must hold out against endless pressure.
 		"ZombieCanReborn": true
 	},
 
@@ -204,9 +233,86 @@
 
 	// ── Zombie physics ───────────────────────────────────────────────────────
 	// Base knockback force (units/s) applied to a zombie when shot.
-	"KnockZombieForce": 250.0,
+	// Used for weapons not listed in WeaponKnockbackTable below.
+	"KnockZombieForce": 200.0,
 	// Duration (seconds) a zombie is stunned / slowed after a knockback hit.
 	"StunZombieTime": 0.1,
+
+	// ── Per-weapon knockback table ────────────────────────────────────────────
+	// Maps each weapon's designer name to its individual knockback force.
+	// Weapons NOT listed here use KnockZombieForce as the fallback.
+	// Set a value to 0 to disable knockback for that weapon entirely.
+	// Values are intentionally moderate — scale up if you want more push.
+	// Based on ZombiePlague 1.6 relative ratios, adapted for CS2.
+	"WeaponKnockbackTable": {
+		"weapon_awp":        350.0,   // Sniper rifle — highest single-shot impact
+		"weapon_ssg08":      300.0,   // Scout / SSG 08 — lighter sniper
+		"weapon_xm1014":     280.0,   // Shotgun — close-range blast
+		"weapon_nova":       280.0,   // Shotgun
+		"weapon_sawedoff":   270.0,   // Sawed-off
+		"weapon_mag7":       270.0,   // MAG-7
+		"weapon_m249":       260.0,   // LMG — heavy sustained fire
+		"weapon_negev":      260.0,   // Negev LMG
+		"weapon_ak47":       240.0,   // AK-47 — strong rifle
+		"weapon_sg553":      235.0,   // SG 553
+		"weapon_aug":        230.0,   // AUG
+		"weapon_m4a1":       225.0,   // M4A1-S
+		"weapon_m4a4":       225.0,   // M4A4
+		"weapon_famas":      220.0,   // FAMAS
+		"weapon_galilar":    220.0,   // Galil AR
+		"weapon_deagle":     210.0,   // Desert Eagle — powerful pistol
+		"weapon_revolver":   200.0,   // R8 Revolver
+		"weapon_usp_silencer": 160.0, // USP-S
+		"weapon_hkp2000":    150.0,   // P2000
+		"weapon_glock":      140.0,   // Glock-18
+		"weapon_p250":       145.0,   // P250
+		"weapon_tec9":       140.0,   // Tec-9
+		"weapon_cz75a":      140.0,   // CZ75-Auto
+		"weapon_fiveseven":  145.0,   // Five-SeveN
+		"weapon_elite":      130.0,   // Dual Berettas
+		"weapon_p90":        120.0,   // P90 — high fire rate, low per-shot push
+		"weapon_bizon":      110.0,   // PP-Bizon
+		"weapon_mac10":      110.0,   // MAC-10
+		"weapon_mp9":        115.0,   // MP9
+		"weapon_mp5sd":      115.0,   // MP5-SD
+		"weapon_mp7":        115.0,   // MP7
+		"weapon_ump45":      120.0,   // UMP-45
+		"weapon_knife":        0.0    // Knife — infection handled separately, no push
+	},
+
+	// ── Spawn protection ─────────────────────────────────────────────────────
+	// Seconds of invulnerability granted to every player immediately after spawn.
+	// Set to 0 to disable. Mirrors zp_spawn_protection from ZombiePlague CS 1.6.
+	"SpawnProtectionTime": 2.0,
+
+	// ── Zombie infection health reward ───────────────────────────────────────
+	// HP given to a zombie attacker each time they successfully infect a human.
+	// Capped at the zombie's MaxHealth. Set to 0 to disable.
+	// Mirrors zp_zombie_infect_health from ZombiePlague CS 1.6.
+	"ZombieInfectHealthReward": 500,
+
+	// ── Zombie leap (Long Jump) ───────────────────────────────────────────────
+	// When enabled, a zombie that presses Jump while on the ground receives a
+	// burst of horizontal + vertical velocity, letting them leap forward.
+	// Mirrors the zp_leap_* family of cvars from ZombiePlague CS 1.6.
+
+	// Regular zombie leap
+	"LeapZombiesEnabled": true,
+	"LeapZombiesForce": 500.0,      // Horizontal impulse (units/s)
+	"LeapZombiesHeight": 300.0,     // Vertical impulse added to the jump (units/s)
+	"LeapZombiesCooldown": 1.5,     // Seconds between consecutive leaps
+
+	// Nemesis leap (stronger — mirrors zp_leap_nemesis_force / _height)
+	"LeapNemesisEnabled": true,
+	"LeapNemesisForce": 1000.0,
+	"LeapNemesisHeight": 700.0,
+	"LeapNemesisCooldown": 2.0,
+
+	// Assassin leap (mirrors zp_leap_assassin_force / _height)
+	"LeapAssassinEnabled": true,
+	"LeapAssassinForce": 700.0,
+	"LeapAssassinHeight": 650.0,
+	"LeapAssassinCooldown": 1.5,
 
 	// ── T-Virus / Vaccine ────────────────────────────────────────────────────
 	"TVaccineSound": "HealthShot.Pickup",

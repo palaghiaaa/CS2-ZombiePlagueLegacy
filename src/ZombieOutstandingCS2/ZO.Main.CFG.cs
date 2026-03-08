@@ -362,4 +362,12 @@ public class ZOMainCFG
     /// </summary>
     public string Skybox { get; set; } = string.Empty;
 
+    // ── Per-weapon knockback table ────────────────────────────────────────────
+    /// <summary>
+    /// Maps a weapon's DesignerName (e.g. "weapon_awp") to its base knockback
+    /// force (units/s). Weapons not listed fall back to <see cref="KnockZombieForce"/>.
+    /// Set a weapon's value to 0 to completely disable knockback for that weapon.
+    /// </summary>
+    public Dictionary<string, float> WeaponKnockbackTable { get; set; } = new();
+
 }

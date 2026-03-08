@@ -1619,7 +1619,15 @@ public partial class ZOEvents
 
         string inflictorname = inflictor.DesignerName;
 
+        // Resolve per-weapon knockback force: try active weapon first, then fall back to global.
         float force = CFG.KnockZombieForce;
+        var activeWeaponForKnock = AttackerPawn.WeaponServices?.ActiveWeapon.Value;
+        if (activeWeaponForKnock != null && activeWeaponForKnock.IsValid)
+        {
+            string wName = activeWeaponForKnock.DesignerName;
+            if (!string.IsNullOrEmpty(wName) && CFG.WeaponKnockbackTable.TryGetValue(wName, out float wForce))
+                force = wForce;
+        }
         _helpers.KnockBackZombie(AttackerPlayer, victimPlayer, inflictorname, force, isheadshot, CFG);
         
     }
