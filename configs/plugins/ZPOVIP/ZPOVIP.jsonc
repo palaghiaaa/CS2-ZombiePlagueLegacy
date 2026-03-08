@@ -40,11 +40,11 @@
     ],
 
     // ── Chat ─────────────────────────────────────────────────────────────────
-    // Broadcast a chat message when a VIP spawns for the first time each round.
+    // Broadcast a chat message when a VIP connects to the server (once per connection).
     "JoinAnnounceEnabled": true,
 
     // Prefix prepended to all plugin chat messages.
-    "ChatPrefix": "[VIP]",
+    "ChatPrefix": "[red][INFO][default]",
 
     // ── Economy ───────────────────────────────────────────────────────────────
     // Wallet kind used for ammo-pack rewards.

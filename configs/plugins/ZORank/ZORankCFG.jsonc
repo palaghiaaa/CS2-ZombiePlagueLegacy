@@ -54,7 +54,7 @@
     "TopListSize": 15,
 
     // Rows visible at once in the scrollable menu.
-    "TopMenuVisibleRows": 7,
+    "TopMenuVisibleRows": 5,
 
     // ── Feature toggles ───────────────────────────────────────────────────────
     "EnableRankCommand": true,
