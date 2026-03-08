@@ -99,6 +99,13 @@ public class ZOExtraItemsMenu
         return isNemesis || isAssassin || isSurvivor || isSniper || isHero;
     }
 
+    /// <summary>Returns the number of real (non-bot) connected players.</summary>
+    private int GetRealPlayerCount()
+    {
+        return _core.PlayerManager.GetAllPlayers()
+            .Count(p => p != null && p.IsValid && !p.IsFakeClient);
+    }
+
     /// <summary>Parses a "R,G,B,A" string (0–255 each) into a SwiftlyS2 Color.</summary>
     private static SwiftlyS2.Shared.Natives.Color ParseColor(string rgba, byte defaultR, byte defaultG, byte defaultB, byte defaultA)
     {
@@ -661,19 +668,28 @@ public class ZOExtraItemsMenu
     private void ApplyBuySurvivor(IPlayer player, int remainingAP)
     {
         int playerId = player.PlayerID;
+        int price = _extraItemsCFG.CurrentValue.Items
+            .FirstOrDefault(i => i.Key == "buy_survivor")?.Price ?? 0;
         if (_services == null)
         {
             _logger.LogError("[ZOExtraItems] ZOServices not wired – refunding buy_survivor.");
-            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
-                .FirstOrDefault(i => i.Key == "buy_survivor")?.Price ?? 0);
+            AddAmmoPacks(playerId, price);
             return;
         }
         // Survivors are a human-only role; zombies and existing special roles cannot buy.
         if (IsZombie(playerId) || IsSpecialRole(playerId))
         {
-            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
-                .FirstOrDefault(i => i.Key == "buy_survivor")?.Price ?? 0);
+            AddAmmoPacks(playerId, price);
             _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEligible");
+            return;
+        }
+        // Require the same minimum player count as the Survivor round mode.
+        int minPlayers = _mainCFG.CurrentValue.Survivor.MinPlayers;
+        int currentPlayers = GetRealPlayerCount();
+        if (minPlayers > 0 && currentPlayers < minPlayers)
+        {
+            AddAmmoPacks(playerId, price);
+            _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEnoughPlayers", minPlayers, currentPlayers);
             return;
         }
         _services.SetupSurvivor(player);
@@ -683,19 +699,28 @@ public class ZOExtraItemsMenu
     private void ApplyBuyNemesis(IPlayer player, int remainingAP)
     {
         int playerId = player.PlayerID;
+        int price = _extraItemsCFG.CurrentValue.Items
+            .FirstOrDefault(i => i.Key == "buy_nemesis")?.Price ?? 0;
         if (_services == null)
         {
             _logger.LogError("[ZOExtraItems] ZOServices not wired – refunding buy_nemesis.");
-            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
-                .FirstOrDefault(i => i.Key == "buy_nemesis")?.Price ?? 0);
+            AddAmmoPacks(playerId, price);
             return;
         }
         // Nemesis is a zombie role — only active zombies without a special role can buy.
         if (!IsZombie(playerId) || IsSpecialRole(playerId))
         {
-            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
-                .FirstOrDefault(i => i.Key == "buy_nemesis")?.Price ?? 0);
+            AddAmmoPacks(playerId, price);
             _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEligible");
+            return;
+        }
+        // Require the same minimum player count as the Nemesis round mode.
+        int minPlayers = _mainCFG.CurrentValue.Nemesis.MinPlayers;
+        int currentPlayers = GetRealPlayerCount();
+        if (minPlayers > 0 && currentPlayers < minPlayers)
+        {
+            AddAmmoPacks(playerId, price);
+            _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEnoughPlayers", minPlayers, currentPlayers);
             return;
         }
         _services.SetupNemesis(player);
@@ -705,19 +730,28 @@ public class ZOExtraItemsMenu
     private void ApplyBuySniper(IPlayer player, int remainingAP)
     {
         int playerId = player.PlayerID;
+        int price = _extraItemsCFG.CurrentValue.Items
+            .FirstOrDefault(i => i.Key == "buy_sniper")?.Price ?? 0;
         if (_services == null)
         {
             _logger.LogError("[ZOExtraItems] ZOServices not wired – refunding buy_sniper.");
-            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
-                .FirstOrDefault(i => i.Key == "buy_sniper")?.Price ?? 0);
+            AddAmmoPacks(playerId, price);
             return;
         }
         // Snipers are a human-only role; zombies and existing special roles cannot buy.
         if (IsZombie(playerId) || IsSpecialRole(playerId))
         {
-            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
-                .FirstOrDefault(i => i.Key == "buy_sniper")?.Price ?? 0);
+            AddAmmoPacks(playerId, price);
             _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEligible");
+            return;
+        }
+        // Require the same minimum player count as the Sniper round mode.
+        int minPlayers = _mainCFG.CurrentValue.Sniper.MinPlayers;
+        int currentPlayers = GetRealPlayerCount();
+        if (minPlayers > 0 && currentPlayers < minPlayers)
+        {
+            AddAmmoPacks(playerId, price);
+            _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEnoughPlayers", minPlayers, currentPlayers);
             return;
         }
         _services.SetupSniper(player);
@@ -727,19 +761,28 @@ public class ZOExtraItemsMenu
     private void ApplyBuyAssassin(IPlayer player, int remainingAP)
     {
         int playerId = player.PlayerID;
+        int price = _extraItemsCFG.CurrentValue.Items
+            .FirstOrDefault(i => i.Key == "buy_assassin")?.Price ?? 0;
         if (_services == null)
         {
             _logger.LogError("[ZOExtraItems] ZOServices not wired – refunding buy_assassin.");
-            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
-                .FirstOrDefault(i => i.Key == "buy_assassin")?.Price ?? 0);
+            AddAmmoPacks(playerId, price);
             return;
         }
         // Assassin is a zombie role — only active zombies without a special role can buy.
         if (!IsZombie(playerId) || IsSpecialRole(playerId))
         {
-            AddAmmoPacks(playerId, _extraItemsCFG.CurrentValue.Items
-                .FirstOrDefault(i => i.Key == "buy_assassin")?.Price ?? 0);
+            AddAmmoPacks(playerId, price);
             _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEligible");
+            return;
+        }
+        // Require the same minimum player count as the Assassin round mode.
+        int minPlayers = _mainCFG.CurrentValue.Assassin.MinPlayers;
+        int currentPlayers = GetRealPlayerCount();
+        if (minPlayers > 0 && currentPlayers < minPlayers)
+        {
+            AddAmmoPacks(playerId, price);
+            _helpers.SendChatT(player, "ExtraItemsBuyRoleNotEnoughPlayers", minPlayers, currentPlayers);
             return;
         }
         _services.SetupAssassin(player);

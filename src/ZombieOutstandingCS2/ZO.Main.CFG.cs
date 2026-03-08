@@ -283,18 +283,6 @@ public class ZOMainCFG
     /// </summary>
     public int NormalRoundsInterval { get; set; } = 0;
 
-    // ── Custom game mode player gate ──────────────────────────────────────────
-    /// <summary>
-    /// Global minimum number of connected (non-bot) players required before any
-    /// custom game mode (Nemesis, Survivor, Swarm, Plague, Assassin, Sniper,
-    /// MultiInfection, AVS, Hero) is eligible for random selection.
-    /// When the current player count is below this threshold, the round always
-    /// falls back to Normal Infection regardless of per-mode weights.
-    /// Set to 0 (default) to impose no global minimum (per-mode MinPlayers
-    /// values still apply individually).
-    /// </summary>
-    public int MinPlayersForCustomMode { get; set; } = 0;
-
     // ── Solo / low-population guard ───────────────────────────────────────────
     /// <summary>
     /// Minimum number of alive human players required before

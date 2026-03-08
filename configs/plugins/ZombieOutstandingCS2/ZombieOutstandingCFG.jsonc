@@ -46,15 +46,6 @@
     // 5 = at least 5 normal rounds must pass between special rounds.
     "NormalRoundsInterval": 5,
 
-    // Global minimum number of connected (non-bot) players required before any
-    // custom game mode (MultiInfection, Nemesis, Survivor, Swarm, Plague,
-    // Assassin, Sniper, AVS, Hero) is eligible for random selection.
-    // When the player count is below this value the round always falls back to
-    // Normal Infection regardless of per-mode weights.
-    // 0  = no global minimum (rely on per-mode MinPlayers values only).
-    // 10 = custom modes only start when at least 10 real players are connected.
-    "MinPlayersForCustomMode": 10,
-
     // Minimum alive humans required before infection starts.
     // The check is: if (humanCandidates < this value) skip infection entirely.
     //
@@ -100,7 +91,7 @@
       "Enable":                 true,
       "Name":                   "Multi Infection Mode",
       "Weight":                 50,
-      "MinPlayers":             0,
+      "MinPlayers":             10,
       "MotherZombieNames":      "Mother Zombie",
       // 5 mother zombies at round start for fast, chaotic infection.
       "MotherZombieCount":      5,
@@ -115,7 +106,7 @@
       "Enable":                 true,
       "Name":                   "Nemesis Mode",
       "Weight":                 50,
-      "MinPlayers":             0,
+      "MinPlayers":             10,
       "NemesisNames":           "Nemesis",
       // HP assigned to the Nemesis at round start.
       // Balance guide (4-min round, ~270 DPS per human):
@@ -133,7 +124,7 @@
       "Enable":                 true,
       "Name":                   "Assassin Mode",
       "Weight":                 50,
-      "MinPlayers":             0,
+      "MinPlayers":             10,
       "AssassinNames":          "Assassin",
       // 24 000 HP -- dangerous but killable with two coordinated players.
       // Set to 0 to use the special-class default HP in ZOSpecialClassCFG.
@@ -149,7 +140,7 @@
       "Enable":                 true,
       "Name":                   "Swarm Mode",
       "Weight":                 50,
-      "MinPlayers":             0,
+      "MinPlayers":             10,
       "EnableInfiniteClipMode": true,
       // Humans win by eliminating all zombies -- no respawns.
       "ZombieCanReborn":        false
@@ -161,7 +152,7 @@
       "Enable":                 true,
       "Name":                   "Survivor Mode",
       "Weight":                 50,
-      "MinPlayers":             0,
+      "MinPlayers":             10,
       "SurvivorNames":          "Survivor",
       // 8 000 HP lets one human endure zombie pressure without being unkillable.
       // Set to 0 to use normal human base HP.
@@ -182,7 +173,7 @@
       "Enable":                 true,
       "Name":                   "Sniper Mode",
       "Weight":                 50,
-      "MinPlayers":             0,
+      "MinPlayers":             10,
       "SniperNames":            "Sniper",
       // 5 000 HP -- glass-cannon: extreme damage output, dies fast up close.
       // Set to 0 to use normal human base HP.
@@ -208,7 +199,7 @@
       "Enable":                 true,
       "Name":                   "Plague Mode",
       "Weight":                 50,
-      "MinPlayers":             0,
+      "MinPlayers":             15,
       "NemesisNames":           "Nemesis",
       "SurvivorNames":          "Survivor",
       // How many Nemesis zombies are promoted at round start.
@@ -234,7 +225,7 @@
       "Enable":                 true,
       "Name":                   "Assassin vs Sniper",
       "Weight":                 50,
-      "MinPlayers":             0,
+      "MinPlayers":             10,
       "AssassinNames":          "Assassin",
       "SniperNames":            "Sniper",
       "EnableInfiniteClipMode": true,
@@ -246,7 +237,7 @@
       "Enable":                 true,
       "Name":                   "Hero Mode",
       "Weight":                 50,
-      "MinPlayers":             0,
+      "MinPlayers":             10,
       "HeroNames":              "Hero",
       // Number of heroes selected at round start.
       "HeroCount":              3,

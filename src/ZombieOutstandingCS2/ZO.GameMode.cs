@@ -56,17 +56,7 @@ public class ZOGameMode
         int currentPlayerCount = _core.PlayerManager.GetAllPlayers()
             .Count(p => p != null && p.IsValid && !p.IsFakeClient);
 
-        bool customModeAllowed = config.MinPlayersForCustomMode == 0
-            || currentPlayerCount >= config.MinPlayersForCustomMode;
-
-        var enabledModes = modes.Where(m =>
-        {
-            if (!m.enable) return false;
-            if (currentPlayerCount < m.minPlayers) return false;
-            bool isCustomMode = m.type != GameModeType.Normal && m.type != GameModeType.NormalInfection;
-            if (isCustomMode && !customModeAllowed) return false;
-            return true;
-        }).ToList();
+        var enabledModes = modes.Where(m => m.enable && currentPlayerCount >= m.minPlayers).ToList();
 
         if (enabledModes.Count == 0)
         {

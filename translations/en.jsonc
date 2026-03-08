@@ -193,6 +193,8 @@
 
     // ── Buy Role (Extra Items) ────────────────────────────────────────────
     "ExtraItemsBuyRoleNotEligible": "You are not eligible to purchase this role right now.",
+    // {0} = required player count, {1} = current player count
+    "ExtraItemsBuyRoleNotEnoughPlayers": "Not enough players to activate this role ([green]{0}[default] required, [green]{1}[default] online).",
     "ExtraItemsBuySurvivorSuccess": "You became a [green]Survivor[default]! Ammo Packs remaining: [green]{0}[default].",
     "ExtraItemsBuyNemesisSuccess": "You became a [green]Nemesis[default]! Ammo Packs remaining: [green]{0}[default].",
     "ExtraItemsBuySniperSuccess": "You became a [green]Sniper[default]! Ammo Packs remaining: [green]{0}[default].",
