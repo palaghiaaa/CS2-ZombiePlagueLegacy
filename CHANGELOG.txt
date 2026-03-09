@@ -1,0 +1,166 @@
+================================================================================
+  ZombieOutstandingCS2 — CHANGELOG
+  Period: 3 March 2026 – 9 March 2026
+================================================================================
+
+--------------------------------------------------------------------------------
+[2026-03-03]
+--------------------------------------------------------------------------------
+
+FEATURES:
+  + Fog system: server-wide fog and skybox override now applied automatically
+    on every map load and on each player spawn. Fully configurable (color,
+    start/end distance, density, exponent). Can be disabled with "Enable": false
+    in FogConfig. Skybox can also be overridden per map.
+
+--------------------------------------------------------------------------------
+[2026-03-04]
+--------------------------------------------------------------------------------
+
+BUG FIXES:
+  + Fixed instant round-end when playing solo: added MotherZombieWasSelected
+    flag so CheckRoundWinConditions() no longer ends the round before any
+    infection has actually occurred. (PR #13)
+  + Fixed MinPlayersForInfection default value: was incorrectly set to 1
+    (no real solo protection), corrected to 2. (PR #14)
+  + Fixed API shared interface key mismatch: renamed "HanZombiePlague" →
+    "ZombieOutstanding" in ZPAPITEST.cs so external plugins can resolve the
+    API correctly. (PR #15)
+  + Fixed fog system not applying on workshop maps: the fog hook now fires
+    reliably on workshop map loads where the event order differs from
+    standard maps. (PR #16)
+
+CONFIGURATION:
+  + Added MinPlayersForInfection config entry (default: 2). The round now
+    restarts automatically if the player count is below this threshold when
+    the infection countdown ends.
+
+--------------------------------------------------------------------------------
+[2026-03-07]
+--------------------------------------------------------------------------------
+
+FEATURES:
+  + Status HUD: permanent single-line center message showing the current game
+    mode, player class, and Ammo Packs count. Updated live every tick. Can be
+    disabled with EnableStatusHud: false in the main config. (PR #17)
+  + Status HUD: added remaining-players countdown messages (e.g. "2 humans
+    left") alongside the compact status line. (PR #19)
+  + zo_rank plugin (new standalone plugin):
+      - Commands: !rank (personal rank), !top / !top10 / !top15 (leaderboard).
+      - Tracks kills, deaths, and K/D ratio.
+      - SQLite persistence — stats survive map changes and server restarts.
+      - Bots and suicides are excluded from statistics.
+      - Leaderboard size and visible rows are configurable.
+      - Tiered gradient colors: gold → #1, silver → #2, bronze → #3, blue rest.
+      - Full hot-reload support. All messages in a separate translation file.
+  + zo_vip plugin (new standalone plugin):
+      - Integrates with IZombieOutstandingAPI and the Economy plugin.
+      - Armor at spawn (ArmorAmount), multi-jump (ExtraJumps / JumpVelocity),
+        no fall damage, damage multiplier vs zombies, AP reward per damage
+        threshold and per zombie kill, Happy Hour bonus AP + frags, infect
+        reward for zombie VIPs.
+      - !vip menu with configurable benefit lines.
+      - !vips menu listing online VIPs.
+      - VIP join announce on connect (JoinAnnounceEnabled).
+  + CI/CD: separate GitHub Actions build jobs added for zo_vip (ZPOVIP) and
+    zo_rank (ZORank) alongside the main plugin build. (PR #20)
+
+BUG FIXES:
+  + Fixed NullReferenceException in posshuman handler when GiveItem() returns
+    null (e.g. weapon not available on the map). (PR #18)
+  + Fixed missing EnableStatusHud entry in the main config file. (PR #18)
+  + Fixed runtime error 0x80131515: ZombieOutstandingAPI.dll is now included
+    in ZPOVIP and ZORank plugin output directories so SwiftlyS2 can resolve
+    IZombieOutstandingAPI at load time. (PR #21)
+
+IMPROVEMENTS:
+  + Standardized menu navigation across all plugins: removed custom
+    MenuKeybindOverrides (W/S/E/Shift) from ZOMenuHelper so all ZO menus
+    use the same default SwiftlyS2 keybinds as ZPOVIP and ZORank.
+    No more hard-coded key bindings. (PR #21)
+  + README rewritten: cleaner layout, for-the-badge shields, collapsible
+    config sections, feature comparison table, new HUD section.
+
+--------------------------------------------------------------------------------
+[2026-03-08]
+--------------------------------------------------------------------------------
+
+FEATURES:
+  + Spawn protection: new configurable spawn protection window for humans at
+    round start. (PR #30)
+  + Zombie leap: zombies can now perform a configurable leap ability. (PR #30)
+  + Infect HP reward: mother zombie receives bonus HP for each successful
+    infection. Amount is configurable. (PR #30)
+  + Anti-repeat infection: prevents the same player from being chosen as
+    mother zombie on consecutive rounds. (PR #30)
+  + ZP 1.6 gameplay parity (PR #31):
+      - Mother zombie HP multiplier based on player count.
+      - Purchase limits per item in the shop.
+      - Plague (multi-zombie) count configuration.
+      - Last Night / Judgment Day (LNJ) HP multipliers.
+      - Per-weapon knockback values.
+  + Per-mode MinPlayers: each custom game mode can now define its own minimum
+    player count requirement. Shop extra items also check player count before
+    becoming available. (PR #32)
+  + Global MinPlayersForCustomMode setting: prevents any custom game mode from
+    starting if the server has too few players. (PR #32)
+  + Marquee text: left-scrolling animated text added to VIP and Top menus
+    for a cleaner look. (PR #26)
+  + Chat [INFO] prefix added to informational plugin messages to distinguish
+    them from regular chat. (PR #24)
+  + VIP announce on connect: server announces in chat when a VIP player joins.
+    Configurable via JoinAnnounceEnabled. (PR #24)
+
+BUG FIXES:
+  + Fixed SIGSEGV crash (address 0x0) in SwiftlyS2 MenuAPI.BuildMenuHtml:
+    the crash was caused by a menu render timer firing after a player
+    disconnected. Fixed by calling CloseActiveMenu(player) in all
+    OnClientDisconnected handlers (ZO core, zo_vip, zo_rank). (PR #28)
+  + Fixed ObjectDisposedException when accessing player SteamID in async
+    callbacks: player ID and SteamID are now captured as primitive values
+    before NextTick/DelayBySeconds closures so they cannot be disposed.
+    Added IsValid guards inside OnJoinTeam delay callbacks. (PR #22)
+  + Fixed MaxVisibleItems exception: menus threw when item count exceeded the
+    visible limit. ScrollableMenu is now handled correctly. (PR #24)
+  + Fixed VIP permission detection: permission was not checked correctly;
+    resolved by using IsValidRealPlayer. (PR #23)
+  + Fixed fog not persisting across map changes: fog is now re-applied in the
+    OnMapStart event. (PR #23)
+  + Fixed chat prefix not hot-reloading: prefix now uses IOptionsMonitor so
+    it updates when the config file changes without a full restart. (PR #23)
+  + Fixed top menu name truncation: long player names now truncated correctly
+    before being passed to the menu HTML renderer. (PR #23)
+  + Fixed duplicate closing brace in ZPOVIPPlugin.cs that caused a build
+    error. (PR #25)
+  + Fixed missing IsValidRealPlayer method in ZPOVIPPlugin causing a
+    null reference compiler warning. (PR #26)
+  + Fixed nullable dereference warning on player parameter in
+    ZPOVIPPlugin.cs:334 (null-forgiving operator applied). (PR #27)
+  + Fixed MotherZombieWasSelected not being set in SwitchMode: all special
+    game modes now correctly trigger win condition checks. (PR #30)
+  + Fixed round not restarting when player count drops below
+    MinPlayersForInfection at the end of the countdown. (PR #30)
+
+IMPROVEMENTS:
+  + Config files reorganised into clearly labelled sections for readability.
+    Knockback multiplier defaults corrected: head 0.8, body 0.4, ground 0.4,
+    air 0.2, hero 0.5. (PR #31)
+  + All menus now use LinearScroll. Footer is pinned at the bottom in all
+    menus across ZO core, zo_vip, and zo_rank. (PR #22)
+  + Menu colours improved: gold/orange benefit lines and lime-green / orange-
+    red / gold status lines in VIP menu; tiered gradient colours in rank menu.
+  + Workshop map assets consolidated into a single entry.
+  + CHANGELOG.md added documenting all changes relative to the original
+    HanZombiePlagueS2 plugin. (PR #29)
+
+--------------------------------------------------------------------------------
+[2026-03-09]
+--------------------------------------------------------------------------------
+
+  (No code changes — planning day.)
+
+--------------------------------------------------------------------------------
+  ZombieOutstandingCS2 by DeadPoolCS2
+  Based on HanZombiePlagueS2 by H-AN
+  https://github.com/DeadPoolCS2/ZombieOutstandingCS2
+================================================================================
