@@ -201,10 +201,17 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         if (_economyApi != null)
         {
-            _economyApi.AddPlayerBalance(playerId, _config.WalletKind, amount);
-            _economyApi.SaveData(playerId);
-            int total = Math.Max(0, _economyApi.GetPlayerBalance(playerId, _config.WalletKind));
-            SendChat(player, T(player, "VipApReward", amount, total));
+            try
+            {
+                _economyApi.AddPlayerBalance(playerId, _config.WalletKind, amount);
+                _economyApi.SaveData(playerId);
+                int total = Math.Max(0, _economyApi.GetPlayerBalance(playerId, _config.WalletKind));
+                SendChat(player, T(player, "VipApReward", amount, total));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[ZPOVIP] AddAmmoPacks({PlayerId},{Amount}) failed", playerId, amount);
+            }
         }
         else
         {
