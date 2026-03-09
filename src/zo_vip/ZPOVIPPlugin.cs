@@ -59,6 +59,11 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             .Configure(builder =>
             {
                 builder.AddJsonFile(ConfigFile, false, true);
+                builder.SetFileLoadExceptionHandler(ctx =>
+                {
+                    Core.Logger.LogError("[ZPOVIP] Failed to load {File}: {Error}. Using last valid configuration.", ConfigFile, ctx.Exception.Message);
+                    ctx.Ignore = true;
+                });
             });
 
         var services = new ServiceCollection();

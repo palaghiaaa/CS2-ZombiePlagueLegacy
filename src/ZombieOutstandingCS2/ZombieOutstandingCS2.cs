@@ -67,30 +67,65 @@ public partial class ZombieOutstandingCS2(ISwiftlyCore core) : BasePlugin(core)
         Core.Configuration.InitializeJsonWithModel<ZOMainCFG>("ZombieOutstandingCFG.jsonc", "ZOMainCFG").Configure(builder =>
         {
             builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.SetFileLoadExceptionHandler(ctx =>
+            {
+                Core.Logger.LogError("[ZO] Failed to load ZombieOutstandingCFG.jsonc (ZOMainCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                ctx.Ignore = true;
+            });
         });
         Core.Configuration.InitializeJsonWithModel<ZOVoxCFG>("ZombieOutstandingCFG.jsonc", "ZOVoxCFG").Configure(builder =>
         {
             builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.SetFileLoadExceptionHandler(ctx =>
+            {
+                Core.Logger.LogError("[ZO] Failed to load ZombieOutstandingCFG.jsonc (ZOVoxCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                ctx.Ignore = true;
+            });
         });
         Core.Configuration.InitializeJsonWithModel<ZOZombieClassCFG>("ZombieClassesCFG.jsonc", "ZOZombieClassCFG").Configure(builder =>
         {
             builder.AddJsonFile("ZombieClassesCFG.jsonc", false, true);
+            builder.SetFileLoadExceptionHandler(ctx =>
+            {
+                Core.Logger.LogError("[ZO] Failed to load ZombieClassesCFG.jsonc (ZOZombieClassCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                ctx.Ignore = true;
+            });
         });
         Core.Configuration.InitializeJsonWithModel<ZOSpecialClassCFG>("ZombieOutstandingCFG.jsonc", "ZOSpecialClassCFG").Configure(builder =>
         {
             builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.SetFileLoadExceptionHandler(ctx =>
+            {
+                Core.Logger.LogError("[ZO] Failed to load ZombieOutstandingCFG.jsonc (ZOSpecialClassCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                ctx.Ignore = true;
+            });
         });
         Core.Configuration.InitializeJsonWithModel<ZOWeaponsCFG>("ZombieOutstandingCFG.jsonc", "ZOWeaponsCFG").Configure(builder =>
         {
             builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.SetFileLoadExceptionHandler(ctx =>
+            {
+                Core.Logger.LogError("[ZO] Failed to load ZombieOutstandingCFG.jsonc (ZOWeaponsCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                ctx.Ignore = true;
+            });
         });
         Core.Configuration.InitializeJsonWithModel<ZOExtraItemsCFG>("ExtraItemsCFG.jsonc", "ZOExtraItemsCFG").Configure(builder =>
         {
             builder.AddJsonFile("ExtraItemsCFG.jsonc", false, true);
+            builder.SetFileLoadExceptionHandler(ctx =>
+            {
+                Core.Logger.LogError("[ZO] Failed to load ExtraItemsCFG.jsonc (ZOExtraItemsCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                ctx.Ignore = true;
+            });
         });
         Core.Configuration.InitializeJsonWithModel<ZOMineCFG>("ZombieOutstandingCFG.jsonc", "ZOMineCFG").Configure(builder =>
         {
             builder.AddJsonFile("ZombieOutstandingCFG.jsonc", false, true);
+            builder.SetFileLoadExceptionHandler(ctx =>
+            {
+                Core.Logger.LogError("[ZO] Failed to load ZombieOutstandingCFG.jsonc (ZOMineCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                ctx.Ignore = true;
+            });
         });
 
         var collection = new ServiceCollection();

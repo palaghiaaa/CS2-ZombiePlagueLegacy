@@ -545,7 +545,7 @@ public partial class ZOServices
 
         if (currentDisplay <= 10 && currentDisplay >= 1 && _globals.RoundVoxGroup != null)
         {
-            var soundList = _globals.RoundVoxGroup.CoundDownVox.Split(',');
+            var soundList = _globals.RoundVoxGroup.CountDownVox.Split(',');
 
             int soundIndex = currentDisplay - 1;
 
