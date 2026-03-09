@@ -21,6 +21,23 @@
   //  13.  COMMANDS         (chat / console commands, permissions)
   //  14.  DEBUG            (chat prefix, log flags)
   //
+  // ── Known [ResourceSystem] "File not found" log entries ──────────────────
+  //
+  //  The following warnings are NOT caused by this plugin and cannot be fixed
+  //  here.  They are listed so future maintainers know what to look for:
+  //
+  //  • characters/models/shared/materials/character_blood/default/*.vtex_c
+  //    materials/default/default_{mask,ao,eyes_normal}*.vtex_c
+  //    → CS2 engine shared material fallbacks.  These compiled textures must be
+  //      present in the game's own VPK content (pak01_dir.vpk / workshop VPKs).
+  //      If they are missing the server's game content is incomplete or the
+  //      content VPKs are not all mounted.
+  //
+  //  • maps/prefabs/misc/terrorist_team_intro_variant2/world_visibility.vvis_c
+  //    → Pre-compiled visibility data for a map prefab.  This is generated when
+  //      the map is compiled with VVIS.  It is a map-authoring issue, not a
+  //      plugin issue.  Contact the map author or recompile the map with VVIS.
+  //
   // ============================================================================
 
   "ZOMainCFG": {
@@ -786,7 +803,13 @@
           "IdleInterval":         70.0
         },
         "Models": {
-          "ModelPath":            "characters/models/hmn_sk2/zombie/hl2_zombie/hl2_zombie_sk2model.vmdl",
+          // hl2_zombie_sk2model.vmdl was replaced because it carries a transitive
+          // dependency on characters/models/hmn_sk2/zombie/hlalyx_zombie/materials/
+          // (the "arms fix" textures).  Those compiled .vtex_c files are not packaged
+          // with the workshop addon and cause [ResourceSystem] "File not found" errors
+          // on every map load.  The boomer model ships with the same hmn_sk2 zombie
+          // workshop pack but has no hlalyx_zombie dependency.
+          "ModelPath":            "characters/models/hmn_sk2/zombie/boomer/boomer_sk2model.vmdl",
           "CustomKinfeModelPath": ""
         },
         "Sounds": {
