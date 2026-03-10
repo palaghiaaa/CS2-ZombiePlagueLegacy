@@ -248,7 +248,11 @@ public partial class ZOEvents
         if (zombie == null)
             return;
 
-        if (@event.Entity.DesignerName != "worldent")
+        var entity = @event.Entity;
+        if (entity == null || !entity.IsValid)
+            return;
+
+        if (entity.DesignerName != "worldent")
             return;
 
         _globals.InSwing[AttackerPlayer.PlayerID] = true;
