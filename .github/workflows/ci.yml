@@ -12,6 +12,22 @@ jobs:
     permissions:
       contents: read
 
+    strategy:
+      matrix:
+        include:
+          - name: ZombieOutstandingCS2
+            csproj: src/ZombieOutstandingCS2/ZombieOutstandingCS2.csproj
+            output: ZombieOutstandingCS2
+            copy_economy: true
+          - name: ZPOVIP
+            csproj: src/zo_vip/ZPOVIP.csproj
+            output: ZPOVIP
+            copy_economy: true
+          - name: ZORank
+            csproj: src/zo_rank/ZORank.csproj
+            output: ZORank
+            copy_economy: false
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,95 +35,28 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
+          dotnet-version-file: global.json
           cache: true
           cache-dependency-path: "**/*.csproj"
 
       - name: Restore
-        run: dotnet restore src/ZombieOutstandingCS2/ZombieOutstandingCS2.csproj
+        run: dotnet restore ${{ matrix.csproj }}
 
       - name: Build
-        run: dotnet build src/ZombieOutstandingCS2/ZombieOutstandingCS2.csproj -c Release --no-restore
+        run: dotnet build ${{ matrix.csproj }} -c Release --no-restore
 
       - name: Publish
-        run: dotnet publish src/ZombieOutstandingCS2/ZombieOutstandingCS2.csproj -c Release -f net10.0 --no-restore -o ZombieOutstandingCS2
+        run: dotnet publish ${{ matrix.csproj }} -c Release -f net10.0 --no-restore -o ${{ matrix.output }}
 
       - name: Copy Economy contract
-        run: cp src/ZombieOutstandingCS2/lib/Economy.Contract.dll ZombieOutstandingCS2/
+        if: matrix.copy_economy
+        run: cp src/ZombieOutstandingCS2/lib/Economy.Contract.dll ${{ matrix.output }}/
 
       - name: Package artifact
-        run: zip -r ZombieOutstandingCS2-net10.0.zip ZombieOutstandingCS2
+        run: zip -r ${{ matrix.name }}-net10.0.zip ${{ matrix.output }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ZombieOutstandingCS2-net10.0
-          path: ZombieOutstandingCS2-net10.0.zip
-
-  build-zovip:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          cache: true
-          cache-dependency-path: "**/*.csproj"
-
-      - name: Restore
-        run: dotnet restore src/zo_vip/ZPOVIP.csproj
-
-      - name: Build
-        run: dotnet build src/zo_vip/ZPOVIP.csproj -c Release --no-restore
-
-      - name: Publish
-        run: dotnet publish src/zo_vip/ZPOVIP.csproj -c Release -f net10.0 --no-restore -o ZPOVIP
-
-      - name: Copy Economy contract
-        run: cp src/ZombieOutstandingCS2/lib/Economy.Contract.dll ZPOVIP/
-
-      - name: Package artifact
-        run: zip -r ZPOVIP-net10.0.zip ZPOVIP
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ZPOVIP-net10.0
-          path: ZPOVIP-net10.0.zip
-
-  build-zorank:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          cache: true
-          cache-dependency-path: "**/*.csproj"
-
-      - name: Restore
-        run: dotnet restore src/zo_rank/ZORank.csproj
-
-      - name: Build
-        run: dotnet build src/zo_rank/ZORank.csproj -c Release --no-restore
-
-      - name: Publish
-        run: dotnet publish src/zo_rank/ZORank.csproj -c Release -f net10.0 --no-restore -o ZORank
-
-      - name: Package artifact
-        run: zip -r ZORank-net10.0.zip ZORank
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ZORank-net10.0
-          path: ZORank-net10.0.zip
+          name: ${{ matrix.name }}-net10.0
+          path: ${{ matrix.name }}-net10.0.zip
