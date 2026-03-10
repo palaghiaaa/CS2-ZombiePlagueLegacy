@@ -57,16 +57,21 @@ public class ZORankPlugin(ISwiftlyCore core) : BasePlugin(core)
         // Bind config from configs/plugins/ZORank/ZORankCFG.jsonc
         // reloadOnChange: true ensures IOptionsMonitor reflects edits made to
         // the file at runtime (chat tag, weights, top list size, etc.).
-        Core.Configuration.InitializeJsonWithModel<ZORankCFG>(ConfigFile, "ZORankCFG")
-            .Configure(builder =>
-            {
-                builder.AddJsonFile(ConfigFile, false, true);
-                builder.SetFileLoadExceptionHandler(ctx =>
+        // Guard with !hotReload: SwiftlyS2's PluginConfigurationService.Manager is a
+        // lazy singleton that is never reset between reloads.  Calling AddJsonFile on
+        // it again on every Load() appends a new FileSystemWatcher thread to the same
+        // ConfigurationManager, leaking one watcher thread per map change.
+        if (!hotReload)
+            Core.Configuration.InitializeJsonWithModel<ZORankCFG>(ConfigFile, "ZORankCFG")
+                .Configure(builder =>
                 {
-                    Core.Logger.LogError("[ZORank] Failed to load {File}: {Error}. Using last valid configuration.", ConfigFile, ctx.Exception.Message);
-                    ctx.Ignore = true;
+                    builder.AddJsonFile(ConfigFile, false, true);
+                    builder.SetFileLoadExceptionHandler(ctx =>
+                    {
+                        Core.Logger.LogError("[ZORank] Failed to load {File}: {Error}. Using last valid configuration.", ConfigFile, ctx.Exception.Message);
+                        ctx.Ignore = true;
+                    });
                 });
-            });
 
         var collection = new ServiceCollection();
         collection.AddSwiftly(Core);
