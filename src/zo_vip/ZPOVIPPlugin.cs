@@ -55,11 +55,21 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         // Bind config from configs/plugins/ZPOVIP/ZPOVIP.jsonc.
         // reloadOnChange: true ensures IOptionsMonitor reflects edits made to
         // the file at runtime (chat prefix, permissions, perk values, etc.).
-        Core.Configuration.InitializeJsonWithModel<ZPOVIPConfig>(ConfigFile, "ZPOVIP")
-            .Configure(builder =>
-            {
-                builder.AddJsonFile(ConfigFile, false, true);
-            });
+        // Guard with !hotReload: SwiftlyS2's PluginConfigurationService.Manager is a
+        // lazy singleton that is never reset between reloads.  Calling AddJsonFile on
+        // it again on every Load() appends a new FileSystemWatcher thread to the same
+        // ConfigurationManager, leaking one watcher thread per map change.
+        if (!hotReload)
+            Core.Configuration.InitializeJsonWithModel<ZPOVIPConfig>(ConfigFile, "ZPOVIP")
+                .Configure(builder =>
+                {
+                    builder.AddJsonFile(ConfigFile, false, true);
+                    builder.SetFileLoadExceptionHandler(ctx =>
+                    {
+                        Core.Logger.LogError("[ZPOVIP] Failed to load {File}: {Error}. Using last valid configuration.", ConfigFile, ctx.Exception.Message);
+                        ctx.Ignore = true;
+                    });
+                });
 
         var services = new ServiceCollection();
         services.AddSwiftly(Core);
@@ -201,10 +211,17 @@ public class ZPOVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         if (_economyApi != null)
         {
-            _economyApi.AddPlayerBalance(playerId, _config.WalletKind, amount);
-            _economyApi.SaveData(playerId);
-            int total = Math.Max(0, _economyApi.GetPlayerBalance(playerId, _config.WalletKind));
-            SendChat(player, T(player, "VipApReward", amount, total));
+            try
+            {
+                _economyApi.AddPlayerBalance(playerId, _config.WalletKind, amount);
+                _economyApi.SaveData(playerId);
+                int total = Math.Max(0, _economyApi.GetPlayerBalance(playerId, _config.WalletKind));
+                SendChat(player, T(player, "VipApReward", amount, total));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("[ZPOVIP] AddAmmoPacks({PlayerId}, {Amount}) Economy call failed: {Ex}", playerId, amount, ex.Message);
+            }
         }
         else
         {

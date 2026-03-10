@@ -9,7 +9,7 @@ public class ZOVoxCFG
         public float Volume { get; set; } = 1.0f;
         public string RoundMusicVox { get; set; } = string.Empty;
         public string SecRemainVox { get; set; } = string.Empty;
-        public string CoundDownVox { get; set; } = string.Empty;
+        public string CountDownVox { get; set; } = string.Empty;
         public string ZombieSpawnVox { get; set; } = string.Empty;
         public string NormalInfectionVox { get; set; } = string.Empty;
         public string MultiInfectionVox { get; set; } = string.Empty;
