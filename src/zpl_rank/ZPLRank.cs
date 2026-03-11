@@ -103,10 +103,17 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         if (interfaceManager.HasSharedInterface("ZombiePlagueLegacy"))
         {
-            _zplApi = interfaceManager.GetSharedInterface<IZombiePlagueLegacyAPI>("ZombiePlagueLegacy");
-            if (_zplApi != null)
+            try
             {
-                _zplApi.ZPL_OnPlayerInfect += OnZPLPlayerInfect;
+                _zplApi = interfaceManager.GetSharedInterface<IZombiePlagueLegacyAPI>("ZombiePlagueLegacy");
+                if (_zplApi != null)
+                {
+                    _zplApi.ZPL_OnPlayerInfect += OnZPLPlayerInfect;
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Core.Logger.LogWarning("[ZPLRank] Failed to acquire ZombiePlagueLegacyCS2 API: {Error} – infections will not be tracked.", ex.Message);
             }
         }
         else

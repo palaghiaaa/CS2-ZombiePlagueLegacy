@@ -1,78 +1,14 @@
 {
-  // ============================================================================
-  // ZOMBIE PLAGUE: LEGACY -- MAIN CONFIGURATION
-  // ============================================================================
-  //
-  //  This file is loaded at plugin startup and hot-reloaded on map change.
-  //  Jump to any section with Ctrl+F on the section title below:
-  //
-  //   1.  ROUND TIMING
-  //   2.  GAME MODE POOL   (scheduling, minimum players)
-  //   3.  GAME MODES       (one block per mode)
-  //   4.  HUMAN SETTINGS   (health, speed, spawn points, HUD, weapons)
-  //   5.  ZOMBIE SETTINGS  (HP multipliers, infect reward, spawn protection)
-  //   6.  ZOMBIE LEAP      (long-jump burst, per-role settings)
-  //   7.  KNOCKBACK        (multipliers + per-weapon force table)
-  //   8.  GRENADES         (fire, light, freeze, teleport, T-Virus)
-  //   9.  EQUIPMENT        (SCBA Suit)
-  //  10.  ECONOMY          (ammo-pack wallet)
-  //  11.  AMBIENCE         (background sounds)
-  //  12.  ATMOSPHERE       (fog, skybox)
-  //  13.  COMMANDS         (chat / console commands, permissions)
-  //  14.  DEBUG            (chat prefix, log flags)
-  //
-  // ============================================================================
 
   "ZPLMainCFG": {
 
-    // ==========================================================================
-    // 1.  ROUND TIMING
-    // ==========================================================================
-
-    // Seconds players have to prepare/buy before infection starts each round.
     "RoundReadyTime": "22.0",
 
-    // Total round duration in minutes (excluding freeze time).
     "RoundTime": "4.0",
 
-
-    // ==========================================================================
-    // 2.  GAME MODE POOL
-    // ==========================================================================
-
-    // Minimum consecutive Normal-Infection rounds required before a special
-    // game mode (Nemesis, Survivor, etc.) can be randomly chosen.
-    // 0 = disabled (pure weight-based selection at all times).
-    // 5 = at least 5 normal rounds must pass between special rounds.
     "NormalRoundsInterval": 5,
 
-    // Minimum alive humans required before infection starts.
-    // The check is: if (humanCandidates < this value) skip infection entirely.
-    //
-    // WHY 2 IS THE CORRECT VALUE FOR SOLO PROTECTION:
-    //   1 human + set to 1 : 1 < 1 = false -> infection runs ->
-    //     solo player becomes zombie -> round ends instantly. (NOT protected)
-    //   1 human + set to 2 : 1 < 2 = true  -> infection skipped ->
-    //     round runs to the natural timer end. (PROTECTED) v
-    //   2 humans + set to 2 : 2 < 2 = false -> infection runs normally. v
-    //
     "MinPlayersForInfection": 2,
-
-
-    // ==========================================================================
-    // 3.  GAME MODES
-    // ==========================================================================
-    //
-    //  Fields common to every mode:
-    //    Enable               -- true/false: include in random rotation.
-    //    Name                 -- display name shown in chat and HUD.
-    //    Weight               -- relative chance of being chosen (higher = more frequent).
-    //    MinPlayers           -- minimum players online; 0 = no minimum.
-    //    EnableInfiniteClipMode -- true = all weapons have infinite magazine this round.
-    //    ZombieCanReborn      -- true = dead zombies respawn automatically.
-    //
-
-    // -- Standard infection modes ---------------------------------------------
 
     "NormalInfection": {
       "Enable":                 true,
@@ -80,10 +16,8 @@
       "Weight":                 50,
       "MinPlayers":             0,
       "MotherZombieNames":      "Mother Zombie",
-      // How many mother zombies are selected at round start.
       "MotherZombieCount":      1,
       "EnableInfiniteClipMode": false,
-      // Zombies do NOT respawn -- humans win by surviving to round end.
       "ZombieCanReborn":        false
     },
 
@@ -93,14 +27,10 @@
       "Weight":                 50,
       "MinPlayers":             10,
       "MotherZombieNames":      "Mother Zombie",
-      // 5 mother zombies at round start for fast, chaotic infection.
       "MotherZombieCount":      5,
       "EnableInfiniteClipMode": true,
-      // Zombies CAN respawn -- the horde keeps growing all round.
       "ZombieCanReborn":        true
     },
-
-    // -- Single-zombie special modes ------------------------------------------
 
     "Nemesis": {
       "Enable":                 true,
@@ -108,15 +38,8 @@
       "Weight":                 50,
       "MinPlayers":             10,
       "NemesisNames":           "Nemesis",
-      // HP assigned to the Nemesis at round start.
-      // Balance guide (4-min round, ~270 DPS per human):
-      //   5 humans  -> ~60 s to kill  (half the round; fair for small servers)
-      //   10 humans -> ~29 s to kill  (rewards coordination on full servers)
-      // 100 HP/s regen adds ~6 000 extra effective HP over a sustained fight.
-      // Set to 0 to fall back to the special-class HP in ZPLSpecialClassCFG.
       "NemesisHealth":          75000,
       "EnableInfiniteClipMode": true,
-      // Single Nemesis must survive alone -- no zombie respawns.
       "ZombieCanReborn":        false
     },
 
@@ -126,13 +49,9 @@
       "Weight":                 50,
       "MinPlayers":             10,
       "AssassinNames":          "Assassin",
-      // 24 000 HP -- dangerous but killable with two coordinated players.
-      // Set to 0 to use the special-class default HP in ZPLSpecialClassCFG.
       "AssassinHealth":         24000,
-      // The Assassin is invisible to humans beyond this distance (engine units).
       "InvisibilityDist":       200.0,
       "EnableInfiniteClipMode": false,
-      // Assassin must eliminate all humans alone -- no zombie respawns.
       "ZombieCanReborn":        false
     },
 
@@ -142,11 +61,8 @@
       "Weight":                 50,
       "MinPlayers":             10,
       "EnableInfiniteClipMode": true,
-      // Humans win by eliminating all zombies -- no respawns.
       "ZombieCanReborn":        false
     },
-
-    // -- Single-human special modes -------------------------------------------
 
     "Survivor": {
       "Enable":                 true,
@@ -154,18 +70,14 @@
       "Weight":                 50,
       "MinPlayers":             10,
       "SurvivorNames":          "Survivor",
-      // 8 000 HP lets one human endure zombie pressure without being unkillable.
-      // Set to 0 to use normal human base HP.
       "SurvivorHealth":         8000,
       "SurvivorSpeed":          0.92,
       "SurvivorGravity":        1.25,
-      // Damage multiplier applied to the Survivor weapon.
       "SurvivorDamage":         5.0,
       "SurvivorWeapon":         "weapon_xm1014",
       "CustomWeaponName":       "Survivor XM1014",
       "ModelsPath":             "characters/models/tm_phoenix_heavy/tm_phoenix_heavy.vmdl",
       "EnableInfiniteClipMode": false,
-      // Eliminating all zombies is a valid win path -- no respawns.
       "ZombieCanReborn":        false
     },
 
@@ -175,25 +87,17 @@
       "Weight":                 50,
       "MinPlayers":             10,
       "SniperNames":            "Sniper",
-      // 5 000 HP -- glass-cannon: extreme damage output, dies fast up close.
-      // Set to 0 to use normal human base HP.
       "SniperHealth":           5000,
       "SniperSpeed":            0.92,
       "SniperGravity":          0.75,
-      // Damage multiplier when OneShotKill = false.
       "SniperDamage":           35.0,
-      // true  = one AWP shot instantly eliminates any zombie (CS 1.6 style).
-      // false = damage is multiplied by SniperDamage instead.
       "OneShotKill":            true,
       "SniperWeapon":           "weapon_awp",
       "CustomWeaponName":       "Sniper AWP",
       "ModelsPath":             "characters/models/tm_professional/tm_professional_varf4.vmdl",
       "EnableInfiniteClipMode": false,
-      // Sniper wins by eliminating all zombies -- no respawns.
       "ZombieCanReborn":        false
     },
-
-    // -- Mixed / team-based modes ---------------------------------------------
 
     "Plague": {
       "Enable":                 true,
@@ -202,22 +106,11 @@
       "MinPlayers":             15,
       "NemesisNames":           "Nemesis",
       "SurvivorNames":          "Survivor",
-      // How many Nemesis zombies are promoted at round start.
-      // Mirrors zp_plague_nem_number from ZombiePlague CS 1.6.
       "NemesisCount":           1,
-      // How many Survivors are appointed at round start.
-      // Mirrors zp_plague_surv_number from ZombiePlague CS 1.6.
       "SurvivorCount":          1,
-      // HP multiplier applied to each Nemesis in this mode.
-      //   1.0 = full Nemesis HP (standard Plague)
-      //   0.5 = half HP (Armageddon / LNJ style -- mirrors zp_lnj_nem_hp_multi)
       "NemesisHPMultiplier":    1.0,
-      // HP multiplier applied to each Survivor in this mode.
-      //   1.0 = full Survivor HP (standard Plague)
-      //   0.5 = half HP (Armageddon / LNJ style -- mirrors zp_lnj_surv_hp_multi)
       "SurvivorHPMultiplier":   1.0,
       "EnableInfiniteClipMode": true,
-      // Nemesis(es) must eliminate all humans -- no zombie respawns.
       "ZombieCanReborn":        false
     },
 
@@ -229,7 +122,6 @@
       "AssassinNames":          "Assassin",
       "SniperNames":            "Sniper",
       "EnableInfiniteClipMode": true,
-      // Eliminating the opposing special role wins -- no respawns.
       "ZombieCanReborn":        false
     },
 
@@ -239,305 +131,154 @@
       "Weight":                 50,
       "MinPlayers":             10,
       "HeroNames":              "Hero",
-      // Number of heroes selected at round start.
       "HeroCount":              3,
       "HeroHealth":             1500,
       "HeroSpeed":              3.0,
       "HeroGravity":            0.4,
-      // Damage multiplier applied to hero weapons.
       "HeroDamage":             50.0,
       "ModelsPath":             "characters/models/ctm_heavy/ctm_heavy.vmdl",
       "EnableInfiniteClipMode": false,
-      // Heroes hold out against endless pressure -- zombies CAN respawn.
       "ZombieCanReborn":        true
     },
 
-
-    // ==========================================================================
-    // 4.  HUMAN SETTINGS
-    // ==========================================================================
-
-    // Default player model path assigned to every human each round.
     "HumandefaultModel":         "characters/models/ctm_st6/ctm_st6_variante.vmdl",
 
-    // Base health all humans spawn with (mirrors zp_human_health from ZP 1.6).
     "HumanMaxHealth":            150,
 
-    // Movement defaults (1.0 = CS2 default speed / gravity).
     "HumanInitialSpeed":         1.0,
     "HumanInitialGravity":       1.0,
 
-    // Comma-separated spawn-point types used for human / zombie spawning.
-    // Valid values: CT, T, DM
     "HumanSpawnPoints":          "CT,T,DM",
     "ZombieSpawnPoints":         "CT,T,DM",
 
-    // Show a floating damage number when a human hits a zombie.
     "EnableDamageHud":           true,
 
-    // Show a persistent status HUD (game mode, class, ammo packs) every second.
     "EnableStatusHud":           true,
 
-    // Give humans infinite reserve ammo (mirrors zp_human_unlimited_ammo = 1).
     "EnableInfiniteReserveAmmo": true,
 
-    // Remove weapon recoil / spread for all humans.
     "EnableWeaponNoRecoil":      true,
 
-
-    // ==========================================================================
-    // 5.  ZOMBIE SETTINGS
-    // ==========================================================================
-
-    // HP multiplier applied to the very first (mother) zombie each round.
-    //   2.5 = mother zombie gets 2.5x the normal zombie-class HP.
-    //   1.0 = disabled (mother zombie gets normal HP).
-    // Mirrors zp_zombie_first_hp from ZombiePlague CS 1.6 (their default: 2.0).
     "MotherZombieHPMultiplier":  2.5,
 
-    // HP given to a zombie each time they successfully infect a human.
-    // Capped at the zombie MaxHealth. Set to 0 to disable.
-    // Mirrors zp_zombie_infect_health from ZombiePlague CS 1.6.
     "ZombieInfectHealthReward":  500,
 
-    // Seconds of invulnerability granted immediately after spawning.
-    // Applies to both humans and zombies. Set to 0 to disable.
-    // Mirrors zp_spawn_protection from ZombiePlague CS 1.6.
     "SpawnProtectionTime":       2.0,
 
-
-    // ==========================================================================
-    // 6.  ZOMBIE LEAP  (Long Jump)
-    // ==========================================================================
-    //
-    //  When enabled, pressing Jump while on the ground gives a burst of
-    //  horizontal + vertical velocity -- a long-jump forward lunge.
-    //  Mirrors the zp_leap_* family of cvars from ZombiePlague CS 1.6.
-    //
-    //  Force    -- horizontal impulse (units/s).
-    //  Height   -- vertical impulse added on top of the normal jump (units/s).
-    //  Cooldown -- minimum seconds between consecutive leaps.
-
-    // Regular zombies
     "LeapZombiesEnabled":        true,
     "LeapZombiesForce":          500.0,
     "LeapZombiesHeight":         300.0,
     "LeapZombiesCooldown":       1.5,
 
-    // Nemesis  (stronger -- mirrors zp_leap_nemesis_force / _height)
     "LeapNemesisEnabled":        true,
     "LeapNemesisForce":          1000.0,
     "LeapNemesisHeight":         700.0,
     "LeapNemesisCooldown":       2.0,
 
-    // Assassin  (mirrors zp_leap_assassin_force / _height)
     "LeapAssassinEnabled":       true,
     "LeapAssassinForce":         700.0,
     "LeapAssassinHeight":        650.0,
     "LeapAssassinCooldown":      1.5,
 
-
-    // ==========================================================================
-    // 7.  KNOCKBACK
-    // ==========================================================================
-    //
-    //  How knockback force is calculated for each bullet hit:
-    //    final_force = WeaponForce * HitLocationMultiplier * PlayerStateMultiplier
-    //
-    //  WeaponForce         = value from WeaponKnockbackTable (or KnockZombieForce fallback)
-    //  HitLocationMultiplier = Head or Body multiplier below
-    //  PlayerStateMultiplier = Ground or Air multiplier below
-    //
-    //  Then HumanHeroKnockBackMultiply is applied on top when the shooter is a Hero.
-
-    // -- Hit-location multipliers ---------------------------------------------
     "HumanKnockBackHeadMultiply":   0.8,
     "HumanKnockBackBodyMultiply":   0.4,
 
-    // -- Player-state multipliers ---------------------------------------------
-    // Reduce push when the zombie is already airborne (prevents infinite air-juggling).
     "HumanKnockBackGroundMultiply": 0.4,
     "HumanKnockBackAirMultiply":    0.2,
 
-    // Extra multiplier applied when a Hero-class player shoots a zombie.
     "HumanHeroKnockBackMultiply":   0.5,
 
-    // -- Zombie physics -------------------------------------------------------
-    // Base knockback force (units/s) for weapons NOT listed in WeaponKnockbackTable.
     "KnockZombieForce":          200.0,
 
-    // How long (seconds) a zombie is stunned/slowed after being knocked back.
     "StunZombieTime":            0.1,
 
-    // -- Per-weapon knockback table -------------------------------------------
-    //
-    //  Maps each weapon internal designer-name to its knockback force (units/s).
-    //  These values are the BASE force BEFORE the multipliers above are applied.
-    //  Weapons absent from this table fall back to KnockZombieForce.
-    //  Set a weapon to 0 to completely disable knockback for that weapon.
-    //  Values preserve ZombiePlague 1.6 relative ratios (sniper > rifle > SMG).
-    //
     "WeaponKnockbackTable": {
 
-      // Sniper rifles
-      "weapon_awp":              350.0,   // AWP         -- highest single-shot impact
-      "weapon_ssg08":            300.0,   // SSG 08      -- lighter sniper
+      "weapon_awp":              350.0,
+      "weapon_ssg08":            300.0,
 
-      // Shotguns
-      "weapon_xm1014":           280.0,   // XM1014      -- full-auto
-      "weapon_nova":             280.0,   // Nova
-      "weapon_sawedoff":         270.0,   // Sawed-Off
-      "weapon_mag7":             270.0,   // MAG-7
+      "weapon_xm1014":           280.0,
+      "weapon_nova":             280.0,
+      "weapon_sawedoff":         270.0,
+      "weapon_mag7":             270.0,
 
-      // Light machine guns
-      "weapon_m249":             260.0,   // M249
-      "weapon_negev":            260.0,   // Negev
+      "weapon_m249":             260.0,
+      "weapon_negev":            260.0,
 
-      // Assault rifles
-      "weapon_ak47":             240.0,   // AK-47
-      "weapon_sg553":            235.0,   // SG 553
-      "weapon_aug":              230.0,   // AUG
-      "weapon_m4a1":             225.0,   // M4A1-S
-      "weapon_m4a4":             225.0,   // M4A4
-      "weapon_famas":            220.0,   // FAMAS
-      "weapon_galilar":          220.0,   // Galil AR
+      "weapon_ak47":             240.0,
+      "weapon_sg553":            235.0,
+      "weapon_aug":              230.0,
+      "weapon_m4a1":             225.0,
+      "weapon_m4a4":             225.0,
+      "weapon_famas":            220.0,
+      "weapon_galilar":          220.0,
 
-      // Pistols
-      "weapon_deagle":           210.0,   // Desert Eagle
-      "weapon_revolver":         200.0,   // R8 Revolver
-      "weapon_usp_silencer":     160.0,   // USP-S
-      "weapon_hkp2000":          150.0,   // P2000
-      "weapon_p250":             145.0,   // P250
-      "weapon_fiveseven":        145.0,   // Five-SeveN
-      "weapon_glock":            140.0,   // Glock-18
-      "weapon_tec9":             140.0,   // Tec-9
-      "weapon_cz75a":            140.0,   // CZ75-Auto
-      "weapon_elite":            130.0,   // Dual Berettas
+      "weapon_deagle":           210.0,
+      "weapon_revolver":         200.0,
+      "weapon_usp_silencer":     160.0,
+      "weapon_hkp2000":          150.0,
+      "weapon_p250":             145.0,
+      "weapon_fiveseven":        145.0,
+      "weapon_glock":            140.0,
+      "weapon_tec9":             140.0,
+      "weapon_cz75a":            140.0,
+      "weapon_elite":            130.0,
 
-      // Sub-machine guns
-      "weapon_ump45":            120.0,   // UMP-45
-      "weapon_p90":              120.0,   // P90 -- high fire rate, low per-shot push
-      "weapon_mp9":              115.0,   // MP9
-      "weapon_mp5sd":            115.0,   // MP5-SD
-      "weapon_mp7":              115.0,   // MP7
-      "weapon_mac10":            110.0,   // MAC-10
-      "weapon_bizon":            110.0,   // PP-Bizon
+      "weapon_ump45":            120.0,
+      "weapon_p90":              120.0,
+      "weapon_mp9":              115.0,
+      "weapon_mp5sd":            115.0,
+      "weapon_mp7":              115.0,
+      "weapon_mac10":            110.0,
+      "weapon_bizon":            110.0,
 
-      // Knife -- infection is handled separately; no bullet knockback.
       "weapon_knife":              0.0
     },
 
-
-    // ==========================================================================
-    // 8.  GRENADES
-    // ==========================================================================
-
-    // -- Fire grenade (HE) ----------------------------------------------------
-    // Enable the fire-grenade mechanic (HE grenades set zombies ablaze).
     "FireGrenade":               true,
-    // Give humans a fire (HE) grenade on spawn (mirrors zp_fire_grenades = 1).
     "SpawnGiveFireGrenade":      true,
-    // Also give an incendiary grenade on spawn (in addition to the HE).
     "SpawnGiveIncGrenade":       false,
-    // Radius (units) of the initial blast that applies the fire effect.
     "FireGrenadeRange":          300.0,
-    // Instant damage dealt by the explosion.
     "FireGrenadeDmg":            500.0,
-    // Damage applied per tick while a zombie is burning.
     "FireDmg":                   10.0,
-    // Duration (seconds) the fire effect lasts on a zombie.
     "FireGrenadeDuration":       5.0,
     "FireGrenadeSound":          "han.zombieplague.grenadedote",
 
-    // -- Light grenade (Flashbang) --------------------------------------------
-    // Enable the light-grenade mechanic (flashbangs act as flares).
     "LightGrenade":              true,
-    // Give humans a flashbang (light grenade) on spawn.
     "SpawnGiveLightGrenade":     true,
-    // Illumination radius (units).
     "LightGrenadeRange":         1000.0,
-    // Duration (seconds) the light stays active.
     "LightGrenadeDuration":      30.0,
     "LightGrenadeSound":         "C4.ExplodeTriggerTrip",
 
-    // -- Freeze grenade (Smoke) -----------------------------------------------
-    // Enable the freeze-grenade mechanic (smoke grenades freeze zombies).
     "FreezeGrenade":             true,
-    // Give humans a smoke (freeze grenade) on spawn (mirrors zp_frost_grenades = 1).
     "SpawnGiveFreezeGrenade":    true,
-    // Radius (units) of the freeze effect.
     "FreezeGrenadeRange":        300.0,
-    // Duration (seconds) a zombie remains frozen.
     "FreezeGrenadeDuration":     10.0,
     "FreezeGrenadeSound":        "han.zombieplague.grenadedote",
 
-    // -- Teleport grenade (Decoy) ---------------------------------------------
-    // Enable the teleport-grenade mechanic (decoys teleport the thrower).
     "TelportGrenade":            true,
-    // Give humans a teleport grenade on spawn (disabled by default).
     "SpawnGiveTelportGrenade":   false,
 
-    // -- T-Virus grenade / Vaccine (Antidote) ---------------------------------
-    // Sound event played when an antidote / vaccine is used.
     "TVaccineSound":             "HealthShot.Pickup",
-    // Radius (units) of the T-Virus grenade infection cloud.
     "TVirusGrenadeRange":        300.0,
-    // Whether the T-Virus grenade can infect Hero-class players.
     "TVirusCanInfectHero":       true,
     "TVirusGrenadeSound":        "han.zombieplague.grenadedote",
-    // Sound played when a player receives bonus health from an item.
     "AddHealthSound":            "HealthShot.Pickup",
 
-
-    // ==========================================================================
-    // 9.  EQUIPMENT
-    // ==========================================================================
-
-    // -- SCBA Suit ------------------------------------------------------------
-    // Humans can equip an SCBA suit that absorbs one zombie attack.
     "CanUseScbaSuit":            true,
     "ScbaSuitGetSound":          "Player.PickupPistol",
     "ScbaSuitBrokenSound":       "Breakable.Flesh",
 
-
-    // ==========================================================================
-    // 10.  ECONOMY  (Ammo Packs)
-    // ==========================================================================
-
-    // Wallet kind name registered in the Economy plugin.
-    // Must match a wallet kind in the Economy plugin own config.
     "EconomyWalletKind":         "ammo",
 
-
-    // ==========================================================================
-    // 11.  AMBIENCE
-    // ==========================================================================
-
-    // Comma-separated sound events played in rotation during the round.
     "AmbSound": "han.zombie.amb.zriot,han.zombie.amb.classicA,han.zombie.amb.classicB,han.zombie.amb.classicC,han.zombie.amb.classicD",
 
-    // Interval in seconds between ambient sound plays.
     "AmbSoundLoopTime":          "60.0",
 
-    // Ambient sound volume (0.0 to 1.0).
     "AmbSoundVolume":            "0.8",
 
-    // Comma-separated .vsndevts files to precache for ambient sounds.
     "PrecacheAmbSound": "soundevents/hanzbambience.vsndevts,soundevents/hanzombiepanicplayer.vsndevts",
 
-
-    // ==========================================================================
-    // 12.  ATMOSPHERE
-    // ==========================================================================
-
-    // -- Fog ------------------------------------------------------------------
-    //  Applied server-wide on every map load and to each spawning player.
-    //  Set Enable to false to disable completely.
-    //  ColorR/G/B -- fog colour (0-255); default dark grey-green for horror mood.
-    //  StartDist  -- distance (units) at which fog begins.
-    //  EndDist    -- distance at which fog reaches full density.
-    //  MaxDensity -- opacity at EndDist (0.0-1.0; 0.9 = very heavy).
-    //  Exponent   -- fall-off curve (1.0 = linear; higher = sharp build at end).
     "Fog": {
       "Enable":     true,
       "ColorR":     100,
@@ -549,18 +290,8 @@
       "Exponent":   1.0
     },
 
-    // -- Skybox ---------------------------------------------------------------
-    //  Override the map skybox on every map load (sv_skyname value).
-    //  Leave empty ("") to keep the map default skybox.
-    //  Good options: "sky_overcast01", "sky_csgo_night02", "sky_csgo_cloudy01"
     "Skybox": "sky_csgo_cloudy01",
 
-
-    // ==========================================================================
-    // 13.  COMMANDS
-    // ==========================================================================
-
-    // Chat / console commands registered by the plugin (must start with sw_).
     "ZombieClassCommand":        "sw_zclass",
     "AdminMenuItemCommand":      "sw_zadmin",
     "MainMenuCommand":           "sw_zmenu",
@@ -568,35 +299,16 @@
     "BuyWeaponsCommand":         "sw_buyweapons",
     "MineMenuCommand":           "sw_mine",
 
-    // Swiftly permission required to open the admin menu.
-    // Leave empty ("") to allow every player to open it.
     "AdminMenuPermission":       "hzp.adminmenu",
 
-
-    // ==========================================================================
-    // 14.  DEBUG / DEVELOPMENT
-    // ==========================================================================
-
-    // Prefix prepended to every plugin chat message.
     "ChatPrefix":                    "[red][INFO][default]",
 
-    // Log every command invocation to the server console.
     "EnableCommandDebugLogs":        false,
 
-    // Send a chat reply to the command invoker on each invocation.
     "EnableCommandDebugChatReply":   false
 
   },
 
-
-  // ============================================================================
-  // VOX -- ROUND ANNOUNCEMENT SOUND GROUPS
-  // ============================================================================
-  //
-  //  Each group is a random-pick pool of sound events for round start,
-  //  countdown, zombie-spawn, mode announcements, and win stings.
-  //  Set Enable: false on a group to exclude it from the pool entirely.
-  //
   "ZPLVoxCFG": {
     "VoxList": [
       {
@@ -707,28 +419,6 @@
     ]
   },
 
-
-  // ============================================================================
-  // SPECIAL ZOMBIE CLASSES  (Mother Zombie, Nemesis, Assassin)
-  // ============================================================================
-  //
-  //  Each entry defines a special zombie role.
-  //  Name must match the NemesisNames / AssassinNames / MotherZombieNames
-  //  strings set in the game-mode blocks above.
-  //
-  //  Stats fields:
-  //    Health             -- base HP (used when the mode health override is 0).
-  //    MotherZombieHealth -- HP when acting as a mother zombie.
-  //    Speed              -- movement speed multiplier (1.0 = default CS2 speed).
-  //    Damage             -- knife damage per hit.
-  //    Gravity            -- gravity multiplier (0.5 = floaty / low-gravity jumps).
-  //    Fov                -- field of view in degrees.
-  //    EnableRegen        -- true = health regeneration is active.
-  //    HpRegenSec         -- regeneration interval in seconds.
-  //    HpRegenHp          -- HP restored per interval.
-  //    ZombieSoundVolume  -- volume of zombie sounds (0.0-1.0).
-  //    IdleInterval       -- average seconds between idle sound plays.
-  //
   "ZPLSpecialClassCFG": {
     "SpecialClassList": [
       {
@@ -771,8 +461,6 @@
         "Enable":  true,
         "PrecacheSoundEvent": "soundevents/hanzombieplagueplayers.vsndevts",
         "Stats": {
-          // Fallback HP -- only used when NemesisHealth = 0 in ZPLMainCFG.
-          // Keep in sync with the NemesisHealth value in the Nemesis mode block.
           "Health":               75000,
           "MotherZombieHealth":   150000,
           "Speed":                1.0,
@@ -841,25 +529,12 @@
     ]
   },
 
-
-  // ============================================================================
-  // WEAPON BUY MENU
-  // ============================================================================
-  //
-  //  Humans pick one primary and one secondary weapon from these lists at round
-  //  start. DefaultGrenades are given automatically after the selection.
-  //
   "ZPLWeaponsCFG": {
-    // Enable the weapon-selection menu system.
     "EnableWeaponsMenu":      true,
-    // Open the weapon menu automatically for eligible humans at round start.
     "GiveMenuOnRoundStart":   true,
-    // Allow players to reopen the weapon menu via command (once per round).
     "AllowOpenFromGameMenu":  true,
-    // Reserve ammo given to each weapon chosen from the menu.
     "ReserveAmmoAmount":      9999,
 
-    // -- Primary weapons ------------------------------------------------------
     "PrimaryWeapons": [
       { "Name": "AK-47",      "Classname": "weapon_ak47"          },
       { "Name": "M4A4",       "Classname": "weapon_m4a1"          },
@@ -871,7 +546,6 @@
       { "Name": "AUG",        "Classname": "weapon_aug"           }
     ],
 
-    // -- Secondary weapons ----------------------------------------------------
     "SecondaryWeapons": [
       { "Name": "Desert Eagle",  "Classname": "weapon_deagle"       },
       { "Name": "P250",          "Classname": "weapon_p250"         },
@@ -880,10 +554,6 @@
       { "Name": "Dual Berettas", "Classname": "weapon_elite"        }
     ],
 
-    // -- Default grenades -----------------------------------------------------
-    // Given automatically after secondary selection.
-    // Valid classnames: weapon_hegrenade, weapon_flashbang,
-    //                   weapon_smokegrenade, weapon_incgrenade, weapon_decoy
     "DefaultGrenades": [
       "weapon_hegrenade",
       "weapon_flashbang",
@@ -891,39 +561,9 @@
     ]
   },
 
-
-  // ============================================================================
-  // LASER TRIP MINES
-  // ============================================================================
-  //
-  //  Mine fields:
-  //    Enable              -- include this mine type in the mine menu.
-  //    Name                -- display name shown in the mine menu.
-  //    Model               -- server-side model path.
-  //    CanExplorer         -- false = laser beam trap | true = explosive mine.
-  //    CanOwnerTeamTrigger -- true = owner team can also trigger the mine.
-  //    LaserRate           -- beam check interval in seconds.
-  //    LaserDamage         -- damage per beam tick.
-  //    LaserKnockBack      -- knockback per tick (beam mines only).
-  //    ExplorerRadius      -- explosion radius in units (explosive mines only).
-  //    ExplorerDamage      -- explosion damage (explosive mines only).
-  //    Team                -- "ct", "t", or "all" (who can place this mine).
-  //    Price               -- ammo packs cost per mine purchase.
-  //    Limit               -- max simultaneous mines per player (0 = unlimited).
-  //    Permissions         -- required Swiftly permission (empty = no restriction).
-  //    GlowColor           -- mine entity glow "R,G,B,A".
-  //    laserColor          -- beam colour "R,G,B,A".
-  //    laserSize           -- beam visual thickness.
-  //    MineOpenSound       -- sound played on placement.
-  //    LaserOpenSound      -- sound when beam activates.
-  //    LaserTouchSound     -- sound when beam is crossed.
-  //    PrecacheSoundEvent  -- .vsndevts file to precache (workshop addon 3618032051).
-  //    ModelAngleFix       -- degrees added to model yaw to correct orientation.
-  //
   "ZPLMineCFG": {
     "MineList": [
       {
-        // Laser beam trap -- continuously damages players crossing the beam.
         "Enable":               true,
         "Name":                 "Laser Tripwire",
         "Model":                "models/stk_sentry_guns/lasermine/stk_lasermines_one.vmdl",
@@ -948,7 +588,6 @@
         "ModelAngleFix":        90.0
       },
       {
-        // Explosive mine -- detonates when beam is crossed.
         "Enable":               true,
         "Name":                 "Explosive Mine",
         "Model":                "models/stk_sentry_guns/lasermine/stk_lasermines_two.vmdl",

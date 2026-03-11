@@ -110,11 +110,18 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         // ── ZPL API ────────────────────────────────────────────────────────────
         if (interfaceManager.HasSharedInterface("ZombiePlagueLegacy"))
         {
-            _zplApi = interfaceManager.GetSharedInterface<IZombiePlagueLegacyAPI>("ZombiePlagueLegacy");
-            if (_zplApi != null)
+            try
             {
-                if (_config.InfectRewardsEnabled)
-                    _zplApi.ZPL_OnPlayerInfect += OnZPLPlayerInfect;
+                _zplApi = interfaceManager.GetSharedInterface<IZombiePlagueLegacyAPI>("ZombiePlagueLegacy");
+                if (_zplApi != null)
+                {
+                    if (_config.InfectRewardsEnabled)
+                        _zplApi.ZPL_OnPlayerInfect += OnZPLPlayerInfect;
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning("[ZPLVIP] Failed to acquire ZombiePlagueLegacyCS2 API: {Error} – zombie detection falls back to team check (T = zombie).", ex.Message);
             }
         }
         else
@@ -125,12 +132,19 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         // ── Economy API ───────────────────────────────────────────────────────
         if (interfaceManager.HasSharedInterface("Economy.API.v1"))
         {
-            _economyApi = interfaceManager.GetSharedInterface<IEconomyAPIv1>("Economy.API.v1");
-            if (_economyApi != null)
+            try
             {
-                // Ensure the wallet kind exists (same as ZPL does).
-                if (!_economyApi.WalletKindExists(_config.WalletKind))
-                    _economyApi.EnsureWalletKind(_config.WalletKind);
+                _economyApi = interfaceManager.GetSharedInterface<IEconomyAPIv1>("Economy.API.v1");
+                if (_economyApi != null)
+                {
+                    // Ensure the wallet kind exists (same as ZPL does).
+                    if (!_economyApi.WalletKindExists(_config.WalletKind))
+                        _economyApi.EnsureWalletKind(_config.WalletKind);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning("[ZPLVIP] Failed to acquire Economy API: {Error} – AP rewards will be announced in chat only.", ex.Message);
             }
         }
         else
