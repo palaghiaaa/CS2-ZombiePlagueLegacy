@@ -93,14 +93,6 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.Event.OnClientDisconnected += OnClientDisconnected;
 
         RegisterCommands(_cfg.CurrentValue);
-
-        _cfg.OnChange(_ => Core.Logger.LogInformation("[ZPLRank] Configuration hot-reloaded."));
-
-        Core.Logger.LogInformation("[ZPLRank] Loaded. Commands: !{Rank}, !{Top}, !{Top15}, !{Top10}",
-            _cfg.CurrentValue.RankCommand,
-            _cfg.CurrentValue.TopCommand,
-            _cfg.CurrentValue.Top15Command,
-            _cfg.CurrentValue.Top10Command);
     }
 
     /// <summary>
@@ -115,7 +107,6 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
             if (_zplApi != null)
             {
                 _zplApi.ZPL_OnPlayerInfect += OnZPLPlayerInfect;
-                Core.Logger.LogInformation("[ZPLRank] ZombiePlagueLegacyCS2 API connected.");
             }
         }
         else

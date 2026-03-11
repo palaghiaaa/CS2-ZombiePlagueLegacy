@@ -84,7 +84,6 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         _cfgMonitor.OnChange(cfg =>
         {
             _config = cfg;
-            _logger.LogInformation("[ZPLVIP] Configuration hot-reloaded.");
         });
 
         // Game-event hooks.
@@ -99,9 +98,6 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         // Register chat commands.
         Core.Command.RegisterCommand(_config.VipMenuCommand, CmdVipMenu, true);
         Core.Command.RegisterCommand(_config.VipsListCommand, CmdVipsList, true);
-
-        _logger.LogInformation("[ZPLVIP] Loaded. Commands: !{V} / !{VS}",
-            _config.VipMenuCommand, _config.VipsListCommand);
     }
 
     /// <summary>
@@ -119,7 +115,6 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             {
                 if (_config.InfectRewardsEnabled)
                     _zplApi.ZPL_OnPlayerInfect += OnZPLPlayerInfect;
-                _logger.LogInformation("[ZPLVIP] ZombiePlagueLegacyCS2 API connected.");
             }
         }
         else
@@ -133,10 +128,9 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             _economyApi = interfaceManager.GetSharedInterface<IEconomyAPIv1>("Economy.API.v1");
             if (_economyApi != null)
             {
-                // Ensure the wallet kind exists (same as ZO does).
+                // Ensure the wallet kind exists (same as ZPL does).
                 if (!_economyApi.WalletKindExists(_config.WalletKind))
                     _economyApi.EnsureWalletKind(_config.WalletKind);
-                _logger.LogInformation("[ZPLVIP] Economy API connected (wallet: '{W}').", _config.WalletKind);
             }
         }
         else

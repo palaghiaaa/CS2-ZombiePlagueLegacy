@@ -73,7 +73,6 @@ public sealed class ZPLRankDatabase(ILogger<ZPLRankDatabase> logger)
             cmd.ExecuteNonQuery();
 
             _ready = true;
-            logger.LogInformation("[ZPLRank-DB] SQLite database ready: {Path}", dbPath);
         }
         catch (Exception ex)
         {
@@ -154,8 +153,6 @@ public sealed class ZPLRankDatabase(ILogger<ZPLRankDatabase> logger)
                 };
                 stats[sid] = s;
             }
-
-            logger.LogInformation("[ZPLRank-DB] Loaded {Count} player records.", stats.Count);
         }
         catch (Exception ex)
         {

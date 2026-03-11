@@ -129,7 +129,6 @@ public class AmmoPacksService
         if (!_api.WalletKindExists(walletKind))
         {
             _api.EnsureWalletKind(walletKind);
-            _logger.LogInformation("[ZPL-AP] Registered wallet kind '{Kind}' in Economy.", walletKind);
         }
     }
 }

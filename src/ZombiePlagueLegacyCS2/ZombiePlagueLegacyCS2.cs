@@ -48,7 +48,6 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 {
                     ammoPacks.SetApi(economyApi);
                     ammoPacks.EnsureWalletKind();
-                    Core.Logger.LogInformation("[ZPL] Economy API resolved successfully.");
                 }
             }
             else
@@ -222,7 +221,6 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         ZriotCFGMonitor.OnChange(newConfig =>
         {
             _ZPLMainCFG = newConfig;
-            Core.Logger.LogInformation(Core.Localizer["ServerInfoHotReload"]);
         });
 
         _Events.HookEvents();

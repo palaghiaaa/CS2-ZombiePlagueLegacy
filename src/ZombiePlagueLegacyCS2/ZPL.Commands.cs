@@ -53,22 +53,16 @@ public class ZPLCommands
     {
         var CFG = _mainCFG.CurrentValue;
         _core.Command.RegisterCommand(CFG.ZombieClassCommand, SelectZombieClass, true);
-        _logger.LogInformation("[ZPL] Registered zombie class command: {Cmd}", CFG.ZombieClassCommand);
 
         _core.Command.RegisterCommand(CFG.AdminMenuItemCommand, UseItemMenu, true);
-        _logger.LogInformation("[ZPL] Registered admin menu command: {Cmd}", CFG.AdminMenuItemCommand);
 
         _core.Command.RegisterCommand(CFG.BuyWeaponsCommand, BuyWeapons, true);
-        _logger.LogInformation("[ZPL] Registered buy weapons command: {Cmd}", CFG.BuyWeaponsCommand);
 
         _core.Command.RegisterCommand(CFG.MainMenuCommand, OpenGameMenu, true);
-        _logger.LogInformation("[ZPL] Registered main menu command: {Cmd}", CFG.MainMenuCommand);
 
         _core.Command.RegisterCommand(CFG.ExtraItemsCommand, OpenExtraItemsMenu, true);
-        _logger.LogInformation("[ZPL] Registered extra items command: {Cmd}", CFG.ExtraItemsCommand);
 
         _core.Command.RegisterCommand(CFG.MineMenuCommand, OpenMineMenu, true);
-        _logger.LogInformation("[ZPL] Registered mine menu command: {Cmd}", CFG.MineMenuCommand);
     }
     public void SelectZombieClass(ICommandContext context)
     {
