@@ -1,62 +1,28 @@
 {
-  // ════════════════════════════════════════════════════════════════════════════
-  // ZPL RANK & TOP — CONFIGURATION
-  // ════════════════════════════════════════════════════════════════════════════
 
   "ZPLRankCFG": {
 
-    // ── Database ─────────────────────────────────────────────────────────────
-    // Path to the SQLite database file (relative to the csgo/ root, or absolute).
-    // The directory is created automatically on first load.
-    // Stats are loaded on plugin start and player connect, and saved on
-    // player disconnect, round end, and plugin unload.
     "DatabasePath": "addons/swiftly/data/ZPLRank.db",
 
-    // ── Chat ─────────────────────────────────────────────────────────────────
-    // Tag prepended to every chat message sent by this plugin.
     "ChatTag": "[ZPL Rank]",
 
-    // ── Commands ─────────────────────────────────────────────────────────────
     "RankCommand":  "rank",
     "TopCommand":   "top",
     "Top15Command": "top15",
     "Top10Command": "top10",
 
-    // ── Score formula ─────────────────────────────────────────────────────────
-    // Players are sorted by a single KDA-style score:
-    //
-    //   Score = (Kills × KillWeight
-    //            + Infections × InfectionWeight
-    //            + Assists    × AssistWeight
-    //            + Damage     / DamageDivisor)
-    //           / max(Deaths, 1)
-    //
-    // Adjust weights to shift the focus of your server:
-    //   - Pure PvP server    → lower InfectionWeight (e.g. 0)
-    //   - Zombie Plague focus → raise InfectionWeight (e.g. 3.0)
-    //   - Damage matters      → lower DamageDivisor  (e.g. 50)
-
-    // Points awarded per human kill.
     "KillWeight": 2.0,
 
-    // Points awarded per zombie infection.
     "InfectionWeight": 2.0,
 
-    // Points awarded per kill assist.
     "AssistWeight": 1.0,
 
-    // Every this many damage points = 1 score point.
-    // Set to 0 to exclude damage from the score entirely.
     "DamageDivisor": 100.0,
 
-    // ── Top menu ─────────────────────────────────────────────────────────────
-    // Number of players shown by !top.  !top10 / !top15 always use 10 / 15.
     "TopListSize": 15,
 
-    // Rows visible at once in the scrollable menu.
     "TopMenuVisibleRows": 5,
 
-    // ── Feature toggles ───────────────────────────────────────────────────────
     "EnableRankCommand": true,
     "EnableTopCommands": true
   }
