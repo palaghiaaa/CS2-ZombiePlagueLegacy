@@ -1,5 +1,5 @@
 {
-    "ServerInfoHotReload": "Configuration file ZOMainCFG has been hot reloaded!",
+    "ServerInfoHotReload": "Configuration file ZPLMainCFG has been hot reloaded!",
     "ServerGameBegin": "The game will restart in [green]1 second",
     "NotEnoughPlayersRestart": "Not enough players to start infection. Restarting round...",
     "ServerGameHumanWin": "Humans WIN !!!",
@@ -102,7 +102,7 @@
 
     // ── Main Game Menu ─────────────────────────────────────────────────────
     "GameMenuTitle": "ZP Game Menu",
-    "GameMenuHint": "Zombie OutStanding CS@",
+    "GameMenuHint": "Zombie Plague: Legacy CS@",
     "GameMenuBuyWeapons": "Buy Weapons",
     "GameMenuExtraItems": "Buy Extra Items",
     "GameMenuZombieClass": "Choose Zombie Class",

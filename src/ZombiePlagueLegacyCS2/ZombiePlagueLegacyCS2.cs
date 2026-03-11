@@ -1,0 +1,239 @@
+using Economy.Contract;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SwiftlyS2.Shared;
+using SwiftlyS2.Shared.Players;
+using SwiftlyS2.Shared.Plugins;
+using SwiftlyS2.Shared.Services;
+
+namespace ZombiePlagueLegacyCS2;
+
+[PluginMetadata(
+    Id = "ZombiePlagueLegacyCS2",
+    Version = "1.0",
+    Name = "CS2 僵尸瘟疫 for Sw2/CS2 ZombiePlague for Sw2",
+    Author = "H-AN",
+    Description = "CS2 僵尸瘟疫 SW2版本 CS2 ZombiePlague for SW2.")]
+
+public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
+{
+
+    private ServiceProvider? ServiceProvider { get; set; }
+    private static readonly ZombiePlagueLegacyAPI _apiInstance = new();
+    private ZPLMainCFG _ZPLMainCFG = null!;
+    private ZPLGlobals _Globals = null!;
+    private ZPLEvents _Events = null!;
+    private ZPLCommands _Commands = null!;
+
+    public override void ConfigureSharedInterface(IInterfaceManager interfaceManager)
+    {
+        interfaceManager.AddSharedInterface<IZombiePlagueLegacyAPI, ZombiePlagueLegacyAPI>("ZombiePlagueLegacy", _apiInstance);
+    }
+
+    public override void UseSharedInterface(IInterfaceManager interfaceManager)
+    {
+        if (ServiceProvider == null) return;
+
+        var ammoPacks = ServiceProvider.GetRequiredService<AmmoPacksService>();
+
+        // ── Economy plugin ────────────────────────────────────────────────────
+        try
+        {
+            if (interfaceManager.HasSharedInterface("Economy.API.v1"))
+            {
+                var economyApi = interfaceManager.GetSharedInterface<IEconomyAPIv1>("Economy.API.v1");
+                if (economyApi != null)
+                {
+                    ammoPacks.SetApi(economyApi);
+                    ammoPacks.EnsureWalletKind();
+                    Core.Logger.LogInformation("[ZPL] Economy API resolved successfully.");
+                }
+            }
+            else
+            {
+                Core.Logger.LogWarning("[ZPL] Economy plugin not found – ammo packs will not function until the Economy plugin is loaded.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Core.Logger.LogWarning("[ZPL] Economy API lookup failed: {Ex}", ex.Message);
+        }
+    }
+
+    public override void Load(bool hotReload)
+    {
+        // Guard Configure() calls with !hotReload.
+        // SwiftlyS2's PluginConfigurationService.Manager is a lazy singleton that is
+        // never reset between hot-reloads (map changes).  Calling AddJsonFile on it
+        // again on every Load() appends a brand-new FileSystemWatcher thread to the
+        // same ConfigurationManager, causing one set of watcher threads to leak per
+        // map change.  9 configs × N map changes = the 31 file-watcher threads seen
+        // in the managedtrace.txt crash.  Skipping Configure() on hot-reload keeps
+        // the already-registered watchers without adding duplicates.
+        if (!hotReload)
+        {
+            Core.Configuration.InitializeJsonWithModel<ZPLMainCFG>("ZombiePlagueLegacyCFG.jsonc", "ZPLMainCFG").Configure(builder =>
+            {
+                builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
+                builder.SetFileLoadExceptionHandler(ctx =>
+                {
+                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLMainCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    ctx.Ignore = true;
+                });
+            });
+            Core.Configuration.InitializeJsonWithModel<ZPLVoxCFG>("ZombiePlagueLegacyCFG.jsonc", "ZPLVoxCFG").Configure(builder =>
+            {
+                builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
+                builder.SetFileLoadExceptionHandler(ctx =>
+                {
+                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLVoxCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    ctx.Ignore = true;
+                });
+            });
+            Core.Configuration.InitializeJsonWithModel<ZPLZombieClassCFG>("ZombieClassesCFG.jsonc", "ZPLZombieClassCFG").Configure(builder =>
+            {
+                builder.AddJsonFile("ZombieClassesCFG.jsonc", false, true);
+                builder.SetFileLoadExceptionHandler(ctx =>
+                {
+                    Core.Logger.LogError("[ZPL] Failed to load ZombieClassesCFG.jsonc (ZPLZombieClassCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    ctx.Ignore = true;
+                });
+            });
+            Core.Configuration.InitializeJsonWithModel<ZPLSpecialClassCFG>("ZombiePlagueLegacyCFG.jsonc", "ZPLSpecialClassCFG").Configure(builder =>
+            {
+                builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
+                builder.SetFileLoadExceptionHandler(ctx =>
+                {
+                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLSpecialClassCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    ctx.Ignore = true;
+                });
+            });
+            Core.Configuration.InitializeJsonWithModel<ZPLWeaponsCFG>("ZombiePlagueLegacyCFG.jsonc", "ZPLWeaponsCFG").Configure(builder =>
+            {
+                builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
+                builder.SetFileLoadExceptionHandler(ctx =>
+                {
+                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLWeaponsCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    ctx.Ignore = true;
+                });
+            });
+            Core.Configuration.InitializeJsonWithModel<ZPLExtraItemsCFG>("ExtraItemsCFG.jsonc", "ZPLExtraItemsCFG").Configure(builder =>
+            {
+                builder.AddJsonFile("ExtraItemsCFG.jsonc", false, true);
+                builder.SetFileLoadExceptionHandler(ctx =>
+                {
+                    Core.Logger.LogError("[ZPL] Failed to load ExtraItemsCFG.jsonc (ZPLExtraItemsCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    ctx.Ignore = true;
+                });
+            });
+            Core.Configuration.InitializeJsonWithModel<ZPLMineCFG>("ZombiePlagueLegacyCFG.jsonc", "ZPLMineCFG").Configure(builder =>
+            {
+                builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
+                builder.SetFileLoadExceptionHandler(ctx =>
+                {
+                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLMineCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    ctx.Ignore = true;
+                });
+            });
+        }
+
+        var collection = new ServiceCollection();
+        collection.AddSwiftly(Core);
+        collection.AddSingleton<ISwiftlyCore>(Core);
+        collection.AddSingleton<IZombiePlagueLegacyAPI>(_apiInstance);
+        collection.AddSingleton(_apiInstance);
+
+        collection
+            .AddOptionsWithValidateOnStart<ZPLMainCFG>()
+            .BindConfiguration("ZPLMainCFG");
+
+        collection
+            .AddOptionsWithValidateOnStart<ZPLVoxCFG>()
+            .BindConfiguration("ZPLVoxCFG");
+
+        collection
+            .AddOptionsWithValidateOnStart<ZPLZombieClassCFG>()
+            .BindConfiguration("ZPLZombieClassCFG");
+
+        collection
+            .AddOptionsWithValidateOnStart<ZPLSpecialClassCFG>()
+            .BindConfiguration("ZPLSpecialClassCFG");
+
+        collection
+            .AddOptionsWithValidateOnStart<ZPLWeaponsCFG>()
+            .BindConfiguration("ZPLWeaponsCFG");
+
+        collection
+            .AddOptionsWithValidateOnStart<ZPLExtraItemsCFG>()
+            .BindConfiguration("ZPLExtraItemsCFG");
+
+        collection
+            .AddOptionsWithValidateOnStart<ZPLMineCFG>()
+            .BindConfiguration("ZPLMineCFG");
+
+        collection.AddSingleton<ZPLGlobals>();
+
+        // ── Ammo Packs service (Economy-only) ─────────────────────────────────
+        collection.AddSingleton<AmmoPacksService>();
+
+        // ── Mine service and menu ─────────────────────────────────────────────
+        collection.AddSingleton<ZPLMineService>();
+        collection.AddSingleton<ZPLMineMenu>();
+
+        collection.AddSingleton<ZPLEvents>();
+        collection.AddSingleton<ZPLHelpers>();
+        collection.AddSingleton<ZPLServices>();
+        collection.AddSingleton<ZPLCommands>();
+        collection.AddSingleton<PlayerZombieState>();
+        collection.AddSingleton<ZPLMenuHelper>();
+        collection.AddSingleton<ZPLZombieClassMenu>();
+        collection.AddSingleton<ZPLAdminItemMenu>();
+        collection.AddSingleton<ZPLGameMode>();
+        collection.AddSingleton<ZPLWeaponsMenu>();
+        collection.AddSingleton<ZPLExtraItemsMenu>();
+        collection.AddSingleton<ZPLGameMenu>();
+        ServiceProvider = collection.BuildServiceProvider();
+
+        // Break circular dependency: inject ZPLServices into ZPLExtraItemsMenu post-build
+        ServiceProvider.GetRequiredService<ZPLExtraItemsMenu>()
+            .SetServices(ServiceProvider.GetRequiredService<ZPLServices>());
+
+        _apiInstance.Initialize(
+            Core,
+            ServiceProvider.GetRequiredService<ILogger<ZombiePlagueLegacyAPI>>(),
+            ServiceProvider.GetRequiredService<ZPLGlobals>(),
+            ServiceProvider.GetRequiredService<ZPLHelpers>(),
+            ServiceProvider.GetRequiredService<ZPLServices>(),
+            ServiceProvider.GetRequiredService<IOptionsMonitor<ZPLMainCFG>>(),
+            ServiceProvider.GetRequiredService<PlayerZombieState>(),
+            ServiceProvider.GetRequiredService<IOptionsMonitor<ZPLZombieClassCFG>>(),
+            ServiceProvider.GetRequiredService<IOptionsMonitor<ZPLSpecialClassCFG>>(),
+            ServiceProvider.GetRequiredService<ZPLGameMode>()
+        );
+
+        _Globals = ServiceProvider.GetRequiredService<ZPLGlobals>();
+        _Events = ServiceProvider.GetRequiredService<ZPLEvents>();
+        _Commands = ServiceProvider.GetRequiredService<ZPLCommands>();
+
+        var ZriotCFGMonitor = ServiceProvider.GetRequiredService<IOptionsMonitor<ZPLMainCFG>>();
+        _ZPLMainCFG = ZriotCFGMonitor.CurrentValue;
+        ZriotCFGMonitor.OnChange(newConfig =>
+        {
+            _ZPLMainCFG = newConfig;
+            Core.Logger.LogInformation(Core.Localizer["ServerInfoHotReload"]);
+        });
+
+        _Events.HookEvents();
+        _Events.HookZombieSoundEvents();
+        _Commands.Command();
+        _Commands.MenuCommands();
+    }
+
+    public override void Unload()
+    {
+        _apiInstance!.Dispose();
+        ServiceProvider!.Dispose();
+    }
+}

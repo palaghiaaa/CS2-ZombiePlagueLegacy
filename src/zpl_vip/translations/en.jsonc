@@ -1,0 +1,50 @@
+{
+    // ── ZPL VIP – English translations ─────────────────────────────────────────
+    // {0}, {1} … are positional arguments filled in at runtime.
+
+    // ── Chat messages ─────────────────────────────────────────────────────────
+    // Broadcast when a VIP connects to the server. {0} = player name.
+    "VipJoinAnnounce": "[gold]VIP [green]{0}[gold] has joined the game!",
+
+    // Sent to attacker after an AP reward. {0} = amount gained, {1} = new total.
+    "VipApReward": "[gold]+{0} AP [default](VIP reward) | Total: [green]{1}",
+
+    // Sent when the economy bridge is offline. {0} = amount that would have been awarded.
+    "VipApBridgeOffline": "[gold]+{0} VIP AP reward [default](economy offline)",
+
+    // ── !vip menu – status lines ──────────────────────────────────────────────
+    "VipMenuIsVip": "[lime]✓ You are a VIP player",
+    "VipMenuNotVip": "[red]✗ You are not a VIP player",
+    "VipMenuHappyHourActive": "[gold]★ Happy Hour is ACTIVE now!",
+    "VipMenuSeparator": "─────────────────────────",
+
+    // ── !vip menu – auto-generated benefit lines ──────────────────────────────
+    // Used only when BenefitLines is empty in the config.
+    // {0} = ArmorAmount
+    "VipAutoLineArmor": "[gold]★[default] Armor on spawn: [green]+{0}",
+    // {0} = ExtraJumps
+    "VipAutoLineJumps": "[gold]★[default] Extra jumps: [green]{0}",
+    // {0} = "Disabled" or "Normal"
+    "VipAutoLineFallDmg": "[gold]★[default] Fall damage: [green]{0}",
+    "VipAutoLineFallDmgDisabled": "Disabled",
+    "VipAutoLineFallDmgNormal": "Normal",
+    // {0} = DamageMultiplier
+    "VipAutoLineDmgMult": "[gold]★[default] Damage multiplier: [green]×{0}[default] vs zombies",
+    // {0} = KillRewardAmount
+    "VipAutoLineKillReward": "[gold]★[default] Kill reward: [green]+{0} AP[default] per zombie kill",
+    // {0} = DamageRewardAmount, {1} = DamageRewardThreshold
+    "VipAutoLineDmgReward": "[gold]★[default] Damage reward: [green]+{0} AP[default] per [green]{1}[default] dmg",
+    // {0} = HappyHourStart, {1} = HappyHourEnd, {2} = " [ACTIVE]" or ""
+    "VipAutoLineHappyHour": "[gold]★[default] Happy Hour [green]{0}:00–{1}:00[gold]{2}",
+    "VipAutoLineHappyHourActiveTag": " [ACTIVE]",
+    // {0} = HappyHourBonusAP, {1} = HappyHourBonusFrags
+    "VipAutoLineHappyHourBonus": "  [green]+{0} AP[default] & [green]+{1}[default] frags per kill",
+
+    // ── !vips menu ────────────────────────────────────────────────────────────
+    // Menu title. {0} = number of VIPs online.
+    "VipsMenuTitle": "Online VIPs ({0})",
+    // Shown when no VIPs are online.
+    "VipsMenuNoVips": "[red]No VIPs are online at the moment",
+    // One entry per VIP. {0} = player name.
+    "VipsMenuEntry": "[gold]★ [green]{0}"
+}

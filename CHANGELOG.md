@@ -1,8 +1,8 @@
-# ZombieOutstandingCS2 — Changelog
+# ZombiePlagueLegacyCS2 — Changelog
 
 > Toate modificările, funcționalitățile noi și bug-fix-urile față de versiunea originală a lui [H-AN/HanZombiePlagueS2](https://github.com/H-AN/HanZombiePlagueS2).
 
-**Plugin:** ZombieOutstandingCS2  
+**Plugin:** ZombiePlagueLegacyCS2  
 **Bazat pe:** [HanZombiePlagueS2](https://github.com/H-AN/HanZombiePlagueS2) de H-AN  
 **Extins de:** [DeadPoolCS2](https://github.com/DeadPoolCS2)
 
@@ -79,12 +79,12 @@ Integrat din [H-AN/HanLaserTripmineS2](https://github.com/H-AN/HanLaserTripmineS
 
 - `OneShotKill: true` — orice tir de sniper omoară instant orice zombie, indiferent de HP. Comportamentul clasic din CS 1.6.
 
-### API complet — `IZombieOutstandingAPI`
+### API complet — `IZombiePlagueLegacyAPI`
 
 - Interfață shared pentru plugin-uri externe care se integrează cu gamemode-ul.
 - Interogare stare: `IsZombie()`, `IsNemesis()`, `IsAssassin()`, `IsSurvivor()`, `IsHero()`, `CurrentMode`.
 - Acțiuni: forțare roluri, give/take Ammo Packs, set glow / FOV / god mode.
-- Evenimente: `ZO_OnPlayerInfect`, `ZO_OnNemesisSelected`, `ZO_OnGameStart`, `ZO_OnHumanWin`, `ZO_OnZombieWin`.
+- Evenimente: `ZPL_OnPlayerInfect`, `ZPL_OnNemesisSelected`, `ZPL_OnGameStart`, `ZPL_OnHumanWin`, `ZPL_OnZombieWin`.
 
 ---
 
@@ -99,7 +99,7 @@ Integrat din [H-AN/HanLaserTripmineS2](https://github.com/H-AN/HanLaserTripmineS
 - `HumanKnockBackGroundMultiply` *(implicit: 1.0)* — Multiplicator knockback când zombie-ul e pe sol.
 - `HumanKnockBackAirMultiply` *(implicit: 0.5)* — Multiplicator knockback când zombie-ul e în aer.
 - `HumanHeroKnockBackMultiply` *(implicit: 1.0)* — Multiplicator knockback separat pentru jucătorii Hero.
-- `ChatPrefix` *(implicit: "[ZO]")* — Prefix afișat înaintea mesajelor de chat ale plugin-ului.
+- `ChatPrefix` *(implicit: "[ZPL]")* — Prefix afișat înaintea mesajelor de chat ale plugin-ului.
 - `EconomyWalletKind` *(implicit: "ammo")* — Tipul de portofel Economy folosit pentru Ammo Packs.
 - `EnableCommandDebugLogs` *(implicit: false)* — Loghează comenzile în consola serverului.
 - `EnableCommandDebugChatReply` *(implicit: false)* — Răspunde în chat la invocarea comenzilor (debug).
@@ -120,7 +120,7 @@ Integrat din [H-AN/HanLaserTripmineS2](https://github.com/H-AN/HanLaserTripmineS
 
 ## 🔌 Plugin-uri Standalone Noi
 
-### 🏅 zo_rank — Rank & Top
+### 🏅 zpl_rank — Rank & Top
 
 Un plugin de ranking lightweight cu persistență SQLite:
 
@@ -130,9 +130,9 @@ Un plugin de ranking lightweight cu persistență SQLite:
 - Dimensiunea clasamentului, rândurile vizibile în meniu și suport complet pentru hot-reload sunt configurabile.
 - Toate mesajele se află într-un fișier de traducere separat.
 
-### 👑 zo_vip — VIP Perks
+### 👑 zpl_vip — VIP Perks
 
-Plugin VIP complet integrat cu `IZombieOutstandingAPI` și Economy plugin:
+Plugin VIP complet integrat cu `IZombiePlagueLegacyAPI` și Economy plugin:
 
 - Armură la spawn (`ArmorAmount`)
 - Multi-jump (`ExtraJumps` / `JumpVelocity`)
@@ -157,9 +157,9 @@ Plugin VIP complet integrat cu `IZombieOutstandingAPI` și Economy plugin:
 - **ObjectDisposedException în async** — `SteamID` era accesat în callback-uri async după deconectare. Rezolvat prin capturarea valorii înainte.
 - **Operațiuni de entități thread-unsafe** — Operațiunile pe entități se întâmplau în afara thread-ului principal. Mutate în `NextWorldUpdate`.
 - **Default greșit pentru MinPlayersForInfection** — Default-ul era `1` (fără protecție reală). Corectat la `2`.
-- **Cheie API shared greșită** — Cheia `"HanZombiePlague"` redenumită în `"ZombieOutstanding"` în întreaga bază de cod.
+- **Cheie API shared greșită** — Cheia `"HanZombiePlague"` redenumită în `"ZombiePlagueLegacy"` în întreaga bază de cod.
 - **Config server CS2 greșit** — Setări incorecte pentru friendly-fire, solid teammates, boți și round restart delay. Toate corectate.
-- **Eroare de build acoladă duplicată** — Eliminată o acoladă duplicată în `ZPOVIPPlugin.cs` care bloca compilarea.
+- **Eroare de build acoladă duplicată** — Eliminată o acoladă duplicată în `ZPLVIPPlugin.cs` care bloca compilarea.
 - **Chat prefix fără hot-reload** — Prefix-ul de chat nu se actualiza la schimbarea fișierului config fără restart complet. Rezolvat cu `IOptionsMonitor`.
 - **Detectare VIP greșită** — Permisiunea VIP nu era verificată corect. Rezolvat cu `IsValidRealPlayer`.
 - **Fog lipsă după schimbare hartă** — Fog-ul nu persista la schimbarea hărții. Aplicat din nou în evenimentul `OnMapStart`.
@@ -174,19 +174,19 @@ Plugin VIP complet integrat cu `IZombieOutstandingAPI` și Economy plugin:
 - **Sistem knockback granular** — Multiplicatori separați per locație de lovire (cap/corp) și starea zombie (sol/aer) în loc de o singură valoare globală.
 - **Meniuri scrollable** — Toate meniurile folosesc `LinearScroll`. Footer-ul rămâne fixat în jos.
 - **Text marquee** — Text animat cu scroll în meniurile VIP și Top pentru un aspect mai îngrijit.
-- **Cheie API redenumită** — `"HanZombiePlague"` → `"ZombieOutstanding"` pentru consistență cu noul brand.
+- **Cheie API redenumită** — `"HanZombiePlague"` → `"ZombiePlagueLegacy"` pentru consistență cu noul brand.
 - **Navigare meniu standardizată** — Toate plugin-urile folosesc acum keybind-urile implicite SwiftlyS2. Fără mai multe chei hard-codate.
-- **CI/CD cu GitHub Actions** — Job-uri de build separate pentru `zo_vip` (ZPOVIP) și `zo_rank` (ZORank) alături de plugin-ul principal.
+- **CI/CD cu GitHub Actions** — Job-uri de build separate pentru `zpl_vip` (ZPLVIP) și `zpl_rank` (ZPLRank) alături de plugin-ul principal.
 
 ---
 
 ## 📁 Fișiere de Configurare Noi
 
-- `configs/plugins/ZombieOutstandingCS2/ZombieOutstandingCFG.jsonc` — Config principal, extins față de original.
-- `configs/plugins/ZombieOutstandingCS2/ZombieClassesCFG.jsonc` — Statistici clase zombie.
-- `configs/plugins/ZombieOutstandingCS2/ExtraItemsCFG.jsonc` — Prețuri shop și recompense AP.
-- `configs/plugins/ZPOVIP/ZPOVIP.jsonc` — Config plugin VIP.
-- `configs/plugins/ZORank/ZORankCFG.jsonc` — Config plugin Rank/Top.
+- `configs/plugins/ZombiePlagueLegacyCS2/ZombiePlagueLegacyCFG.jsonc` — Config principal, extins față de original.
+- `configs/plugins/ZombiePlagueLegacyCS2/ZombieClassesCFG.jsonc` — Statistici clase zombie.
+- `configs/plugins/ZombiePlagueLegacyCS2/ExtraItemsCFG.jsonc` — Prețuri shop și recompense AP.
+- `configs/plugins/ZPLVIP/ZPLVIP.jsonc` — Config plugin VIP.
+- `configs/plugins/ZPLRank/ZPLRankCFG.jsonc` — Config plugin Rank/Top.
 - `gamemode_casual.cfg` — Config gamemode CS2 (friendly-fire, solid teammates, boți).
 - `gamemode_casual_server.cfg` — Config server specific gamemode.
 - `server.cfg` — Config general server.
