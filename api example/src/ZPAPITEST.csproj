@@ -12,8 +12,8 @@
 		<PackageReference Include="SwiftlyS2.CS2" Version="*" />
 	</ItemGroup>
 	<ItemGroup>
-		<Reference Include="ZombieOutstandingCS2">
-			<HintPath>ZombieOutstandingAPI.dll</HintPath>
+		<Reference Include="ZombiePlagueLegacyCS2">
+			<HintPath>ZombiePlagueLegacyAPI.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 	</ItemGroup>

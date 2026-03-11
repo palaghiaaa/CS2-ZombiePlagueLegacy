@@ -1,6 +1,6 @@
 <div align="center">
 
-<img width="600" height="131" alt="Zombie Outstanding CS2" src="https://github.com/user-attachments/assets/d0316faa-c2d0-478f-a642-1e3c3651f1d4" />
+<img width="600" height="131" alt="Zombie Plague: Legacy CS2" src="https://github.com/user-attachments/assets/d0316faa-c2d0-478f-a642-1e3c3651f1d4" />
 
 <h3>A full-featured Zombie Plague gamemode plugin for Counter-Strike 2</h3>
 
@@ -87,7 +87,7 @@
 </tr>
 <tr>
   <td>🔌 <strong>Full Plugin API</strong></td>
-  <td><code>IZombieOutstandingAPI</code> — hook events, query player state, and set roles from external plugins</td>
+  <td><code>IZombiePlagueLegacyAPI</code> — hook events, query player state, and set roles from external plugins</td>
 </tr>
 </table>
 
@@ -107,7 +107,7 @@ Ammo Packs are stored exclusively through the Economy plugin — no MySQL or dat
 
 **Economy quick-start:**
 1. Install the Economy plugin and follow its own README.
-2. The wallet kind `"ammo"` is registered automatically on first startup (name is set by `EconomyWalletKind` in `ZombieOutstandingCFG.jsonc`).
+2. The wallet kind `"ammo"` is registered automatically on first startup (name is set by `EconomyWalletKind` in `ZombiePlagueLegacyCFG.jsonc`).
 
 ---
 
@@ -127,11 +127,11 @@ Ammo Packs are stored exclusively through the Economy plugin — no MySQL or dat
 1. Install SwiftlyS2 on your CS2 server.
 2. Install the Economy plugin.
 3. Copy the plugin folder:
-       addons/swiftlys2/plugins/ZombieOutstandingCS2/
+       addons/swiftlys2/plugins/ZombiePlagueLegacyCS2/
 4. Subscribe to the Workshop assets above (optional but recommended).
 5. Start or reload the server:  sw_reload
 6. Edit configs in:
-       configs/plugins/ZombieOutstandingCS2/
+       configs/plugins/ZombiePlagueLegacyCS2/
 7. Check the server console for load errors.
 ```
 
@@ -139,11 +139,11 @@ Ammo Packs are stored exclusively through the Economy plugin — no MySQL or dat
 
 ```
 addons/swiftlys2/plugins/
-└── ZombieOutstandingCS2/
-    └── ZombieOutstandingCS2.dll
+└── ZombiePlagueLegacyCS2/
+    └── ZombiePlagueLegacyCS2.dll
 
-configs/plugins/ZombieOutstandingCS2/
-├── ZombieOutstandingCFG.jsonc   ← Core settings, game modes, special classes, weapons, vox, mines
+configs/plugins/ZombiePlagueLegacyCS2/
+├── ZombiePlagueLegacyCFG.jsonc   ← Core settings, game modes, special classes, weapons, vox, mines
 ├── ZombieClassesCFG.jsonc       ← Zombie class stats & sounds
 └── ExtraItemsCFG.jsonc          ← Shop items, prices, and AP reward rates
 
@@ -165,7 +165,7 @@ translations/
 | `sw_zclass` | `!zclass` | Choose your zombie class preference |
 | `sw_mine` | `!mine` | Open the laser mine placement menu |
 
-> All command names are configurable in `ZombieOutstandingCFG.jsonc`.
+> All command names are configurable in `ZombiePlagueLegacyCFG.jsonc`.
 
 ### Admin Commands
 
@@ -173,13 +173,13 @@ translations/
 |---------|-----------|-------------|
 | `sw_zadmin` | `hzp.adminmenu` | Admin action menu (infect, respawn, set roles, etc.) |
 
-> Set `AdminMenuPermission` to `""` in `ZombieOutstandingCFG.jsonc` to allow all players.
+> Set `AdminMenuPermission` to `""` in `ZombiePlagueLegacyCFG.jsonc` to allow all players.
 
 ---
 
 ## 🗺️ Game Modes
 
-All modes are configured in `ZombieOutstandingCFG.jsonc`. Every mode supports `Enable`, `Weight` (random chance), `ZombieCanReborn`, and `EnableInfiniteClipMode`.
+All modes are configured in `ZombiePlagueLegacyCFG.jsonc`. Every mode supports `Enable`, `Weight` (random chance), `ZombieCanReborn`, and `EnableInfiniteClipMode`.
 
 | # | Mode | Description |
 |---|------|-------------|
@@ -194,13 +194,13 @@ All modes are configured in `ZombieOutstandingCFG.jsonc`. Every mode supports `E
 | 9 | 🦸 **Hero** | Last humans alive become Heroes with extreme stats |
 | 10 | ⚔️ **Assassin vs Sniper** | Assassin zombie faces a Sniper human 1-on-1 |
 
-> Use `NormalRoundsInterval` in `ZombieOutstandingCFG.jsonc` to enforce a minimum number of normal rounds between special modes.
+> Use `NormalRoundsInterval` in `ZombiePlagueLegacyCFG.jsonc` to enforce a minimum number of normal rounds between special modes.
 
 ---
 
 ## 🧟 Zombie Classes
 
-Defined in `ZombieClassesCFG.jsonc`. Stats are based on the original **Zombie Outstanding v7.1** class balance.
+Defined in `ZombieClassesCFG.jsonc`. Stats are based on the original **Zombie Plague: Legacy v7.1** class balance.
 
 | Class | HP | Speed | Gravity | Notes |
 |-------|----|-------|---------|-------|
@@ -217,7 +217,7 @@ Defined in `ZombieClassesCFG.jsonc`. Stats are based on the original **Zombie Ou
 
 ## 👑 Special Classes
 
-Configured under `ZOSpecialClassCFG` (models/sounds/regen) and each mode section (HP override).
+Configured under `ZPLSpecialClassCFG` (models/sounds/regen) and each mode section (HP override).
 
 | Class | HP | Speed | Gravity | Damage | Used In |
 |-------|----|-------|---------|--------|---------|
@@ -225,7 +225,7 @@ Configured under `ZOSpecialClassCFG` (models/sounds/regen) and each mode section
 | 💀 **Nemesis** | 75 000 | 1.00× | 0.50 | 250 | Nemesis / Plague |
 | 🥷 **Assassin** | 24 000 | 3.50× | 0.50 | 357 | Assassin / AVS |
 
-> Set `NemesisHealth` / `AssassinHealth` to `0` in `ZombieOutstandingCFG.jsonc` to fall back to the raw class HP from `ZOSpecialClassCFG`.
+> Set `NemesisHealth` / `AssassinHealth` to `0` in `ZombiePlagueLegacyCFG.jsonc` to fall back to the raw class HP from `ZPLSpecialClassCFG`.
 
 ---
 
@@ -278,13 +278,13 @@ Open with `!zextra` or via the main menu (`!zmenu`). Everything is purchased wit
 | 💚 **Laser Tripwire** | 6 AP | Continuous beam damage (10 dmg per 0.1 s tick) | 2 per player |
 | 🔴 **Explosive Mine** | 10 AP | Explodes on beam cross (radius 360 u, up to 2 600 dmg) | 2 per player |
 
-> Plant with `!mine` after purchasing. Visuals, colors, sounds, and limits are fully configurable in `ZombieOutstandingCFG.jsonc` (`ZOMineCFG` section).
+> Plant with `!mine` after purchasing. Visuals, colors, sounds, and limits are fully configurable in `ZombiePlagueLegacyCFG.jsonc` (`ZPLMineCFG` section).
 
 ---
 
 ## 💣 Grenades & Weapons
 
-All grenades are configured in `ZombieOutstandingCFG.jsonc`.
+All grenades are configured in `ZombiePlagueLegacyCFG.jsonc`.
 
 | Grenade | Enable Key | Auto-Give Key | Range | Duration | Effect |
 |---------|-----------|--------------|-------|----------|--------|
@@ -316,11 +316,11 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
 ## ⚙️ Configuration Reference
 
 <details>
-<summary><strong>ZombieOutstandingCFG.jsonc — Core settings</strong></summary>
+<summary><strong>ZombiePlagueLegacyCFG.jsonc — Core settings</strong></summary>
 
 ```jsonc
 {
-  "ZOMainCFG": {
+  "ZPLMainCFG": {
     "RoundReadyTime": 22.0,        // Seconds before Mother Zombie appears
     "RoundTime": 4.0,              // Round duration in minutes
 
@@ -360,7 +360,7 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
 </details>
 
 <details>
-<summary><strong>ZombieOutstandingCFG.jsonc — Special class HP overrides</strong></summary>
+<summary><strong>ZombiePlagueLegacyCFG.jsonc — Special class HP overrides</strong></summary>
 
 ```jsonc
 "Nemesis":  { "NemesisHealth":  75000 },  // ~60 s TTK for 5 players, ~29 s for 10
@@ -369,15 +369,15 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
 "Assassin": { "AssassinHealth": 24000 }   // ~45 s TTK for 2 focused players
 ```
 
-> Set any value to `0` to use the raw HP from `ZOSpecialClassCFG` instead.
+> Set any value to `0` to use the raw HP from `ZPLSpecialClassCFG` instead.
 
 </details>
 
 <details>
-<summary><strong>ZombieOutstandingCFG.jsonc — Laser mines (ZOMineCFG)</strong></summary>
+<summary><strong>ZombiePlagueLegacyCFG.jsonc — Laser mines (ZPLMineCFG)</strong></summary>
 
 ```jsonc
-"ZOMineCFG": {
+"ZPLMineCFG": {
   "MineList": [
     {
       "Name": "Laser Tripwire",
@@ -401,7 +401,7 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
 <summary><strong>ExtraItemsCFG.jsonc — Shop items & AP rewards</strong></summary>
 
 ```jsonc
-"ZOExtraItemsCFG": {
+"ZPLExtraItemsCFG": {
   "RoundSurviveReward": 3,
   "ZombieKillReward": 2,
   "HumanDamageRewardThreshold": 600,
@@ -437,7 +437,7 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
 <summary><strong>ZombieClassesCFG.jsonc — Class schema example</strong></summary>
 
 ```jsonc
-"ZOZombieClassCFG": {
+"ZPLZombieClassCFG": {
   "ZombieClassList": [
     {
       "Name": "Classic Zombie",
@@ -477,16 +477,16 @@ Translation files live in the `translations/` folder (`en.jsonc` is bundled). Co
 
 ## 🔌 API
 
-`IZombieOutstandingAPI` is exposed as a SwiftlyS2 shared interface so external plugins can integrate with the gamemode.
+`IZombiePlagueLegacyAPI` is exposed as a SwiftlyS2 shared interface so external plugins can integrate with the gamemode.
 
 **Registering the API:**
 
 ```csharp
 public override void UseSharedInterface(IInterfaceManager interfaceManager)
 {
-    if (interfaceManager.HasSharedInterface("ZombieOutstanding"))
+    if (interfaceManager.HasSharedInterface("ZombiePlagueLegacy"))
     {
-        var api = interfaceManager.GetSharedInterface<IZombieOutstandingAPI>("ZombieOutstanding");
+        var api = interfaceManager.GetSharedInterface<IZombiePlagueLegacyAPI>("ZombiePlagueLegacy");
         // hook events, query state, perform actions...
     }
 }
@@ -496,11 +496,11 @@ public override void UseSharedInterface(IInterfaceManager interfaceManager)
 
 | Category | Examples |
 |----------|---------|
-| **Events** | `ZO_OnPlayerInfect`, `ZO_OnNemesisSelected`, `ZO_OnGameStart`, `ZO_OnHumanWin`, `ZO_OnZombieWin` |
+| **Events** | `ZPL_OnPlayerInfect`, `ZPL_OnNemesisSelected`, `ZPL_OnGameStart`, `ZPL_OnHumanWin`, `ZPL_OnZombieWin` |
 | **Queries** | `IsZombie()`, `IsNemesis()`, `IsAssassin()`, `IsSurvivor()`, `CurrentMode` |
 | **Actions** | Force roles, give/take Ammo Packs, set glow / FOV / god mode |
 
-Full interface: [`src/IZombieOutstandingAPI/IZombieOutstandingAPI.cs`](src/IZombieOutstandingAPI/IZombieOutstandingAPI.cs)
+Full interface: [`src/IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.cs`](src/IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.cs)
 
 ---
 

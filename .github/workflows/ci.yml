@@ -15,17 +15,17 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: ZombieOutstandingCS2
-            csproj: src/ZombieOutstandingCS2/ZombieOutstandingCS2.csproj
-            output: ZombieOutstandingCS2
+          - name: ZombiePlagueLegacyCS2
+            csproj: src/ZombiePlagueLegacyCS2/ZombiePlagueLegacyCS2.csproj
+            output: ZombiePlagueLegacyCS2
             copy_economy: true
-          - name: ZPOVIP
-            csproj: src/zo_vip/ZPOVIP.csproj
-            output: ZPOVIP
+          - name: ZPLVIP
+            csproj: src/zpl_vip/ZPLVIP.csproj
+            output: ZPLVIP
             copy_economy: true
-          - name: ZORank
-            csproj: src/zo_rank/ZORank.csproj
-            output: ZORank
+          - name: ZPLRank
+            csproj: src/zpl_rank/ZPLRank.csproj
+            output: ZPLRank
             copy_economy: false
 
     steps:
@@ -49,7 +49,7 @@ jobs:
 
       - name: Copy Economy contract
         if: matrix.copy_economy
-        run: cp src/ZombieOutstandingCS2/lib/Economy.Contract.dll ${{ matrix.output }}/
+        run: cp src/ZombiePlagueLegacyCS2/lib/Economy.Contract.dll ${{ matrix.output }}/
 
       - name: Package artifact
         run: zip -r ${{ matrix.name }}-net10.0.zip ${{ matrix.output }}
