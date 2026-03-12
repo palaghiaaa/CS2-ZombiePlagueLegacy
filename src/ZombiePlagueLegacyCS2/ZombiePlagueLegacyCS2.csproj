@@ -30,6 +30,20 @@
 			<Link>resources/translations/%(RecursiveDir)%(Filename)%(Extension)</Link>
 		</Content>
 	</ItemGroup>
+	<!-- Move ZombiePlagueLegacyAPI.dll into resources/exports/ so SwiftlyS2's
+	     LoadExports() picks it up as a shared type before any plugin is loaded.
+	     With PreferSharedTypes=true (McMaster.NETCore.Plugins), every plugin's
+	     isolated AssemblyLoadContext will then resolve IZombiePlagueLegacyAPI
+	     from the single already-loaded assembly in the default context, keeping
+	     the type identity consistent and preventing the
+	     "No keyed service for type IZombiePlagueLegacyAPI" error. -->
+	<Target Name="MoveApiToExports" AfterTargets="Publish" BeforeTargets="CreateZip">
+		<MakeDir Directories="$(PublishDir)resources/exports" />
+		<Move SourceFiles="$(PublishDir)ZombiePlagueLegacyAPI.dll"
+		      DestinationFolder="$(PublishDir)resources/exports"
+		      Condition="Exists('$(PublishDir)ZombiePlagueLegacyAPI.dll')" />
+	</Target>
+
 	<Target Name="CreateZip" AfterTargets="Publish">
 		<ItemGroup>
 			<PublishFiles Include="$(PublishDir)**\*.*" />

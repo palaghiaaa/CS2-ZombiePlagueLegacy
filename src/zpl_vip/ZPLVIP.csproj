@@ -21,9 +21,12 @@
 
   <ItemGroup>
     <!-- ZombiePlagueLegacyCS2 API contract (zombie-state queries + events).
-         Private="true" (default) so ZombiePlagueLegacyAPI.dll is copied to this
-         plugin's output directory and can be resolved at runtime. -->
-    <ProjectReference Include="../IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj" />
+         Private="false" so ZombiePlagueLegacyAPI.dll is NOT copied to this plugin's
+         output directory.  The single copy deployed by ZombiePlagueLegacyCS2 is
+         reused at runtime, which keeps the type identity consistent across plugins
+         and prevents the "No keyed service for type IZombiePlagueLegacyAPI" error
+         that occurs when SwiftlyS2 loads the same assembly from two different paths. -->
+    <ProjectReference Include="../IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj" Private="false" />
     <!-- Economy plugin contract (AP wallet management) -->
     <Reference Include="Economy.Contract">
       <HintPath>../ZombiePlagueLegacyCS2/lib/Economy.Contract.dll</HintPath>
