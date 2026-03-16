@@ -231,6 +231,17 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
 
     public override void Unload()
     {
+        // Close all open menus BEFORE unhooking events and disposing services.
+        // On hot-reload (map change) SwiftlyS2 does not automatically cancel
+        // per-player menu render timers, so they would continue to fire after
+        // the ServiceProvider is disposed and access freed managed objects,
+        // crashing the server with SIGSEGV (MenuAPI.BuildMenuHtml at 0x0).
+        foreach (var player in Core.PlayerManager.GetAllPlayers())
+        {
+            if (player != null && player.IsValid)
+                Core.MenusAPI.CloseActiveMenu(player);
+        }
+
         // Unregister all event hooks before disposing services so that stale
         // delegates from this plugin load do not accumulate on hot-reload
         // (map change) and cause double event processing or memory leaks.

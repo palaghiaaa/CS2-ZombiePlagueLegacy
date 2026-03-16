@@ -1233,12 +1233,23 @@ public partial class ZPLEvents
 
     private void Event_OnClientDisconnected(SwiftlyS2.Shared.Events.IOnClientDisconnectedEvent @event)
     {
+        var id = @event.PlayerId;
+
+        // Close any open menu FIRST – while the native player controller is still
+        // guaranteed alive – so SwiftlyS2's per-player render timer cannot fire on
+        // an already-freed controller after disconnect and crash with SIGSEGV
+        // (MenuAPI.BuildMenuHtml null-dereference at address 0x0).
+        var disconnectedPlayer = _core.PlayerManager.GetPlayer(id);
+        if (disconnectedPlayer != null && disconnectedPlayer.IsValid)
+        {
+            _core.MenusAPI.CloseActiveMenu(disconnectedPlayer);
+            _helpers.RemoveGlow(disconnectedPlayer);
+        }
+
         if (_globals.GameStart)
         {
             _service.CheckRoundWinConditions();
         }
-
-        var id = @event.PlayerId;
 
         _helpers.ClearPlayerBurn(id);
         _globals.IsZombie.Remove(id);
@@ -1275,7 +1286,6 @@ public partial class ZPLEvents
         // Jetpack / Revive Token
         _extraItemsMenu.CleanupJetpack(id);
         // Cleanup mines for disconnecting player
-        var disconnectedPlayer = _core.PlayerManager.GetPlayer(id);
         if (disconnectedPlayer != null && disconnectedPlayer.IsValid && disconnectedPlayer.SteamID != 0)
             _mineService.CleanupMinesForPlayer(disconnectedPlayer.SteamID);
         _globals.HasReviveToken.Remove(id);
@@ -1294,16 +1304,6 @@ public partial class ZPLEvents
                 _helpers.restartgame();
             }
         });
-
-        var player = _core.PlayerManager.GetPlayer(id);
-        if (player != null && player.IsValid)
-        {
-            // Close any open menu immediately so SwiftlyS2's per-player render
-            // timer cannot fire on an already-freed native player controller and
-            // crash the server with SIGSEGV (BuildMenuHtml null-dereference).
-            _core.MenusAPI.CloseActiveMenu(player);
-            _helpers.RemoveGlow(player);
-        }
     }
 
     private void Event_OnTickSpeed()
