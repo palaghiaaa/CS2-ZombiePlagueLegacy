@@ -1,0 +1,1675 @@
+Thread 140056291765248: 
+    No frames
+
+Thread 140333132479488: .NET TP Worker
+    object System.Reflection.RuntimeConstructorInfo.Invoke(System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, object[] parameters, System.Globalization.CultureInfo culture)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    object System.RuntimeType.CreateInstanceImpl(System.Reflection.BindingFlags bindingAttr, System.Reflection.Binder binder, object[] args, System.Globalization.CultureInfo culture)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    Dommel.SqlExpression<Dommel.DateOnlyTypeHandler> Dommel.DommelMapper.CreateSqlExpression(Dommel.ISqlBuilder sqlBuilder)
+        Assembly: Dommel
+        Module  : Dommel.dll
+
+    void Admins.Comms.Manager.ServerComms+<LoadPlayerSanctionsAsync>d__10.MoveNext()
+        Assembly: Admins.Comms
+        Module  : Admins.Comms.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Threading.Tasks.VoidTaskResult, Microsoft.Win32.SafeHandles.SafeFileHandle+NullableBool>+AsyncStateMachineBox<System.Threading.Tasks.VoidTaskResult, Microsoft.Win32.SafeHandles.SafeFileHandle+NullableBool>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.NotFiniteNumberException>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void Dapper.SqlMapper<Dapper.CompiledRegex>+<QueryAsync>d__33<Dapper.CompiledRegex>.MoveNext()
+        Assembly: Dapper
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/Dapper.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Collections.Generic.IEnumerable<Interop+HostPolicy>, System.RuntimeMethodHandle<Interop+HostPolicy>>+AsyncStateMachineBox<System.Collections.Generic.IEnumerable<Interop+HostPolicy>, System.RuntimeMethodHandle<Interop+HostPolicy>>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.MySqlCommand+<ExecuteDbDataReaderAsync>d__83.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.MemoryExtensions+SpanSplitEnumerator`1, System.Func`3>+AsyncStateMachineBox<System.MemoryExtensions+SpanSplitEnumerator`1, System.Func`3>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.NotFiniteNumberException>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.MySqlCommand+<ExecuteReaderAsync>d__84.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<Interop+Sys+Passwd, System.Func`5>+AsyncStateMachineBox<Interop+Sys+Passwd, System.Func`5>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.NotFiniteNumberException>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Core.CommandExecutor+<ExecuteReaderAsync>d__0.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<Interop+Sys+Passwd, System.IntPtr>+AsyncStateMachineBox<Interop+Sys+Passwd, System.IntPtr>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Threading.Tasks.VoidTaskResult>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.MySqlDataReader+<InitAsync>d__111.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Threading.Tasks.VoidTaskResult, System.DateTimeParse+DTT>+AsyncStateMachineBox<System.Threading.Tasks.VoidTaskResult, System.DateTimeParse+DTT>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Threading.Tasks.VoidTaskResult>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Core.ResultSet+<ReadResultSetHeaderAsync>d__2.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Threading.Tasks.VoidTaskResult, System.LoaderOptimizationAttribute>+AsyncStateMachineBox<System.Threading.Tasks.VoidTaskResult, System.LoaderOptimizationAttribute>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Decimal+DecCalc+Buf28>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Core.ServerSession+<ReceiveReplyAsync>d__117.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Decimal+DecCalc+Buf28, System.Random+ImplBase>+AsyncStateMachineBox<System.Decimal+DecCalc+Buf28, System.Random+ImplBase>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.ArraySegment<System.Byte>>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Protocol.Serialization.ProtocolUtility+<ReadPayloadAsync>d__1.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.ArraySegment<System.Byte>, System.IConvertible>+AsyncStateMachineBox<System.ArraySegment<System.Byte>, System.IConvertible>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.ArraySegment<System.Byte>>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Protocol.Serialization.BufferedByteReader+<ReadBytesAsync>d__2.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.ArraySegment<System.Byte>, System.HashCode>+AsyncStateMachineBox<System.ArraySegment<System.Byte>, System.HashCode>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Protocol.Serialization.StreamByteHandler+<<ReadBytesAsync>g__DoReadBytesAsync|6_2>d.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Int32, System.IFormatProvider>+AsyncStateMachineBox<System.Int32, System.IFormatProvider>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Net.Security.SslStream<System.Net.AsyncReadWriteAdapter>+<ReadAsyncInternal>d__172<System.Net.AsyncReadWriteAdapter>.MoveNext()
+        Assembly: System.Net.Security
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Net.Security.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Net.Security.SslStream<System.Net.AsyncReadWriteAdapter>+<EnsureFullTlsFrameAsync>d__170<System.Net.AsyncReadWriteAdapter>.MoveNext()
+        Assembly: System.Net.Security
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Net.Security.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Net.Sockets.SocketAsyncEngine.System.Threading.IThreadPoolWorkItem.Execute()
+        Assembly: System.Net.Sockets
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Net.Sockets.dll
+
+    bool System.Threading.ThreadPoolWorkQueue.Dispatch()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.PortableThreadPool+WorkerThread.WorkerThreadStart()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140332858320128: 
+    No frames
+
+Thread 140332806845184: .NET TP Worker
+    bool System.Threading.LowLevelLifoSemaphore.WaitForSignal(int timeoutMs)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    bool System.Threading.LowLevelLifoSemaphore.Wait(int timeoutMs, bool spinWait)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.PortableThreadPool+WorkerThread.WorkerThreadStart()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334373511680: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334351145472: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140333138877696: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334351141632: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334351140864: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140332806844416: .NET TP Worker
+    bool System.Threading.LowLevelLifoSemaphore.WaitForSignal(int timeoutMs)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    bool System.Threading.LowLevelLifoSemaphore.Wait(int timeoutMs, bool spinWait)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.PortableThreadPool+WorkerThread.WorkerThreadStart()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334351137792: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334544928512: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334371266304: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334742108416: .NET Timer
+    void System.Threading.TimerQueue.TimerThread()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334544925440: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334740636928: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140333139939840: .NET TP Worker
+    object System.Reflection.RuntimeConstructorInfo.Invoke(System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, object[] parameters, System.Globalization.CultureInfo culture)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    object System.RuntimeType.CreateInstanceImpl(System.Reflection.BindingFlags bindingAttr, System.Reflection.Binder binder, object[] args, System.Globalization.CultureInfo culture)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    Dommel.SqlExpression<Dommel.DateOnlyTypeHandler> Dommel.DommelMapper.CreateSqlExpression(Dommel.ISqlBuilder sqlBuilder)
+        Assembly: Dommel
+        Module  : Dommel.dll
+
+    void Admins.Bans.Manager.ServerBans+<FindActiveBanAsync>d__6.MoveNext()
+        Assembly: Admins.Bans
+        Module  : Admins.Bans.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<Interop+Globalization, Microsoft.Win32.SafeHandles.SafeWaitHandle>+AsyncStateMachineBox<Interop+Globalization, Microsoft.Win32.SafeHandles.SafeWaitHandle>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.NotFiniteNumberException>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void Dapper.SqlMapper<Dapper.CompiledRegex>+<QueryAsync>d__33<Dapper.CompiledRegex>.MoveNext()
+        Assembly: Dapper
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/Dapper.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Collections.Generic.IEnumerable<Interop+HostPolicy>, System.RuntimeMethodHandle<Interop+HostPolicy>>+AsyncStateMachineBox<System.Collections.Generic.IEnumerable<Interop+HostPolicy>, System.RuntimeMethodHandle<Interop+HostPolicy>>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.MySqlCommand+<ExecuteDbDataReaderAsync>d__83.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.MemoryExtensions+SpanSplitEnumerator`1, System.Func`3>+AsyncStateMachineBox<System.MemoryExtensions+SpanSplitEnumerator`1, System.Func`3>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.NotFiniteNumberException>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.MySqlCommand+<ExecuteReaderAsync>d__84.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<Interop+Sys+Passwd, System.Func`5>+AsyncStateMachineBox<Interop+Sys+Passwd, System.Func`5>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.NotFiniteNumberException>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Core.CommandExecutor+<ExecuteReaderAsync>d__0.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<Interop+Sys+Passwd, System.IntPtr>+AsyncStateMachineBox<Interop+Sys+Passwd, System.IntPtr>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Threading.Tasks.VoidTaskResult>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.MySqlDataReader+<InitAsync>d__111.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Threading.Tasks.VoidTaskResult, System.DateTimeParse+DTT>+AsyncStateMachineBox<System.Threading.Tasks.VoidTaskResult, System.DateTimeParse+DTT>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Threading.Tasks.VoidTaskResult>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Core.ResultSet+<ReadResultSetHeaderAsync>d__2.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Threading.Tasks.VoidTaskResult, System.LoaderOptimizationAttribute>+AsyncStateMachineBox<System.Threading.Tasks.VoidTaskResult, System.LoaderOptimizationAttribute>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Decimal+DecCalc+Buf28>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Core.ServerSession+<ReceiveReplyAsync>d__117.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Decimal+DecCalc+Buf28, System.Random+ImplBase>+AsyncStateMachineBox<System.Decimal+DecCalc+Buf28, System.Random+ImplBase>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.ArraySegment<System.Byte>>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Protocol.Serialization.ProtocolUtility+<ReadPayloadAsync>d__1.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.ArraySegment<System.Byte>, System.IConvertible>+AsyncStateMachineBox<System.ArraySegment<System.Byte>, System.IConvertible>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.ArraySegment<System.Byte>>.SetExistingTaskResult(System.Threading.Tasks.Task<!0> task, !0 result)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Protocol.Serialization.BufferedByteReader+<ReadBytesAsync>d__2.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.ArraySegment<System.Byte>, System.HashCode>+AsyncStateMachineBox<System.ArraySegment<System.Byte>, System.HashCode>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(System.Runtime.CompilerServices.IAsyncStateMachineBox box, bool allowInlining)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Tasks.Task.RunContinuations(object continuationObject)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void MySqlConnector.Protocol.Serialization.StreamByteHandler+<<ReadBytesAsync>g__DoReadBytesAsync|6_2>d.MoveNext()
+        Assembly: MySqlConnector
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/MySqlConnector.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Int32, System.IFormatProvider>+AsyncStateMachineBox<System.Int32, System.IFormatProvider>.MoveNext()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Net.Security.SslStream<System.Net.AsyncReadWriteAdapter>+<ReadAsyncInternal>d__172<System.Net.AsyncReadWriteAdapter>.MoveNext()
+        Assembly: System.Net.Security
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Net.Security.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Net.Security.SslStream<System.Net.AsyncReadWriteAdapter>+<EnsureFullTlsFrameAsync>d__170<System.Net.AsyncReadWriteAdapter>.MoveNext()
+        Assembly: System.Net.Security
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Net.Security.dll
+
+    void System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, object state)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Net.Sockets.SocketAsyncEngine.System.Threading.IThreadPoolWorkItem.Execute()
+        Assembly: System.Net.Sockets
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Net.Sockets.dll
+
+    bool System.Threading.ThreadPoolWorkQueue.Dispatch()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.PortableThreadPool+WorkerThread.WorkerThreadStart()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334371263232: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334298467072: .NET TP Worker
+    bool System.Threading.LowLevelLifoSemaphore.WaitForSignal(int timeoutMs)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    bool System.Threading.LowLevelLifoSemaphore.Wait(int timeoutMs, bool spinWait)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.PortableThreadPool+WorkerThread.WorkerThreadStart()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334742026240: .NET TP Gate
+    void System.Threading.PortableThreadPool+GateThread.GateThreadStart()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334369979904: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334351137024: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140058055290880: 
+    No frames
+
+Thread 140334369976832: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334741253632: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334738065152: 
+    No frames
+
+Thread 140334738063616: 
+    object System.Reflection.RuntimeConstructorInfo.Invoke(System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, object[] parameters, System.Globalization.CultureInfo culture)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    object System.RuntimeType.CreateInstanceImpl(System.Reflection.BindingFlags bindingAttr, System.Reflection.Binder binder, object[] args, System.Globalization.CultureInfo culture)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    Dommel.SqlExpression<Dommel.DateOnlyTypeHandler> Dommel.DommelMapper.CreateSqlExpression(Dommel.ISqlBuilder sqlBuilder)
+        Assembly: Dommel
+        Module  : Dommel.dll
+
+    System.Collections.Generic.List<Admins.Bans.Contract.IBan> Admins.Bans.Manager.BansManager.FindBans(System.Nullable<long> steamId64, string playerIp, System.Nullable<Admins.Bans.Contract.BanType> banType, Admins.Bans.Contract.RecordStatus status)
+        Assembly: Admins.Bans
+        Module  : Admins.Bans.dll
+
+    void Admins.Core.GamePlayer.GamePlayer+<>c__DisplayClass10_0.<NotifyAdminsAboutPlayerRecord>b__0()
+        Assembly: Admins.Core
+        Module  : Admins.Core.dll
+
+    void SwiftlyS2.Core.Scheduler.SchedulerManager.ExecuteOnTickTimers()
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+
+    void SwiftlyS2.Core.Scheduler.SchedulerManager.OnTick()
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnTick(byte simulating, byte first, byte last)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+
+Thread 140334350403840: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140056293864192: 
+    No frames
+
+Thread 140334372203520: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334371267072: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334373507840: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334371272448: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334371273216: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140333145047296: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334742582272: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334350406912: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140333618115584: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334351135488: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334545932544: .NET Sockets
+    void System.Net.Sockets.SocketAsyncEngine.EventLoop()
+        Assembly: System.Net.Sockets
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Net.Sockets.dll
+
+    void System.Net.Sockets.SocketAsyncEngine+<>c.<.ctor>b__16_0(object s)
+        Assembly: System.Net.Sockets
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Net.Sockets.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334369683968: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Thread 140334351136256: .NET File Watcher
+    int Interop+Sys.Read(System.Runtime.InteropServices.SafeHandle fd, byte* buffer, int count)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    bool System.IO.FileSystemWatcher+RunningInstance.TryReadEvent(System.IO.FileSystemWatcher+RunningInstance+NotifyEvent& notifyEvent)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance.ProcessEvents()
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.IO.FileSystemWatcher+RunningInstance+<>c.<Start>b__14_0(object obj)
+        Assembly: System.IO.FileSystem.Watcher
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.IO.FileSystem.Watcher.dll
+
+    void System.Threading.Thread+StartHelper.RunWorker()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread+StartHelper.Run()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+    void System.Threading.Thread.StartCallback()
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+
+Recent 50 unmanaged to managed transitions (last seen):
+    void SwiftlyS2.Core.Events.EventPublisher.OnConsoleOutput(nint messagePtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 7489796
+
+    int System.Security.Cryptography.X509Certificates.OpenSslX509ChainProcessor.VerifyCallback(int ok, nint ctx)
+        Assembly: System.Security.Cryptography
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Security.Cryptography.dll
+        Age (ns): 240009822
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnTick(byte simulating, byte first, byte last)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 258523602
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnPreworldUpdate(byte simulating)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 273841751
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnClientSteamAuthorize(int playerId)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 273932571
+
+    byte SwiftlyS2.Core.Events.EventPublisher.OnClientConnected(int playerId)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 1414745809
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnEntitySpawned(nint entityPtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 28238851269
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnEntityCreated(nint entityPtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 28239806182
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnEntityDeleted(nint entityPtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 28241549015
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnClientDisconnected(int playerId, int reason)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 539360899577
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnEntityParentChanged(nint entityPtr, nint newParentPtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 539361283013
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnClientProcessUsercmds(int playerId, nint usercmdsPtr, int numcmds, byte paused, float margin)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 539461701580
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnClientKeyStateChanged(int playerId, SwiftlyS2.Shared.Events.GameButtons key, byte pressed)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 542710814820
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnClientPutInServer(int playerId, int clientKind)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 588025560634
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnConVarValueChanged(nint convarNamePtr, int playerid, nint newValuePtr, nint oldValuePtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 632306206962
+
+    byte SwiftlyS2.Core.Events.EventPublisher.OnEntityTakeDamage(nint entityPtr, nint takeDamageInfoPtr, nint takeDamageResultPtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 50645045723822
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnClientSteamAuthorizeFail(int playerId)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 51403909413944
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnPrecacheResource(nint pResourceManifest)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 233573431171041
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnStartupServer()
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 233573442936653
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnMapLoad(nint mapNamePtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 233573501478120
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnMapUnload(nint mapNamePtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 233573501783443
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnConCommandCreated(nint commandNamePtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 233577493506139
+
+    void SwiftlyS2.Core.Events.EventPublisher.OnConVarCreated(nint convarNamePtr)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 233585955373326
+
+    void System.Globalization.CalendarData.EnumCalendarInfoCallback(char* calendarStringPtr, nint context)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+        Age (ns): 233587831785146
+
+    void SwiftlyS2.Entrypoint.Start(nint nativeTable, int nativeTableSize, nint basePath, nint logsPath)
+        Assembly: SwiftlyS2.CS2
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/SwiftlyS2.CS2.dll
+        Age (ns): 233588071217049
+
+    int Internal.Runtime.InteropServices.ComponentActivator.LoadAssemblyAndGetFunctionPointer(nint assemblyPathNative, nint typeNameNative, nint methodNameNative, nint delegateTypeNative, nint reserved, nint functionHandle)
+        Assembly: System.Private.CoreLib
+        Module  : /home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/System.Private.CoreLib.dll
+        Age (ns): 233588213733432
+
