@@ -158,6 +158,17 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         if (_zplApi != null)
             _zplApi.ZPL_OnPlayerInfect -= OnZPLPlayerInfect;
 
+        // Unregister all event hooks so that stale delegates from the previous
+        // load do not accumulate on hot-reload (map change) and cause double
+        // event processing or memory leaks.
+        Core.GameEvent.UnhookPre<EventPlayerSpawn>();
+        Core.GameEvent.UnhookPre<EventPlayerDeath>();
+        Core.GameEvent.UnhookPre<EventRoundEnd>();
+        Core.Event.OnEntityTakeDamage   -= OnEntityTakeDamage;
+        Core.Event.OnTick               -= OnTick;
+        Core.Event.OnClientConnected    -= OnClientConnected;
+        Core.Event.OnClientDisconnected -= OnClientDisconnected;
+
         _sp?.Dispose();
         _sp = null;
     }

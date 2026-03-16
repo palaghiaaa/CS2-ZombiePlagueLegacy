@@ -20,6 +20,18 @@ public partial class ZPLEvents
         _core.Event.OnEntityTakeDamage += Event_OnInGrenadeDamage;
     }
 
+    /// <summary>
+    /// Removes the C# delegate subscriptions registered in
+    /// <see cref="HookZombieSoundEvents"/>. GameEvent pre-hooks for the same
+    /// event types are cleaned up by <see cref="UnhookEvents"/> via
+    /// <c>IGameEventService.UnhookPre&lt;T&gt;()</c>.
+    /// </summary>
+    public void UnhookZombieSoundEvents()
+    {
+        _core.Event.OnEntityTakeDamage -= Event_OnEntityTakeSoundDamage;
+        _core.Event.OnEntityTakeDamage -= Event_OnInGrenadeDamage;
+    }
+
 
     private HookResult OnPlayerSoundSpawn(EventPlayerSpawn @event)
     {

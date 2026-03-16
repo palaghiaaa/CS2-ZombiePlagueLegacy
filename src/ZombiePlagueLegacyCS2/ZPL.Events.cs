@@ -127,6 +127,48 @@ public partial class ZPLEvents
         _core.Event.OnEntityCreated += Event_OnEntityCreated;
     }
 
+    /// <summary>
+    /// Removes all GameEvent.HookPre registrations and all Core.Event delegate
+    /// subscriptions that were added in <see cref="HookEvents"/>. Must be called
+    /// from <see cref="ZombiePlagueLegacyCS2.Unload"/> so that stale handlers
+    /// from the previous load do not accumulate on hot-reload (map change) and
+    /// cause double event processing or memory leaks.
+    /// </summary>
+    public void UnhookEvents()
+    {
+        // IGameEventService.UnhookPre<T>() removes all HookPre registrations
+        // for event type T that were made by this plugin context.
+        // Covers hooks from both HookEvents and HookZombieSoundEvents.
+        _core.GameEvent.UnhookPre<EventRoundStart>();
+        _core.GameEvent.UnhookPre<EventRoundFreezeEnd>();
+        _core.GameEvent.UnhookPre<EventRoundEnd>();
+        _core.GameEvent.UnhookPre<EventPlayerDeath>();
+        _core.GameEvent.UnhookPre<EventPlayerHurt>();
+        _core.GameEvent.UnhookPre<EventWeaponFire>();
+        _core.GameEvent.UnhookPre<EventPlayerSpawn>();
+        _core.GameEvent.UnhookPre<EventGrenadeThrown>();
+        _core.GameEvent.UnhookPre<EventHegrenadeDetonate>();
+        _core.GameEvent.UnhookPre<EventPlayerBlind>();
+        _core.GameEvent.UnhookPre<EventFlashbangDetonate>();
+        _core.GameEvent.UnhookPre<EventSmokegrenadeDetonate>();
+        _core.GameEvent.UnhookPre<EventDecoyFiring>();
+
+        // Remove C# multicast delegate subscriptions from HookEvents.
+        _core.Event.OnClientDisconnected         -= Event_OnClientDisconnected;
+        _core.Event.OnClientConnected            -= Event_OnClientConnected;
+        _core.Event.OnEntityTakeDamage           -= Event_OnEntityTakeDamage;
+        _core.Event.OnMapLoad                    -= Event_OnMapLoad;
+        _core.Event.OnWeaponServicesCanUseHook   -= Event_OnWeaponServicesCanUseHook;
+        _core.Event.OnPrecacheResource           -= Event_OnPrecacheResource;
+        _core.Event.OnTick                       -= Event_OnTickSpeed;
+        _core.Event.OnTick                       -= Event_OnTickNoRecoil;
+        _core.Event.OnTick                       -= Event_OnTickMultijump;
+        _core.Event.OnTick                       -= Event_OnTickJetpack;
+        _core.Event.OnTick                       -= Event_OnTickLeap;
+        _core.Event.OnEntityTakeDamage           -= Event_OnHumanTakeDamage;
+        _core.Event.OnEntityCreated              -= Event_OnEntityCreated;
+    }
+
     private void Event_OnEntityCreated(IOnEntityCreatedEvent @event)
     {
         var entity = @event.Entity;

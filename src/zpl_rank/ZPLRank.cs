@@ -127,6 +127,15 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
         if (_zplApi != null)
             _zplApi.ZPL_OnPlayerInfect -= OnZPLPlayerInfect;
 
+        // Unregister all event hooks so that stale delegates from the previous
+        // load do not accumulate on hot-reload (map change) and cause double
+        // event processing or memory leaks.
+        Core.GameEvent.UnhookPre<EventPlayerDeath>();
+        Core.GameEvent.UnhookPre<EventRoundEnd>();
+        Core.Event.OnEntityTakeDamage   -= OnEntityTakeDamage;
+        Core.Event.OnClientConnected    -= OnClientConnected;
+        Core.Event.OnClientDisconnected -= OnClientDisconnected;
+
         // Flush all in-memory stats to DB before shutdown.
         _db?.SaveAll(_stats);
 

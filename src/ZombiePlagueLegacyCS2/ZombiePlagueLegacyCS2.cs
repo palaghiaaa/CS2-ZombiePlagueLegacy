@@ -231,6 +231,11 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
 
     public override void Unload()
     {
+        // Unregister all event hooks before disposing services so that stale
+        // delegates from this plugin load do not accumulate on hot-reload
+        // (map change) and cause double event processing or memory leaks.
+        _Events?.UnhookZombieSoundEvents();
+        _Events?.UnhookEvents();
         _apiInstance!.Dispose();
         ServiceProvider!.Dispose();
     }
