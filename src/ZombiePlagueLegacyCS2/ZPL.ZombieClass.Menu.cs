@@ -35,9 +35,10 @@ public class ZPLZombieClassMenu
         _api = api;
     }
 
-    public IMenuAPI OpenZombieClassMenu(IPlayer player)
+    public void OpenZombieClassMenu(IPlayer player)
     {
-        var main = _core.MenusAPI.CreateBuilder();
+        if (!player.IsValid) return;
+
         IMenuAPI menu = _menuhelper.CreateMenu(_helpers.T(player, "ZClassMenu"));
 
         var Id = player.PlayerID;
@@ -121,7 +122,6 @@ public class ZPLZombieClassMenu
         }
 
         _core.MenusAPI.OpenMenuForPlayer(player, menu);
-        return menu;
     }
 
     

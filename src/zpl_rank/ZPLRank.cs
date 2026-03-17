@@ -127,6 +127,14 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
         if (_zplApi != null)
             _zplApi.ZPL_OnPlayerInfect -= OnZPLPlayerInfect;
 
+        // Close all open menus before unloading so that SwiftlyS2's per-player
+        // render timers cannot fire on freed objects after hot-reload.
+        foreach (var player in Core.PlayerManager.GetAllPlayers())
+        {
+            if (player != null && player.IsValid)
+                Core.MenusAPI.CloseActiveMenu(player);
+        }
+
         // Unregister all event hooks so that stale delegates from the previous
         // load do not accumulate on hot-reload (map change) and cause double
         // event processing or memory leaks.
