@@ -1656,7 +1656,12 @@ public partial class ZPLEvents
 
         string inflictorname = inflictor.DesignerName;
 
-        _helpers.KnockBackZombie(AttackerPlayer, victimPlayer, inflictorname, CFG.KnockZombieForce, isheadshot, CFG);
+        // Do not knock back zombies that are in GodState.
+        _globals.GodState.TryGetValue(victimId, out bool victimIsGodState);
+        if (!victimIsGodState)
+        {
+            _helpers.KnockBackZombie(AttackerPlayer, victimPlayer, inflictorname, CFG.KnockZombieForce, isheadshot, CFG);
+        }
         
     }
 
