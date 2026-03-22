@@ -2,195 +2,203 @@
     "callstack": {
         "native": {
             "captureMethod": "backtrace (captured in signal handler) + dladdr",
-            "frameCount": 24,
+            "frameCount": 25,
             "frames": [
                 {
-                    "address": "0x00007FA2281C6839",
-                    "baseAddress": "0x00007FA227CE7000",
+                    "address": "0x00007FEFADF468B9",
+                    "baseAddress": "0x00007FEFADA67000",
                     "index": 0,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/linuxsteamrt64/swiftlys2.so",
-                    "offset": "+0x4DF839",
+                    "offset": "+0x4DF8B9",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA222958D3A",
-                    "baseAddress": "0x00007FA22233E000",
+                    "address": "0x00007FEFA86D4D3A",
+                    "baseAddress": "0x00007FEFA80BA000",
                     "index": 1,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x61AD3A",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA222958280",
-                    "baseAddress": "0x00007FA22233E000",
+                    "address": "0x00007FEFA86D4280",
+                    "baseAddress": "0x00007FEFA80BA000",
                     "index": 2,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x61A280",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA27943D140",
-                    "baseAddress": "0x00007FA27942A000",
+                    "address": "0x00007FEFFEF03140",
+                    "baseAddress": "0x00007FEFFEEF0000",
                     "index": 3,
                     "module": "/lib/x86_64-linux-gnu/libpthread.so.0",
                     "offset": "+0x13140",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA2226B1050",
-                    "baseAddress": "0x00007FA22233E000",
+                    "address": "0x00007FEFA82FE419",
+                    "baseAddress": "0x00007FEFA80BA000",
                     "index": 4,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
-                    "offset": "+0x373050",
+                    "offset": "+0x244419",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA2226B0D67",
-                    "baseAddress": "0x00007FA22233E000",
+                    "address": "0x00007FEFA842CFA8",
+                    "baseAddress": "0x00007FEFA80BA000",
                     "index": 5,
+                    "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
+                    "offset": "+0x372FA8",
+                    "symbol": "UNKNOWN"
+                },
+                {
+                    "address": "0x00007FEFA842CD67",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 6,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x372D67",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA2226B13B2",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 6,
+                    "address": "0x00007FEFA842D3B2",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 7,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x3733B2",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA222941585",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 7,
+                    "address": "0x00007FEFA86BD585",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 8,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x603585",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA222941C1F",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 8,
+                    "address": "0x00007FEFA86BDC1F",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 9,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x603C1F",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA2226FBCC0",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 9,
+                    "address": "0x00007FEFA8477CC0",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 10,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x3BDCC0",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA20B99CA7B",
-                    "baseAddress": "0x00007FA20B722000",
-                    "index": 10,
+                    "address": "0x00007FEFA18C4A7B",
+                    "baseAddress": "0x00007FEFA164A000",
+                    "index": 11,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libclrjit.so",
                     "offset": "+0x27AA7B",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA20B7D3B72",
-                    "baseAddress": "0x00007FA20B722000",
-                    "index": 11,
+                    "address": "0x00007FEFA16FBB72",
+                    "baseAddress": "0x00007FEFA164A000",
+                    "index": 12,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libclrjit.so",
                     "offset": "+0xB1B72",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA20B7D3AC4",
-                    "baseAddress": "0x00007FA20B722000",
-                    "index": 12,
+                    "address": "0x00007FEFA16FBAC4",
+                    "baseAddress": "0x00007FEFA164A000",
+                    "index": 13,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libclrjit.so",
                     "offset": "+0xB1AC4",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA20B7E4E9F",
-                    "baseAddress": "0x00007FA20B722000",
-                    "index": 13,
+                    "address": "0x00007FEFA170CE9F",
+                    "baseAddress": "0x00007FEFA164A000",
+                    "index": 14,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libclrjit.so",
                     "offset": "+0xC2E9F",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA20B7DF374",
-                    "baseAddress": "0x00007FA20B722000",
-                    "index": 14,
+                    "address": "0x00007FEFA1707374",
+                    "baseAddress": "0x00007FEFA164A000",
+                    "index": 15,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libclrjit.so",
                     "offset": "+0xBD374",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA2226FCB7A",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 15,
+                    "address": "0x00007FEFA8478B7A",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 16,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x3BEB7A",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA222738384",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 16,
+                    "address": "0x00007FEFA84B4384",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 17,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x3FA384",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA222737C8B",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 17,
+                    "address": "0x00007FEFA84B3C8B",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 18,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x3F9C8B",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA2227373FA",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 18,
+                    "address": "0x00007FEFA84B33FA",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 19,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x3F93FA",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA222736EC2",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 19,
+                    "address": "0x00007FEFA84B2EC2",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 20,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x3F8EC2",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA22273A8D9",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 20,
+                    "address": "0x00007FEFA84B68D9",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 21,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x3FC8D9",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA222739FC8",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 21,
+                    "address": "0x00007FEFA84B5FC8",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 22,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x3FBFC8",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA22293D394",
-                    "baseAddress": "0x00007FA22233E000",
-                    "index": 22,
+                    "address": "0x00007FEFA86B9394",
+                    "baseAddress": "0x00007FEFA80BA000",
+                    "index": 23,
                     "module": "/home/container/game/csgo/addons/swiftlys2/bin/managed/dotnet/shared/Microsoft.NETCore.App/10.0.0/libcoreclr.so",
                     "offset": "+0x5FF394",
                     "symbol": "UNKNOWN"
                 },
                 {
-                    "address": "0x00007FA1AB4EC98C",
-                    "index": 23,
+                    "address": "0x00007FEF3147B31F",
+                    "index": 24,
                     "module": "UNKNOWN",
                     "symbol": "UNKNOWN"
                 }
@@ -199,24 +207,24 @@
     },
     "exception": {
         "accessViolation": {
-            "address": "0x00000000A5B7429B",
-            "type": "SEGV_MAPERR"
+            "address": "0x0000000000000000",
+            "type": "UNKNOWN"
         },
-        "address": "0x00000000A5B7429B",
+        "address": "0x0000000000000000",
         "code": "0x0000000B",
         "codeName": "SIGSEGV",
         "errno": 0,
-        "siCode": 1
+        "siCode": 128
     },
     "memory": {
-        "availablePhysical": 1361342464,
-        "availableVirtual": 16018481152,
+        "availablePhysical": 2010165248,
+        "availableVirtual": 16749281280,
         "memoryLoad": 98,
         "totalPhysical": 134960492544,
         "totalVirtual": 152140349440
     },
-    "nativeVersion": "1.2.2-beta.1",
-    "processId": 267,
+    "nativeVersion": "1.2.2-beta.15",
+    "processId": 266,
     "registers": {
         "control": {
             "contextFlags": "Linux ucontext"
@@ -232,44 +240,44 @@
         "general": {
             "r10": "0x0000000000000097",
             "r11": "0x0000000000000B6A",
-            "r12": "0x00000000000000A0",
-            "r13": "0x00007FA1A5B74290",
-            "r14": "0x00000000A5B7429B",
-            "r15": "0x00007FA1A5B73A78",
+            "r12": "0x0000000000000010",
+            "r13": "0x7453656B6F766E49",
+            "r14": "0x0000000000000000",
+            "r15": "0x00007FEF2BB376C8",
             "r8": "0x0000000000000000",
             "r9": "0x00000000000000A0",
-            "rax": "0x00007FA1A5B74420",
-            "rbp": "0x00007FFFF9891840",
-            "rbx": "0x00007FA1A5B741F0",
-            "rcx": "0x2E35B8CF35312E35",
-            "rdi": "0x00007FA2229E1600",
-            "rdx": "0x00005586ADAD7010",
-            "rsi": "0x0000000000000001",
-            "rsp": "0x00007FFFF98917E0"
+            "rax": "0x00007FEF2BB376D8",
+            "rbp": "0x00007FAEA8574CD0",
+            "rbx": "0x00007FEFB08FB7C0",
+            "rcx": "0x6E6F697373657270",
+            "rdi": "0x00007FEFB08FB770",
+            "rdx": "0x0000000000000001",
+            "rsi": "0x00007FEF2BB376C8",
+            "rsp": "0x00007FAEA8574C70"
         },
         "general32": {
-            "eax": "0xA5B74420",
-            "ebp": "0xF9891840",
-            "ebx": "0xA5B741F0",
-            "ecx": "0x35312E35",
-            "edi": "0x229E1600",
-            "edx": "0xADAD7010",
-            "esi": "0x00000001",
-            "esp": "0xF98917E0"
+            "eax": "0x2BB376D8",
+            "ebp": "0xA8574CD0",
+            "ebx": "0xB08FB7C0",
+            "ecx": "0x73657270",
+            "edi": "0xB08FB770",
+            "edx": "0x00000001",
+            "esi": "0x2BB376C8",
+            "esp": "0xA8574C70"
         },
         "legacy": {
-            "ah": "0x44",
-            "al": "0x20",
-            "ax": "0x4420",
-            "bh": "0x41",
-            "bl": "0xF0",
-            "bx": "0x41F0",
-            "ch": "0x2E",
-            "cl": "0x35",
-            "cx": "0x2E35",
-            "dh": "0x70",
-            "dl": "0x10",
-            "dx": "0x7010"
+            "ah": "0x76",
+            "al": "0xD8",
+            "ax": "0x76D8",
+            "bh": "0xB7",
+            "bl": "0xC0",
+            "bx": "0xB7C0",
+            "ch": "0x72",
+            "cl": "0x70",
+            "cx": "0x7270",
+            "dh": "0x00",
+            "dl": "0x01",
+            "dx": "0x0001"
         },
         "rflags": {
             "bits": {
@@ -293,7 +301,7 @@
             },
             "raw": "0x0000000000010202"
         },
-        "rip": "0x00007FA2226B1050",
+        "rip": "0x00007FEFA82FE419",
         "segments": {
             "cs": "0x0033",
             "ds": "N/A",
@@ -304,22 +312,22 @@
         },
         "stackInfo": {
             "frameSize": "0x60 (96 bytes)",
-            "rbp": "0x00007FFFF9891840",
-            "rsp": "0x00007FFFF98917E0"
+            "rbp": "0x00007FAEA8574CD0",
+            "rsp": "0x00007FAEA8574C70"
         },
         "xmm": {
             "fpuControlWord": "0x037F",
             "fpuStatusWord": "0x0000",
             "fpuTagWord": "0x0000",
-            "mxcsr": "0x00001FBF",
+            "mxcsr": "0x00001FB2",
             "xmm0": {
                 "full": "0x00000000000000000000000000000000",
                 "high": "0x0000000000000000",
                 "low": "0x0000000000000000"
             },
             "xmm1": {
-                "full": "0x00007FA2229E31600000000000000000",
-                "high": "0x00007FA2229E3160",
+                "full": "0x00007FEFA875F1600000000000000000",
+                "high": "0x00007FEFA875F160",
                 "low": "0x0000000000000000"
             },
             "xmm10": {
@@ -338,9 +346,9 @@
                 "low": "0x0505050505050505"
             },
             "xmm13": {
-                "full": "0x00000000000000000000000000000023",
-                "high": "0x0000000000000000",
-                "low": "0x0000000000000023"
+                "full": "0x000102030405060708090A0B0C0D0E0F",
+                "high": "0x0001020304050607",
+                "low": "0x08090A0B0C0D0E0F"
             },
             "xmm14": {
                 "full": "0x05050505050505050505050505050505",
@@ -348,9 +356,9 @@
                 "low": "0x0505050505050505"
             },
             "xmm15": {
-                "full": "0x0000000000000000000000007F7FFFFF",
-                "high": "0x0000000000000000",
-                "low": "0x000000007F7FFFFF"
+                "full": "0xC70640E86E7E38553261A6C79755DF14",
+                "high": "0xC70640E86E7E3855",
+                "low": "0x3261A6C79755DF14"
             },
             "xmm2": {
                 "full": "0x00000000000000000000000000000000",
@@ -396,50 +404,50 @@
     },
     "stackMemory": {
         "data": {
-            "0x00007FFFF98917A0": "0x12E70EE3181FEF00",
-            "0x00007FFFF98917A8": "0x00007FA1A5B741F0",
-            "0x00007FFFF98917B0": "0x00000000000000A0",
-            "0x00007FFFF98917B8": "0x00007FA1A5B74290",
-            "0x00007FFFF98917C0": "0x00000000A5B73A83",
-            "0x00007FFFF98917C8": "0x00007FA1A5B73A78",
-            "0x00007FFFF98917D0": "0x00007FFFF9891840",
-            "0x00007FFFF98917D8": "0x00007FA2226B104A",
-            "0x00007FFFF98917E0": "0x00007FA222A0E7E0",
-            "0x00007FFFF98917E0Note": "RSP",
-            "0x00007FFFF98917E8": "0x00007FA223006860",
-            "0x00007FFFF98917F0": "0x00007FA1A5B73A78",
-            "0x00007FFFF98917F8": "0x00000000A5B73A83",
-            "0x00007FFFF9891800": "0x00007FA1A5B741F0",
-            "0x00007FFFF9891808": "0x00000000A5B741FB",
-            "0x00007FFFF9891810": "0x12E70EE3181FEF00",
-            "0x00007FFFF9891818": "0x0000000000000010",
-            "0x00007FFFF9891820": "0x0000000000000010",
-            "0x00007FFFF9891828": "0x00000000000000B0",
-            "0x00007FFFF9891830": "0x00007FA223006860",
-            "0x00007FFFF9891838": "0x0000000000000008",
-            "0x00007FFFF9891840": "0x00007FFFF98918B0",
-            "0x00007FFFF9891840Note": "RBP",
-            "0x00007FFFF9891848": "0x00007FA2226B0D67",
-            "0x00007FFFF9891850": "0x00000008A44A44B8",
-            "0x00007FFFF9891858": "0x0000000000000000",
-            "0x00007FFFF9891860": "0x0000000000000080",
-            "0x00007FFFF9891868": "0x0000000000000010",
-            "0x00007FFFF9891870": "0x00007F61285CEBA0",
-            "0x00007FFFF9891878": "0x0000000000000008",
-            "0x00007FFFF9891880": "0x12E70EE3181FEF00",
-            "0x00007FFFF9891888": "0x0000000000000010",
-            "0x00007FFFF9891890": "0x0000000000000010",
-            "0x00007FFFF9891898": "0x0000000000000010"
+            "0x00007FAEA8574C30": "0x00007FAEEE607000",
+            "0x00007FAEA8574C38": "0x00007FEFA8425940",
+            "0x00007FAEA8574C40": "0x2C2D25E841940000",
+            "0x00007FAEA8574C48": "0x00007FEFB08FB7C0",
+            "0x00007FAEA8574C50": "0x0000000000000000",
+            "0x00007FAEA8574C58": "0x00007FEF2BB376C8",
+            "0x00007FAEA8574C60": "0x00007FAEA8574CD0",
+            "0x00007FAEA8574C68": "0x00007FEFA82FE3F0",
+            "0x00007FAEA8574C70": "0x2C2D25E841940000",
+            "0x00007FAEA8574C70Note": "RSP",
+            "0x00007FAEA8574C78": "0x0000000000000003",
+            "0x00007FAEA8574C80": "0x00007FAEA8574CB8",
+            "0x00007FAEA8574C88": "0x0000000000000025",
+            "0x00007FAEA8574C90": "0x00007FEFB08FB770",
+            "0x00007FAEA8574C98": "0x00007FEF00000001",
+            "0x00007FAEA8574CA0": "0x2C2D25E841940000",
+            "0x00007FAEA8574CA8": "0x00007FEF2BB38900",
+            "0x00007FAEA8574CB0": "0x00000000000000A0",
+            "0x00007FAEA8574CB8": "0x00000000000000B0",
+            "0x00007FAEA8574CC0": "0x00007FEFA8D2DAE0",
+            "0x00007FAEA8574CC8": "0x00007FEF2BB376C8",
+            "0x00007FAEA8574CD0": "0x00007FAEA8574D40",
+            "0x00007FAEA8574CD0Note": "RBP",
+            "0x00007FAEA8574CD8": "0x00007FEFA842CFA8",
+            "0x00007FAEA8574CE0": "0x00007FEFA878A7E0",
+            "0x00007FAEA8574CE8": "0x00007FEFA8D2DAE0",
+            "0x00007FAEA8574CF0": "0x0000000000000000",
+            "0x00007FAEA8574CF8": "0x0000000000000000",
+            "0x00007FAEA8574D00": "0x00007FEF2BB376C8",
+            "0x00007FAEA8574D08": "0x00007FEFA84759A6",
+            "0x00007FAEA8574D10": "0x2C2D25E841940000",
+            "0x00007FAEA8574D18": "0x0000000000000010",
+            "0x00007FAEA8574D20": "0x0000000000000010",
+            "0x00007FAEA8574D28": "0x00000000000000B0"
         },
         "dumpSize": 256,
-        "dumpStart": "0x00007FFFF98917A0"
+        "dumpStart": "0x00007FAEA8574C30"
     },
     "system": {
         "numberOfProcessors": "N/A",
         "pageSize": "N/A",
         "processorArchitecture": "x86_64"
     },
-    "threadId": 140055196587776,
-    "timestamp": "2026-03-16 14:11:10 UTC+00:00",
-    "timestampUTC": 1773670270
+    "threadId": 140665834399488,
+    "timestamp": "2026-03-22 19:56:50 UTC+00:00",
+    "timestampUTC": 1774209410
 }
