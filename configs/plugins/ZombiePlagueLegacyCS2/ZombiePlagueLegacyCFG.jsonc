@@ -153,8 +153,6 @@
 
     "EnableDamageHud":           true,
 
-    "EnableStatusHud":           true,
-
     "EnableInfiniteReserveAmmo": true,
 
     "EnableWeaponNoRecoil":      true,
@@ -191,49 +189,6 @@
     "KnockZombieForce":          200.0,
 
     "StunZombieTime":            0.1,
-
-    "WeaponKnockbackTable": {
-
-      "weapon_awp":              350.0,
-      "weapon_ssg08":            300.0,
-
-      "weapon_xm1014":           280.0,
-      "weapon_nova":             280.0,
-      "weapon_sawedoff":         270.0,
-      "weapon_mag7":             270.0,
-
-      "weapon_m249":             260.0,
-      "weapon_negev":            260.0,
-
-      "weapon_ak47":             240.0,
-      "weapon_sg553":            235.0,
-      "weapon_aug":              230.0,
-      "weapon_m4a1":             225.0,
-      "weapon_m4a4":             225.0,
-      "weapon_famas":            220.0,
-      "weapon_galilar":          220.0,
-
-      "weapon_deagle":           210.0,
-      "weapon_revolver":         200.0,
-      "weapon_usp_silencer":     160.0,
-      "weapon_hkp2000":          150.0,
-      "weapon_p250":             145.0,
-      "weapon_fiveseven":        145.0,
-      "weapon_glock":            140.0,
-      "weapon_tec9":             140.0,
-      "weapon_cz75a":            140.0,
-      "weapon_elite":            130.0,
-
-      "weapon_ump45":            120.0,
-      "weapon_p90":              120.0,
-      "weapon_mp9":              115.0,
-      "weapon_mp5sd":            115.0,
-      "weapon_mp7":              115.0,
-      "weapon_mac10":            110.0,
-      "weapon_bizon":            110.0,
-
-      "weapon_knife":              0.0
-    },
 
     "FireGrenade":               true,
     "SpawnGiveFireGrenade":      true,

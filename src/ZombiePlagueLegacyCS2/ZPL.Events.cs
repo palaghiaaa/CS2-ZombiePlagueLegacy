@@ -283,14 +283,6 @@ public partial class ZPLEvents
                 _globals.g_hCountdown = _core.Scheduler.DelayAndRepeatBySeconds(0.1f, 1.0f, () => _service.Round_Countdown());
                 _core.Scheduler.StopOnMapChange(_globals.g_hCountdown);
             }
-
-            if (_mainCFG.CurrentValue.EnableStatusHud)
-            {
-                _globals.g_hStatusHud?.Cancel();
-                _globals.g_hStatusHud = null;
-                _globals.g_hStatusHud = _core.Scheduler.RepeatBySeconds(1.0f, SendStatusHudToAll);
-                _core.Scheduler.StopOnMapChange(_globals.g_hStatusHud);
-            }
         }
         catch (Exception ex)
         {
@@ -368,8 +360,6 @@ public partial class ZPLEvents
         _helpers.ClearAllLights();
         _mineService.CleanupAllMines();
         _globals.GameInfiniteClipMode = false;
-        _globals.g_hStatusHud?.Cancel();
-        _globals.g_hStatusHud = null;
         _core.Scheduler.DelayBySeconds(2.0f, () =>
         {
             _globals.RoundVoxGroup = null;
@@ -1295,6 +1285,9 @@ public partial class ZPLEvents
         _globals.LeapCooldownEnd.Remove(id);
         _globals.PrevOnGround.Remove(id);
 
+        // Remove the player's local AP balance cache entry.
+        _ammoPacks.RemovePlayer(id);
+
         _core.Scheduler.DelayBySeconds(1.0f, () =>
         {
             var playerCount = _helpers.ServerPlayerCount();
@@ -1663,16 +1656,12 @@ public partial class ZPLEvents
 
         string inflictorname = inflictor.DesignerName;
 
-        // Resolve per-weapon knockback force: try active weapon first, then fall back to global.
-        float force = CFG.KnockZombieForce;
-        var activeWeaponForKnock = AttackerPawn.WeaponServices?.ActiveWeapon.Value;
-        if (activeWeaponForKnock != null && activeWeaponForKnock.IsValid)
+        // Do not knock back zombies that are in GodState.
+        _globals.GodState.TryGetValue(victimId, out bool victimIsGodState);
+        if (!victimIsGodState)
         {
-            string wName = activeWeaponForKnock.DesignerName;
-            if (!string.IsNullOrEmpty(wName) && CFG.WeaponKnockbackTable.TryGetValue(wName, out float wForce))
-                force = wForce;
+            _helpers.KnockBackZombie(AttackerPlayer, victimPlayer, inflictorname, CFG.KnockZombieForce, isheadshot, CFG);
         }
-        _helpers.KnockBackZombie(AttackerPlayer, victimPlayer, inflictorname, force, isheadshot, CFG);
         
     }
 
@@ -2151,110 +2140,6 @@ public partial class ZPLEvents
         }
         return HookResult.Continue;
 
-    }
-
-    private void SendStatusHudToAll()
-    {
-        var CFG = _mainCFG.CurrentValue;
-        if (!CFG.EnableStatusHud)
-            return;
-
-        var modeName = _gameMode.GetTramslationsModeName();
-
-        // Pre-compute alive zombie/human counts for the remaining-players line.
-        int aliveZombieCount = 0;
-        int aliveHumanCount = 0;
-        IPlayer? lastZombiePlayer = null;
-        IPlayer? lastHumanPlayer = null;
-
-        if (_globals.GameStart && _globals.MotherZombieWasSelected)
-        {
-            foreach (var p in _core.PlayerManager.GetAlive())
-            {
-                if (p == null || !p.IsValid) continue;
-                var ctrl = p.Controller;
-                if (ctrl == null || !ctrl.IsValid || !ctrl.PawnIsAlive) continue;
-
-                var pId = p.PlayerID;
-                _globals.IsZombie.TryGetValue(pId, out bool isZ);
-                if (isZ) { aliveZombieCount++; lastZombiePlayer = p; }
-                else { aliveHumanCount++; lastHumanPlayer = p; }
-            }
-        }
-
-        foreach (var player in _core.PlayerManager.GetAllPlayers())
-        {
-            if (!player.IsValid || player.IsFakeClient)
-                continue;
-
-            var controller = player.Controller;
-            if (controller == null || !controller.IsValid || !controller.PawnIsAlive)
-                continue;
-
-            var id = player.PlayerID;
-
-            _globals.IsZombie.TryGetValue(id, out bool isZombie);
-            _globals.IsNemesis.TryGetValue(id, out bool isNemesis);
-            _globals.IsAssassin.TryGetValue(id, out bool isAssassin);
-            _globals.IsSurvivor.TryGetValue(id, out bool isSurvivor);
-            _globals.IsSniper.TryGetValue(id, out bool isSniper);
-            _globals.IsHero.TryGetValue(id, out bool isHero);
-
-            string classColor;
-            string className;
-
-            if (isZombie)
-            {
-                classColor = "red";
-                if (isNemesis)
-                    className = _helpers.T(player, "HudStatusNemesis");
-                else if (isAssassin)
-                    className = _helpers.T(player, "HudStatusAssassin");
-                else
-                    className = _zombieState.GetPlayerZombieClass(id) ?? _helpers.T(player, "HudStatusZombie");
-            }
-            else
-            {
-                classColor = "cyan";
-                if (isSurvivor)
-                    className = _helpers.T(player, "HudStatusSurvivor");
-                else if (isSniper)
-                    className = _helpers.T(player, "HudStatusSniper");
-                else if (isHero)
-                    className = _helpers.T(player, "HudStatusHero");
-                else
-                    className = _helpers.T(player, "HudStatusHuman");
-            }
-
-            var ap = _ammoPacks.GetBalance(id);
-            var localModeName = _helpers.T(player, modeName);
-
-            string message =
-                $"<font color='yellow'>{localModeName}</font>" +
-                $"<font color='#888888'> · </font><font color='{classColor}'>{className}</font>" +
-                $"<font color='#888888'> · </font><font color='green'>{ap} AP</font>";
-
-            // Append the remaining-players line when the round is in progress.
-            if (aliveZombieCount == 1 && aliveHumanCount == 1
-                && lastZombiePlayer != null && lastHumanPlayer != null)
-            {
-                var hPawn = lastHumanPlayer.PlayerPawn;
-                var zPawn = lastZombiePlayer.PlayerPawn;
-                if (hPawn != null && hPawn.IsValid && zPawn != null && zPawn.IsValid)
-                {
-                    message += $"<br><font color='white'>{_helpers.T(player, "HudRemainingOneVsOne", lastHumanPlayer.Name, hPawn.Health, lastZombiePlayer.Name, zPawn.Health)}</font>";
-                }
-            }
-            else if (aliveZombieCount > 0 && aliveHumanCount > 0)
-            {
-                if (aliveZombieCount < aliveHumanCount && aliveZombieCount <= 8)
-                    message += $"<br><font color='red'>{_helpers.T(player, "HudRemainingZombies", aliveZombieCount)}</font>";
-                else if (aliveHumanCount < aliveZombieCount && aliveHumanCount <= 8)
-                    message += $"<br><font color='cyan'>{_helpers.T(player, "HudRemainingHumans", aliveHumanCount)}</font>";
-            }
-
-            player.SendCenterHTML(message);
-        }
     }
 
 }
