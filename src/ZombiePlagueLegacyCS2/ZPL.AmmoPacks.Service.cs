@@ -8,13 +8,23 @@ namespace ZombiePlagueLegacyCS2;
 /// <summary>
 /// Manages ammo-pack balances exclusively via the Economy plugin
 /// (https://github.com/SwiftlyS2-Plugins/Economy).
-/// All persistence is delegated to Economy; no local caching or database is used.
+/// All persistence is delegated to Economy; a local per-player cache is
+/// maintained so that high-frequency reads (e.g. 1-second HUD timer) never
+/// call Economy.GetPlayerBalance → LoadFromDatabase, which triggers a
+/// Dommel DateOnlyTypeHandler JIT crash (SIGSEGV at 0x0) seen in the
+/// crash files.  The cache is primed on connect (LoadData) and kept in sync
+/// by every balance mutation (Add/Set/Spend).
 /// </summary>
 public class AmmoPacksService
 {
     private readonly ILogger<AmmoPacksService> _logger;
     private readonly IOptionsMonitor<ZPLMainCFG> _mainCFG;
     private IEconomyAPIv1? _api;
+
+    // Local balance cache – keyed by PlayerId.
+    // All game logic runs on the single game-server thread, so no locking
+    // is required.
+    private readonly Dictionary<int, int> _balanceCache = new();
 
     public AmmoPacksService(
         ILogger<AmmoPacksService> logger,
@@ -30,8 +40,9 @@ public class AmmoPacksService
     private string WalletKind => _mainCFG.CurrentValue.EconomyWalletKind;
 
     /// <summary>
-    /// Loads the player's economy data from persistent storage.
-    /// Must be called when a player connects so that subsequent balance queries are reliable.
+    /// Loads the player's economy data from persistent storage and primes
+    /// the local balance cache with a single Economy round-trip.
+    /// Must be called when a player connects.
     /// </summary>
     public void LoadData(IPlayer player)
     {
@@ -44,18 +55,52 @@ public class AmmoPacksService
         {
             _logger.LogWarning("[ZPL-AP] LoadData({PlayerId}) failed: {Ex}", player.PlayerID, ex.Message);
         }
+
+        // Prime the local cache immediately after loading so that subsequent
+        // GetBalance calls (e.g. from the 1-second HUD timer) never need to
+        // call GetPlayerBalance → LoadFromDatabase again.
+        int id = player.PlayerID;
+        try
+        {
+            _balanceCache[id] = Math.Max(0, _api.GetPlayerBalance(id, WalletKind));
+        }
+        catch
+        {
+            _balanceCache[id] = 0;
+        }
     }
 
+    /// <summary>
+    /// Removes the cached balance entry when the player disconnects.
+    /// Call this from the OnClientDisconnected handler.
+    /// </summary>
+    public void RemovePlayer(int playerId) => _balanceCache.Remove(playerId);
+
+    /// <summary>
+    /// Returns the player's AP balance.
+    /// Reads from the local cache when available to avoid calling
+    /// Economy.GetPlayerBalance → LoadFromDatabase on every HUD tick
+    /// (which triggers the Dommel DateOnlyTypeHandler SIGSEGV).
+    /// </summary>
     public int GetBalance(int playerId)
     {
+        // Fast path: serve from local cache – no Economy API call needed.
+        if (_balanceCache.TryGetValue(playerId, out int cached))
+            return cached;
+
+        // Slow path: player not yet in cache (e.g. connected before the
+        // Economy API was available).  Query once and cache the result.
         if (_api == null) return 0;
         try
         {
-            return Math.Max(0, _api.GetPlayerBalance(playerId, WalletKind));
+            int balance = Math.Max(0, _api.GetPlayerBalance(playerId, WalletKind));
+            _balanceCache[playerId] = balance;
+            return balance;
         }
         catch (Exception ex)
         {
             _logger.LogWarning("[ZPL-AP] GetBalance({PlayerId}) failed: {Ex}", playerId, ex.Message);
+            _balanceCache[playerId] = 0;
             return 0;
         }
     }
@@ -65,8 +110,10 @@ public class AmmoPacksService
         if (_api == null) return;
         try
         {
-            _api.SetPlayerBalance(playerId, WalletKind, Math.Max(0, amount));
+            int clamped = Math.Max(0, amount);
+            _api.SetPlayerBalance(playerId, WalletKind, clamped);
             _api.SaveData(playerId);
+            _balanceCache[playerId] = clamped;
         }
         catch (Exception ex)
         {
@@ -85,8 +132,12 @@ public class AmmoPacksService
         if (_api == null || amount <= 0) return;
         try
         {
+            // Snapshot the current balance from cache (or Economy on first call)
+            // BEFORE the mutation so the post-mutation cache entry is accurate.
+            int before = GetBalance(playerId);
             _api.AddPlayerBalance(playerId, WalletKind, amount);
             _api.SaveData(playerId);
+            _balanceCache[playerId] = before + amount;
         }
         catch (Exception ex)
         {
@@ -107,8 +158,12 @@ public class AmmoPacksService
         try
         {
             if (!_api.HasSufficientFunds(playerId, WalletKind, cost)) return false;
+            // Snapshot the current balance from cache (or Economy on first call)
+            // BEFORE the mutation so the post-mutation cache entry is accurate.
+            int before = GetBalance(playerId);
             _api.SubtractPlayerBalance(playerId, WalletKind, cost);
             _api.SaveData(playerId);
+            _balanceCache[playerId] = Math.Max(0, before - cost);
             return true;
         }
         catch (Exception ex)

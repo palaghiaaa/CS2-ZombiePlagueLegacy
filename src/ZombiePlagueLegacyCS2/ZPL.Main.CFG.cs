@@ -220,7 +220,6 @@ public class ZPLMainCFG
     public string HumandefaultModel { get; set; } = string.Empty;
     public int HumanMaxHealth { get; set; } = 225;
     public bool EnableDamageHud { get; set; } = true;
-    public bool EnableStatusHud { get; set; } = true;
     public float HumanInitialSpeed { get; set; } = 1.0f;
     public float HumanInitialGravity { get; set; } = 0.8f;
     public float HumanKnockBackHeadMultiply { get; set; } = 2.0f;
@@ -391,13 +390,5 @@ public class ZPLMainCFG
     /// Leave empty ("") to keep the map's default skybox.
     /// </summary>
     public string Skybox { get; set; } = string.Empty;
-
-    // ── Per-weapon knockback table ────────────────────────────────────────────
-    /// <summary>
-    /// Maps a weapon's DesignerName (e.g. "weapon_awp") to its base knockback
-    /// force (units/s). Weapons not listed fall back to <see cref="KnockZombieForce"/>.
-    /// Set a weapon's value to 0 to completely disable knockback for that weapon.
-    /// </summary>
-    public Dictionary<string, float> WeaponKnockbackTable { get; set; } = new();
 
 }

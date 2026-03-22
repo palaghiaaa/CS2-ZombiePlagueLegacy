@@ -242,6 +242,17 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 Core.MenusAPI.CloseActiveMenu(player);
         }
 
+        // Cancel all global scheduled timers before disposing services.
+        // StopOnMapChange() only fires on actual map changes; on a same-map
+        // hot-reload the timers would continue to run after ServiceProvider
+        // is disposed and dereference freed objects, crashing the server.
+        _Globals?.g_hCountdown?.Cancel();
+        _Globals?.g_hRoundEndTimer?.Cancel();
+        _Globals?.g_ZombieRegenTimer?.Cancel();
+        _Globals?.g_IdleTimer?.Cancel();
+        _Globals?.g_hAmbMusic?.Cancel();
+        _Globals?.AssassinTimer?.Cancel();
+
         // Unregister all event hooks before disposing services so that stale
         // delegates from this plugin load do not accumulate on hot-reload
         // (map change) and cause double event processing or memory leaks.
