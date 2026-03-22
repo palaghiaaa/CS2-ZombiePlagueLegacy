@@ -119,40 +119,6 @@ Ammo Packs are stored exclusively through the Economy plugin — no MySQL or dat
 
 ---
 
-## 🚀 Installation
-
-**Step-by-step:**
-
-```
-1. Install SwiftlyS2 on your CS2 server.
-2. Install the Economy plugin.
-3. Copy the plugin folder:
-       addons/swiftlys2/plugins/ZombiePlagueLegacyCS2/
-4. Subscribe to the Workshop assets above (optional but recommended).
-5. Start or reload the server:  sw_reload
-6. Edit configs in:
-       configs/plugins/ZombiePlagueLegacyCS2/
-7. Check the server console for load errors.
-```
-
-**File layout:**
-
-```
-addons/swiftlys2/plugins/
-└── ZombiePlagueLegacyCS2/
-    └── ZombiePlagueLegacyCS2.dll
-
-configs/plugins/ZombiePlagueLegacyCS2/
-├── ZombiePlagueLegacyCFG.jsonc   ← Core settings, game modes, special classes, weapons, vox, mines
-├── ZombieClassesCFG.jsonc       ← Zombie class stats & sounds
-└── ExtraItemsCFG.jsonc          ← Shop items, prices, and AP reward rates
-
-translations/
-└── en.jsonc                     ← English strings
-```
-
----
-
 ## 💬 Commands
 
 ### Player Commands
