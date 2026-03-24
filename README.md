@@ -315,7 +315,7 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
     "MineMenuCommand":     "sw_mine",
 
     "AdminMenuPermission": "hzp.adminmenu",  // Empty = allow everyone
-    "ChatPrefix":          "[red][INFO][default]",
+    "ChatPrefix":          "[red][ZM][default]",
     "EconomyWalletKind":   "ammo",
 
     "NormalRoundsInterval": 0      // Min normal rounds between special modes (0 = disabled)
