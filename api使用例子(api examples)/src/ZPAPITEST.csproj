@@ -12,9 +12,6 @@
 		<PackageReference Include="SwiftlyS2.CS2" Version="*" />
 	</ItemGroup>
 	<ItemGroup>
-		<Reference Include="ZombiePlagueLegacyCS2">
-			<HintPath>ZombiePlagueLegacyAPI.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
+		<ProjectReference Include="../../src/IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj" Private="false" />
 	</ItemGroup>
 </Project>

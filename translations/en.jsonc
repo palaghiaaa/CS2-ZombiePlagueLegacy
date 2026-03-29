@@ -101,8 +101,8 @@
     "WeaponsMenuInfectionStarted": "Weapon selection is only available [red]before infection begins.",
 
     // ── Main Game Menu ─────────────────────────────────────────────────────
-    "GameMenuTitle": "ZP Game Menu",
-    "GameMenuHint": "Zombie Plague: Legacy CS@",
+    "GameMenuTitle": "CS2 ZP Game Menu",
+    "GameMenuHint": "Zombie Plague: Legacy",
     "GameMenuBuyWeapons": "Buy Weapons",
     "GameMenuExtraItems": "Buy Extra Items",
     "GameMenuZombieClass": "Choose Zombie Class",
