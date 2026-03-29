@@ -40,7 +40,7 @@ public class AmmoPacksService
 
         try
         {
-            _balanceCache[id] = Math.Max(0, _api.GetPlayerBalance(player, WalletKind));
+            _balanceCache[id] = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
         }
         catch { _balanceCache[id] = 0; }
     }
@@ -61,7 +61,7 @@ public class AmmoPacksService
 
         try
         {
-            int balance = Math.Max(0, _api.GetPlayerBalance(player, WalletKind));
+            int balance = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
             _balanceCache[playerId] = balance;
             return balance;
         }

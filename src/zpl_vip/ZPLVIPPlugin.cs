@@ -230,32 +230,31 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     // ── AP management ─────────────────────────────────────────────────────────
 
     private void AddAmmoPacks(int playerId, int amount, IPlayer? player = null)
+{
+    if (amount <= 0) return;
+
+    player ??= Core.PlayerManager.GetPlayer(playerId);
+    if (player == null || !player.IsValid) return;
+
+    if (_economyApi != null)
     {
-        if (amount <= 0) return;
-
-        player ??= Core.PlayerManager.GetPlayer(playerId);
-        if (player == null || !player.IsValid) return;
-
-        if (_economyApi != null)
+        try
         {
-            try
-            {
-                _economyApi.AddPlayerBalance(playerId, _config.WalletKind, amount);
-                _economyApi.SaveData(playerId);
-                int total = Math.Max(0, _economyApi.GetPlayerBalance(playerId, _config.WalletKind));
-                SendChat(player, T(player, "VipApReward", amount, total));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("[ZPLVIP] AddAmmoPacks({PlayerId}, {Amount}) Economy call failed: {Ex}", playerId, amount, ex.Message);
-            }
+            _economyApi.AddPlayerBalance(player, _config.WalletKind, amount);
+            _economyApi.SaveData(player);
+            int total = Math.Max(0, (int)_economyApi.GetPlayerBalance(player, _config.WalletKind));
+            SendChat(player, T(player, "VipApReward", amount, total));
         }
-        else
+        catch (Exception ex)
         {
-            // Economy bridge offline — announce only.
-            SendChat(player, T(player, "VipApBridgeOffline", amount));
+            _logger.LogWarning("[ZPLVIP] AddAmmoPacks({Id},{Amount}) failed: {Ex}", playerId, amount, ex.Message);
         }
     }
+    else
+    {
+        SendChat(player, T(player, "VipApBridgeOffline", amount));
+    }
+}
 
     // ── Event: player spawn ───────────────────────────────────────────────────
 
