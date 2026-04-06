@@ -13,6 +13,8 @@ public class AmmoPacksService
 
     private readonly Dictionary<int, int> _balanceCache = new();
     private readonly Dictionary<int, IPlayer> _playerMap = new();
+    // SteamID → PlayerID pentru lookup rapid în OnPlayerLoad
+    private readonly Dictionary<ulong, int> _steamToSlot = new();
 
     public AmmoPacksService(
         ILogger<AmmoPacksService> logger,
@@ -22,31 +24,69 @@ public class AmmoPacksService
         _mainCFG = mainCFG;
     }
 
-    public void SetApi(IEconomyAPIv1 api) => _api = api;
+    public void SetApi(IEconomyAPIv1 api)
+    {
+        _api = api;
+        // Abonare la evenimentul OnPlayerLoad — se apelează când datele sunt GATA
+        _api.OnPlayerLoad += OnEconomyPlayerLoad;
+    }
 
     private string WalletKind => _mainCFG.CurrentValue.EconomyWalletKind;
+
+    // Apelat de Economy când datele unui jucător sunt complet încărcate din DB
+    private void OnEconomyPlayerLoad(IPlayer player)
+    {
+        if (player == null || !player.IsValid || player.IsFakeClient)
+            return;
+
+        int id = player.PlayerID;
+        if (!_playerMap.ContainsKey(id))
+        {
+            // Jucătorul nu e în map-ul nostru → înregistrează-l
+            _playerMap[id] = player;
+            _steamToSlot[player.SteamID] = id;
+        }
+
+        // Acum datele SUNT gata — citim balanța
+        try
+        {
+            _balanceCache[id] = Math.Max(0, (int)_api!.GetPlayerBalance(player, WalletKind));
+            _logger.LogDebug("[ZPL-AP] OnPlayerLoad: slot={Id} balance={Bal}", id, _balanceCache[id]);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("[ZPL-AP] OnPlayerLoad balance read failed for slot {Id}: {Ex}", id, ex.Message);
+            _balanceCache[id] = 0;
+        }
+    }
 
     public void LoadData(IPlayer player)
     {
         int id = player.PlayerID;
         _playerMap[id] = player;
+        _steamToSlot[player.SteamID] = id;
 
         if (_api == null) return;
-        try { _api.LoadData(player); }
+
+        // Setăm 0 ca valoare temporară — va fi actualizat în OnEconomyPlayerLoad
+        _balanceCache[id] = 0;
+
+        try
+        {
+            // Aceasta declanșează încărcarea async; OnPlayerLoad va fi apelat când e gata
+            _api.LoadData(player);
+        }
         catch (Exception ex)
         {
             _logger.LogWarning("[ZPL-AP] LoadData({Id}) failed: {Ex}", id, ex.Message);
         }
-
-        try
-        {
-            _balanceCache[id] = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
-        }
-        catch { _balanceCache[id] = 0; }
     }
 
     public void RemovePlayer(int playerId)
     {
+        if (_playerMap.TryGetValue(playerId, out var p) && p.IsValid)
+            _steamToSlot.Remove(p.SteamID);
+
         _balanceCache.Remove(playerId);
         _playerMap.Remove(playerId);
     }
@@ -56,6 +96,7 @@ public class AmmoPacksService
         if (_balanceCache.TryGetValue(playerId, out int cached))
             return cached;
 
+        // Fallback: încearcă direct dacă nu e în cache
         if (_api == null || !_playerMap.TryGetValue(playerId, out var player))
             return 0;
 
@@ -133,5 +174,12 @@ public class AmmoPacksService
         var walletKind = WalletKind;
         if (!_api.WalletKindExists(walletKind))
             _api.EnsureWalletKind(walletKind);
+    }
+
+    // Dezabonare la cleanup
+    public void Dispose()
+    {
+        if (_api != null)
+            _api.OnPlayerLoad -= OnEconomyPlayerLoad;
     }
 }

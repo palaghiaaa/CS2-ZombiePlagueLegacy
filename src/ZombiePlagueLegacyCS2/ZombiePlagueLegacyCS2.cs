@@ -253,9 +253,9 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         _Globals?.g_hAmbMusic?.Cancel();
         _Globals?.AssassinTimer?.Cancel();
 
-        // Unregister all event hooks before disposing services so that stale
-        // delegates from this plugin load do not accumulate on hot-reload
-        // (map change) and cause double event processing or memory leaks.
+        // Dezabonare de la evenimentele Economy
+        ServiceProvider?.GetRequiredService<AmmoPacksService>().Dispose();
+        
         _Events?.UnhookZombieSoundEvents();
         _Events?.UnhookEvents();
         _apiInstance!.Dispose();
