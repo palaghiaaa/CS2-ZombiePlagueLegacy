@@ -148,6 +148,24 @@ public class AmmoPacksService
             _logger.LogInformation("[ZPL-AP] LoadData: Requesting Economy to load data for player {Id}", id);
             // Aceasta declanșează încărcarea async; OnPlayerLoad va fi apelat când e gata
             _api.LoadData(player);
+
+            // Fallback direct read: Economy may have already cached this player's data
+            // and won't fire OnPlayerLoad a second time (e.g. if OnPlayerLoad fired before
+            // ZPL's OnClientConnected reset the cache to 0). Read balance directly so the
+            // cache is not stuck at 0 in that race-condition scenario.
+            // If data is not yet loaded, GetPlayerBalance returns 0 and OnPlayerLoad
+            // will update the cache when it fires.
+            try
+            {
+                decimal bal = _api.GetPlayerBalance(player, WalletKind);
+                int balInt = Math.Max(0, (int)bal);
+                _balanceCache[id] = balInt;
+                _logger.LogInformation("[ZPL-AP] LoadData: Direct read fallback: slot={Id} wallet={Kind} balance={Bal}", id, WalletKind, balInt);
+            }
+            catch (Exception fbEx)
+            {
+                _logger.LogDebug("[ZPL-AP] LoadData: Direct read fallback failed (OnPlayerLoad will update cache): {Ex}", fbEx.Message);
+            }
         }
         catch (Exception ex)
         {
