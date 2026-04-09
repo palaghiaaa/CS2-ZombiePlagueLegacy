@@ -1,20 +1,37 @@
-using Economy.Contract;
+﻿using Economy.Contract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SwiftlyS2.Shared.Players;
 
 namespace ZombiePlagueLegacyCS2;
 
+/// <summary>
+/// Thin wrapper over the Economy API's "ammo" wallet (v2 rewrite).
+///
+/// Key design decisions:
+/// - No IPlayer cache. Economy exposes playerid (int) overloads for every
+///   operation, so we never need to keep live IPlayer references.
+/// - _balanceCache (int->int) avoids hammering the API in tight loops (menus,
+///   HUD ticks). Kept in sync by OnPlayerLoad + OnPlayerBalanceChanged events.
+/// - LoadData() is a stub: Economy automatically loads player data on connect.
+///   We only record the steamId->slot mapping and do a direct read if the cache
+///   is empty (handles UseSharedInterface late-arrival race condition).
+/// - All mutating operations use the playerid (int) overloads; no IPlayer needed.
+/// - _steamToSlot (ulong->int) is still required because OnPlayerBalanceChanged
+///   only provides steamId, not playerid.
+/// </summary>
 public class AmmoPacksService
 {
     private readonly ILogger<AmmoPacksService> _logger;
     private readonly IOptionsMonitor<ZPLMainCFG> _mainCFG;
     private IEconomyAPIv1? _api;
 
+    // PlayerID -> cached balance (int AP)
     private readonly Dictionary<int, int> _balanceCache = new();
-    private readonly Dictionary<int, IPlayer> _playerMap = new();
-    // SteamID → PlayerID pentru lookup rapid în OnPlayerLoad
+    // SteamID -> PlayerID, populated from OnPlayerLoad; needed for OnPlayerBalanceChanged
     private readonly Dictionary<ulong, int> _steamToSlot = new();
+
+    private string WalletKind => _mainCFG.CurrentValue.EconomyWalletKind;
 
     public AmmoPacksService(
         ILogger<AmmoPacksService> logger,
@@ -24,35 +41,76 @@ public class AmmoPacksService
         _mainCFG = mainCFG;
     }
 
+    // -------------------------------------------------------------------------
+    //  API wiring
+    // -------------------------------------------------------------------------
+
     public void SetApi(IEconomyAPIv1 api)
     {
         if (_api != null)
-            UnsubscribeEconomyEvents();
+            UnsubscribeEvents();
 
         _api = api;
-        _logger.LogInformation("[ZPL-AP] SetApi: Economy API set up. Subscribing to events...");
-        
         _api.OnPlayerLoad += OnEconomyPlayerLoad;
-        _api.OnPlayerBalanceChanged += OnEconomyPlayerBalanceChanged;
-        _api.OnPlayerFundsTransferred += OnEconomyPlayerFundsTransferred;
-        
-        _logger.LogInformation("[ZPL-AP] SetApi: Event subscriptions complete.");
+        _api.OnPlayerBalanceChanged += OnEconomyBalanceChanged;
+        _logger.LogInformation("[ZPL-AP] Economy API connected. Wallet='{Kind}'.", WalletKind);
     }
 
-    private string WalletKind => _mainCFG.CurrentValue.EconomyWalletKind;
-
-    private static int ConvertBalance(decimal balance)
-        => (int)Math.Max(0, Math.Floor(balance));
-
-    private void UnsubscribeEconomyEvents()
+    private void UnsubscribeEvents()
     {
         if (_api == null) return;
         _api.OnPlayerLoad -= OnEconomyPlayerLoad;
-        _api.OnPlayerBalanceChanged -= OnEconomyPlayerBalanceChanged;
-        _api.OnPlayerFundsTransferred -= OnEconomyPlayerFundsTransferred;
+        _api.OnPlayerBalanceChanged -= OnEconomyBalanceChanged;
     }
 
-    private void OnEconomyPlayerBalanceChanged(ulong steamId, string walletKind, decimal newBalance, decimal oldBalance)
+    public void EnsureWalletKind()
+    {
+        if (_api == null) return;
+        string kind = WalletKind;
+        try
+        {
+            if (!_api.WalletKindExists(kind))
+                _api.EnsureWalletKind(kind);
+            _logger.LogInformation("[ZPL-AP] Wallet '{Kind}' ensured.", kind);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("[ZPL-AP] EnsureWalletKind '{Kind}' failed: {Ex}", kind, ex.Message);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    //  Economy event handlers
+    // -------------------------------------------------------------------------
+
+    // Fired by Economy when a player's data is fully loaded from the DB.
+    // This is the authoritative moment to populate the cache.
+    private void OnEconomyPlayerLoad(IPlayer player)
+    {
+        if (player == null || !player.IsValid || player.IsFakeClient)
+            return;
+
+        int id = player.PlayerID;
+        ulong steam = player.SteamID;
+
+        if (steam != 0)
+            _steamToSlot[steam] = id;
+
+        try
+        {
+            int bal = Math.Max(0, (int)_api!.GetPlayerBalance(id, WalletKind));
+            _balanceCache[id] = bal;
+            _logger.LogInformation("[ZPL-AP] OnPlayerLoad: slot={Id} steam={Steam} balance={Bal}", id, steam, bal);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("[ZPL-AP] OnPlayerLoad read failed slot={Id}: {Ex}", id, ex.Message);
+            _balanceCache[id] = 0;
+        }
+    }
+
+    // Fired whenever ANY balance change occurs (give, take, set, transfer, etc.)
+    private void OnEconomyBalanceChanged(ulong steamId, string walletKind, decimal newBalance, decimal oldBalance)
     {
         if (!string.Equals(walletKind, WalletKind, StringComparison.OrdinalIgnoreCase))
             return;
@@ -60,209 +118,140 @@ public class AmmoPacksService
         if (!_steamToSlot.TryGetValue(steamId, out int playerId))
             return;
 
-        _balanceCache[playerId] = ConvertBalance(newBalance);
-        _logger.LogDebug("[ZPL-AP] OnPlayerBalanceChanged: slot={Id} wallet={Kind} old={Old} new={New}", playerId, walletKind, oldBalance, newBalance);
+        int newBal = Math.Max(0, (int)newBalance);
+        _balanceCache[playerId] = newBal;
+        _logger.LogDebug("[ZPL-AP] BalanceChanged: slot={Id} {Old}->{New}", playerId, (int)oldBalance, newBal);
     }
 
-    private void OnEconomyPlayerFundsTransferred(ulong fromSteamId, ulong toSteamId, string walletKind, decimal amount)
-    {
-        if (!string.Equals(walletKind, WalletKind, StringComparison.OrdinalIgnoreCase))
-            return;
+    // -------------------------------------------------------------------------
+    //  Player lifecycle
+    // -------------------------------------------------------------------------
 
-        int change = ConvertBalance(amount);
-
-        if (_steamToSlot.TryGetValue(fromSteamId, out int fromId))
-            _balanceCache[fromId] = Math.Max(0, _balanceCache.GetValueOrDefault(fromId) - change);
-
-        if (_steamToSlot.TryGetValue(toSteamId, out int toId))
-            _balanceCache[toId] = _balanceCache.GetValueOrDefault(toId) + change;
-    }
-
-    // Apelat de Economy când datele unui jucător sunt complet încărcate din DB
-    private void OnEconomyPlayerLoad(IPlayer player)
-    {
-        if (player == null || !player.IsValid || player.IsFakeClient)
-        {
-            _logger.LogDebug("[ZPL-AP] OnPlayerLoad: Ignoring invalid/fake player");
-            return;
-        }
-
-        int id = player.PlayerID;
-        _logger.LogInformation("[ZPL-AP] OnEconomyPlayerLoad: Economy data ready for player {PlayerId} (SteamID={SteamID})", id, player.SteamID);
-        
-        // Always refresh mappings: a player may be seen earlier with SteamID=0,
-        // then receive the real SteamID after authorization.
-        _playerMap[id] = player;
-        if (player.SteamID != 0)
-            _steamToSlot[player.SteamID] = id;
-
-        // Acum datele SUNT gata — citim balanța
-        try
-        {
-            string walletKind = WalletKind;
-            decimal balanceDecimal = _api!.GetPlayerBalance(player, walletKind);
-            int balanceInt = Math.Max(0, (int)balanceDecimal);
-            _balanceCache[id] = balanceInt;
-            _logger.LogInformation("[ZPL-AP] OnPlayerLoad: slot={Id} wallet={Kind} balance={Bal} (raw={RawBal})", id, walletKind, balanceInt, balanceDecimal);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("[ZPL-AP] OnPlayerLoad balance read failed for slot {Id}: {Ex}\n{StackTrace}", id, ex.Message, ex.StackTrace);
-            _balanceCache[id] = 0;
-        }
-    }
-
+    /// <summary>
+    /// Economy loads player data automatically on connect, so this is a stub.
+    /// We record the steamId->slot mapping and do a direct cache read if the
+    /// slot is still empty (covers the late UseSharedInterface race condition).
+    /// </summary>
     public void LoadData(IPlayer player)
     {
-        if (player == null || !player.IsValid)
-        {
-            _logger.LogWarning("[ZPL-AP] LoadData: Invalid player passed");
+        if (player == null || !player.IsValid || player.IsFakeClient)
             return;
-        }
-        
+
         int id = player.PlayerID;
-        _logger.LogInformation("[ZPL-AP] LoadData: Called for player {PlayerId} (SteamID={SteamID})", id, player.SteamID);
-        
-        _playerMap[id] = player;
-        if (player.SteamID != 0)
-            _steamToSlot[player.SteamID] = id;
+        ulong steam = player.SteamID;
 
-        if (_api == null)
-        {
-            _logger.LogWarning("[ZPL-AP] LoadData: Economy API not set up yet. Will retry when Economy loads.");
+        if (steam != 0)
+            _steamToSlot[steam] = id;
+
+        // If the cache is already populated (OnPlayerLoad already fired) do nothing.
+        if (_balanceCache.ContainsKey(id))
             return;
-        }
 
-        // Setăm 0 ca valoare temporară — va fi actualizat în OnEconomyPlayerLoad
-        _balanceCache[id] = 0;
-
-        // Avoid loading against SteamID=0; wait for Economy's own player-load flow.
-        if (player.SteamID == 0)
+        // Cache miss: Economy may already have the data in its own cache but
+        // OnPlayerLoad has not fired for us yet (or fired before we subscribed).
+        // Try a direct read; OnPlayerLoad will update the cache when it fires.
+        if (_api != null && steam != 0)
         {
-            _logger.LogDebug("[ZPL-AP] LoadData: Deferring load for player {Id} - SteamID not yet authorized", id);
-            return;
+            try
+            {
+                int bal = Math.Max(0, (int)_api.GetPlayerBalance(id, WalletKind));
+                _balanceCache[id] = bal;
+                _logger.LogInformation("[ZPL-AP] LoadData direct-read: slot={Id} balance={Bal}", id, bal);
+            }
+            catch
+            {
+                // Data not yet available -- OnPlayerLoad will set the cache when ready.
+            }
         }
+    }
+
+    /// <summary>Forces a fresh read from Economy for already-connected players.</summary>
+    public void RefreshBalance(IPlayer player)
+    {
+        if (_api == null || player == null || !player.IsValid || player.IsFakeClient || player.SteamID == 0)
+            return;
+
+        int id = player.PlayerID;
+        _steamToSlot[player.SteamID] = id;
 
         try
         {
-            _logger.LogInformation("[ZPL-AP] LoadData: Requesting Economy to load data for player {Id}", id);
-            // Aceasta declanșează încărcarea async; OnPlayerLoad va fi apelat când e gata
-            _api.LoadData(player);
-
-            // Fallback direct read: Economy may have already cached this player's data
-            // and won't fire OnPlayerLoad a second time (e.g. if OnPlayerLoad fired before
-            // ZPL's OnClientConnected reset the cache to 0). Read balance directly so the
-            // cache is not stuck at 0 in that race-condition scenario.
-            // If data is not yet loaded, GetPlayerBalance returns 0 and OnPlayerLoad
-            // will update the cache when it fires.
-            try
-            {
-                decimal bal = _api.GetPlayerBalance(player, WalletKind);
-                int balInt = Math.Max(0, (int)bal);
-                _balanceCache[id] = balInt;
-                _logger.LogInformation("[ZPL-AP] LoadData: Direct read fallback: slot={Id} wallet={Kind} balance={Bal}", id, WalletKind, balInt);
-            }
-            catch (Exception fbEx)
-            {
-                _logger.LogDebug("[ZPL-AP] LoadData: Direct read fallback failed (OnPlayerLoad will update cache): {Ex}", fbEx.Message);
-            }
+            int bal = Math.Max(0, (int)_api.GetPlayerBalance(id, WalletKind));
+            _balanceCache[id] = bal;
+            _logger.LogDebug("[ZPL-AP] RefreshBalance: slot={Id} balance={Bal}", id, bal);
         }
         catch (Exception ex)
         {
-            _logger.LogError("[ZPL-AP] LoadData({Id}) failed: {Ex}\n{StackTrace}", id, ex.Message, ex.StackTrace);
+            _logger.LogWarning("[ZPL-AP] RefreshBalance slot={Id} failed: {Ex}", id, ex.Message);
         }
     }
 
     public void RemovePlayer(int playerId)
     {
-        if (_playerMap.TryGetValue(playerId, out var p) && p.IsValid && p.SteamID != 0)
-            _steamToSlot.Remove(p.SteamID);
-
-        // Also purge any stale steam->slot entries that still point to this slot.
-        foreach (var steamId in _steamToSlot.Where(kv => kv.Value == playerId).Select(kv => kv.Key).ToArray())
-            _steamToSlot.Remove(steamId);
+        var toRemove = _steamToSlot
+            .Where(kv => kv.Value == playerId)
+            .Select(kv => kv.Key)
+            .ToArray();
+        foreach (var s in toRemove)
+            _steamToSlot.Remove(s);
 
         _balanceCache.Remove(playerId);
-        _playerMap.Remove(playerId);
     }
 
-    public void RefreshBalance(IPlayer player)
-    {
-        if (_api == null || player == null || !player.IsValid || player.IsFakeClient)
-            return;
-
-        if (player.SteamID == 0)
-            return;
-
-        int id = player.PlayerID;
-        _playerMap[id] = player;
-        _steamToSlot[player.SteamID] = id;
-
-        try
-        {
-            _balanceCache[id] = Math.Max(0, ConvertBalance(_api.GetPlayerBalance(player, WalletKind)));
-            _logger.LogDebug("[ZPL-AP] RefreshBalance: slot={Id} balance={Bal}", id, _balanceCache[id]);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning("[ZPL-AP] RefreshBalance({Id}) failed: {Ex}", id, ex.Message);
-        }
-    }
+    // -------------------------------------------------------------------------
+    //  Balance operations -- all use the playerid (int) overload
+    // -------------------------------------------------------------------------
 
     public int GetBalance(int playerId)
     {
         if (_balanceCache.TryGetValue(playerId, out int cached))
             return cached;
 
-        // Fallback: încearcă direct dacă nu e în cache
-        if (_api == null || !_playerMap.TryGetValue(playerId, out var player))
+        // Cache miss: read directly via playerid overload.
+        if (_api == null)
             return 0;
 
         try
         {
-            int balance = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
-            _balanceCache[playerId] = balance;
-            return balance;
+            int bal = Math.Max(0, (int)_api.GetPlayerBalance(playerId, WalletKind));
+            _balanceCache[playerId] = bal;
+            return bal;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("[ZPL-AP] GetBalance({Id}) failed: {Ex}", playerId, ex.Message);
-            _balanceCache[playerId] = 0;
+            _logger.LogDebug("[ZPL-AP] GetBalance cache-miss read failed slot={Id}: {Ex}", playerId, ex.Message);
             return 0;
         }
     }
 
     public void SetBalance(int playerId, int amount)
     {
-        if (_api == null || !_playerMap.TryGetValue(playerId, out var player)) return;
+        if (_api == null) return;
         try
         {
             int clamped = Math.Max(0, amount);
-            _api.SetPlayerBalance(player, WalletKind, clamped);
-            _api.SaveData(player);
-            // Read the actual balance after setting to ensure cache is accurate
-            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
+            _api.SetPlayerBalance(playerId, WalletKind, clamped);
+            _api.SaveData(playerId);
+            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(playerId, WalletKind));
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("[ZPL-AP] SetBalance({Id},{Amount}) failed: {Ex}", playerId, amount, ex.Message);
+            _logger.LogWarning("[ZPL-AP] SetBalance slot={Id} amount={A} failed: {Ex}", playerId, amount, ex.Message);
         }
     }
 
     public void AddBalance(int playerId, int amount)
     {
         if (_api == null || amount <= 0) return;
-        if (!_playerMap.TryGetValue(playerId, out var player)) return;
         try
         {
-            _api.AddPlayerBalance(player, WalletKind, amount);
-            _api.SaveData(player);
-            // Read the actual balance after addition to ensure cache is accurate
-            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
+            _api.AddPlayerBalance(playerId, WalletKind, amount);
+            _api.SaveData(playerId);
+            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(playerId, WalletKind));
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("[ZPL-AP] AddBalance({Id},{Amount}) failed: {Ex}", playerId, amount, ex.Message);
+            _logger.LogWarning("[ZPL-AP] AddBalance slot={Id} amount={A} failed: {Ex}", playerId, amount, ex.Message);
         }
     }
 
@@ -270,56 +259,32 @@ public class AmmoPacksService
     {
         if (_api == null) return false;
         if (cost <= 0) return true;
-        if (!_playerMap.TryGetValue(playerId, out var player)) return false;
         try
         {
-            if (!_api.HasSufficientFunds(player, WalletKind, cost)) return false;
-            _api.SubtractPlayerBalance(player, WalletKind, cost);
-            _api.SaveData(player);
-            // Read the actual balance after subtraction to ensure cache is accurate
-            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
+            if (!_api.HasSufficientFunds(playerId, WalletKind, cost))
+                return false;
+
+            _api.SubtractPlayerBalance(playerId, WalletKind, cost);
+            _api.SaveData(playerId);
+            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(playerId, WalletKind));
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("[ZPL-AP] SpendBalance({Id},{Cost}) failed: {Ex}", playerId, cost, ex.Message);
+            _logger.LogWarning("[ZPL-AP] SpendBalance slot={Id} cost={C} failed: {Ex}", playerId, cost, ex.Message);
             return false;
         }
     }
 
-    public void EnsureWalletKind()
-    {
-        if (_api == null)
-        {
-            _logger.LogWarning("[ZPL-AP] EnsureWalletKind: Economy API not set up yet.");
-            return;
-        }
-        
-        var walletKind = WalletKind;
-        _logger.LogInformation("[ZPL-AP] EnsureWalletKind: Checking wallet '{Kind}'...", walletKind);
-        
-        try
-        {
-            if (!_api.WalletKindExists(walletKind))
-            {
-                _logger.LogInformation("[ZPL-AP] EnsureWalletKind: Creating wallet '{Kind}'...", walletKind);
-                _api.EnsureWalletKind(walletKind);
-            }
-            else
-            {
-                _logger.LogInformation("[ZPL-AP] EnsureWalletKind: Wallet '{Kind}' already exists.", walletKind);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("[ZPL-AP] EnsureWalletKind: Failed to ensure wallet '{Kind}': {Ex}", walletKind, ex.Message);
-        }
-    }
+    // -------------------------------------------------------------------------
+    //  Cleanup
+    // -------------------------------------------------------------------------
 
-    // Dezabonare la cleanup
     public void Dispose()
     {
-        UnsubscribeEconomyEvents();
+        UnsubscribeEvents();
+        _balanceCache.Clear();
+        _steamToSlot.Clear();
         _api = null;
     }
 }
