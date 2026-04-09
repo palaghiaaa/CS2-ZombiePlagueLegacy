@@ -48,6 +48,17 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 {
                     ammoPacks.SetApi(economyApi);
                     ammoPacks.EnsureWalletKind();
+
+                    // If the Economy API becomes available while players are already connected,
+                    // make sure their economy data is loaded and cached.
+                    foreach (var player in Core.PlayerManager.GetAllPlayers())
+                    {
+                        if (player != null && player.IsValid && !player.IsFakeClient)
+                        {
+                            ammoPacks.LoadData(player);
+                            ammoPacks.RefreshBalance(player);
+                        }
+                    }
                 }
             }
             else

@@ -26,12 +26,53 @@ public class AmmoPacksService
 
     public void SetApi(IEconomyAPIv1 api)
     {
+        if (_api != null)
+            UnsubscribeEconomyEvents();
+
         _api = api;
-        // Abonare la evenimentul OnPlayerLoad — se apelează când datele sunt GATA
         _api.OnPlayerLoad += OnEconomyPlayerLoad;
+        _api.OnPlayerBalanceChanged += OnEconomyPlayerBalanceChanged;
+        _api.OnPlayerFundsTransferred += OnEconomyPlayerFundsTransferred;
     }
 
     private string WalletKind => _mainCFG.CurrentValue.EconomyWalletKind;
+
+    private static int ConvertBalance(decimal balance)
+        => (int)Math.Max(0, Math.Floor(balance));
+
+    private void UnsubscribeEconomyEvents()
+    {
+        if (_api == null) return;
+        _api.OnPlayerLoad -= OnEconomyPlayerLoad;
+        _api.OnPlayerBalanceChanged -= OnEconomyPlayerBalanceChanged;
+        _api.OnPlayerFundsTransferred -= OnEconomyPlayerFundsTransferred;
+    }
+
+    private void OnEconomyPlayerBalanceChanged(ulong steamId, string walletKind, decimal newBalance, decimal oldBalance)
+    {
+        if (!string.Equals(walletKind, WalletKind, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (!_steamToSlot.TryGetValue(steamId, out int playerId))
+            return;
+
+        _balanceCache[playerId] = ConvertBalance(newBalance);
+        _logger.LogDebug("[ZPL-AP] OnPlayerBalanceChanged: slot={Id} wallet={Kind} old={Old} new={New}", playerId, walletKind, oldBalance, newBalance);
+    }
+
+    private void OnEconomyPlayerFundsTransferred(ulong fromSteamId, ulong toSteamId, string walletKind, decimal amount)
+    {
+        if (!string.Equals(walletKind, WalletKind, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        int change = ConvertBalance(amount);
+
+        if (_steamToSlot.TryGetValue(fromSteamId, out int fromId))
+            _balanceCache[fromId] = Math.Max(0, _balanceCache.GetValueOrDefault(fromId) - change);
+
+        if (_steamToSlot.TryGetValue(toSteamId, out int toId))
+            _balanceCache[toId] = _balanceCache.GetValueOrDefault(toId) + change;
+    }
 
     // Apelat de Economy când datele unui jucător sunt complet încărcate din DB
     private void OnEconomyPlayerLoad(IPlayer player)
@@ -40,12 +81,11 @@ public class AmmoPacksService
             return;
 
         int id = player.PlayerID;
-        if (!_playerMap.ContainsKey(id))
-        {
-            // Jucătorul nu e în map-ul nostru → înregistrează-l
-            _playerMap[id] = player;
+        // Always refresh mappings: a player may be seen earlier with SteamID=0,
+        // then receive the real SteamID after authorization.
+        _playerMap[id] = player;
+        if (player.SteamID != 0)
             _steamToSlot[player.SteamID] = id;
-        }
 
         // Acum datele SUNT gata — citim balanța
         try
@@ -64,12 +104,17 @@ public class AmmoPacksService
     {
         int id = player.PlayerID;
         _playerMap[id] = player;
-        _steamToSlot[player.SteamID] = id;
+        if (player.SteamID != 0)
+            _steamToSlot[player.SteamID] = id;
 
         if (_api == null) return;
 
         // Setăm 0 ca valoare temporară — va fi actualizat în OnEconomyPlayerLoad
         _balanceCache[id] = 0;
+
+        // Avoid loading against SteamID=0; wait for Economy's own player-load flow.
+        if (player.SteamID == 0)
+            return;
 
         try
         {
@@ -84,11 +129,38 @@ public class AmmoPacksService
 
     public void RemovePlayer(int playerId)
     {
-        if (_playerMap.TryGetValue(playerId, out var p) && p.IsValid)
+        if (_playerMap.TryGetValue(playerId, out var p) && p.IsValid && p.SteamID != 0)
             _steamToSlot.Remove(p.SteamID);
+
+        // Also purge any stale steam->slot entries that still point to this slot.
+        foreach (var steamId in _steamToSlot.Where(kv => kv.Value == playerId).Select(kv => kv.Key).ToArray())
+            _steamToSlot.Remove(steamId);
 
         _balanceCache.Remove(playerId);
         _playerMap.Remove(playerId);
+    }
+
+    public void RefreshBalance(IPlayer player)
+    {
+        if (_api == null || player == null || !player.IsValid || player.IsFakeClient)
+            return;
+
+        if (player.SteamID == 0)
+            return;
+
+        int id = player.PlayerID;
+        _playerMap[id] = player;
+        _steamToSlot[player.SteamID] = id;
+
+        try
+        {
+            _balanceCache[id] = Math.Max(0, ConvertBalance(_api.GetPlayerBalance(player, WalletKind)));
+            _logger.LogDebug("[ZPL-AP] RefreshBalance: slot={Id} balance={Bal}", id, _balanceCache[id]);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("[ZPL-AP] RefreshBalance({Id}) failed: {Ex}", id, ex.Message);
+        }
     }
 
     public int GetBalance(int playerId)
@@ -122,7 +194,8 @@ public class AmmoPacksService
             int clamped = Math.Max(0, amount);
             _api.SetPlayerBalance(player, WalletKind, clamped);
             _api.SaveData(player);
-            _balanceCache[playerId] = clamped;
+            // Read the actual balance after setting to ensure cache is accurate
+            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
         }
         catch (Exception ex)
         {
@@ -136,10 +209,10 @@ public class AmmoPacksService
         if (!_playerMap.TryGetValue(playerId, out var player)) return;
         try
         {
-            int before = GetBalance(playerId);
             _api.AddPlayerBalance(player, WalletKind, amount);
             _api.SaveData(player);
-            _balanceCache[playerId] = before + amount;
+            // Read the actual balance after addition to ensure cache is accurate
+            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
         }
         catch (Exception ex)
         {
@@ -155,10 +228,10 @@ public class AmmoPacksService
         try
         {
             if (!_api.HasSufficientFunds(player, WalletKind, cost)) return false;
-            int before = GetBalance(playerId);
             _api.SubtractPlayerBalance(player, WalletKind, cost);
             _api.SaveData(player);
-            _balanceCache[playerId] = Math.Max(0, before - cost);
+            // Read the actual balance after subtraction to ensure cache is accurate
+            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(player, WalletKind));
             return true;
         }
         catch (Exception ex)
@@ -179,7 +252,7 @@ public class AmmoPacksService
     // Dezabonare la cleanup
     public void Dispose()
     {
-        if (_api != null)
-            _api.OnPlayerLoad -= OnEconomyPlayerLoad;
+        UnsubscribeEconomyEvents();
+        _api = null;
     }
 }

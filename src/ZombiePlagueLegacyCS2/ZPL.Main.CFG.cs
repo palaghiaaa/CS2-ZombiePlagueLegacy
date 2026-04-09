@@ -363,7 +363,7 @@ public class ZPLMainCFG
 
     // ── Debug / chat settings ────────────────────────────────────────────────
     /// <summary>Prefix prepended to chat messages sent by the plugin.</summary>
-    public string ChatPrefix { get; set; } = "[ZPL]";
+    public string ChatPrefix { get; set; } = "[red][ZM][default]";
     /// <summary>When true, command invocations are logged to the server console.</summary>
     public bool EnableCommandDebugLogs { get; set; } = false;
     /// <summary>When true, command invocations produce a chat reply visible to the invoking player.</summary>

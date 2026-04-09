@@ -422,7 +422,7 @@ public partial class ZPLHelpers
 
         });
 
-        _globals.GlowEntity[controller] = new GlowEntity()
+        _globals.GlowEntity[player.PlayerID] = new GlowEntity()
         {
             Glow = modelGlowHandle,
             Relay = modelRelayHandle
@@ -434,10 +434,8 @@ public partial class ZPLHelpers
         if (!player.IsValid || !_core.PlayerManager.IsPlayerOnline(player.PlayerID))
             return;
 
-        var controller = player.Controller;
-        if (controller == null || !controller.IsValid)
-            return;
-        if (_globals.GlowEntity.TryGetValue(controller, out var glowEntity))
+        var playerId = player.PlayerID;
+        if (_globals.GlowEntity.TryGetValue(playerId, out var glowEntity))
         {
             if (glowEntity.Relay.IsValid && glowEntity.Relay.Value != null && glowEntity.Relay.Value.IsValid && glowEntity.Relay.Value.IsValidEntity)
             {
@@ -449,7 +447,7 @@ public partial class ZPLHelpers
                 glowEntity.Glow.Value.AcceptInput("Kill", 0);
             }
 
-            _globals.GlowEntity.Remove(controller);
+            _globals.GlowEntity.Remove(playerId);
         }
     }
 

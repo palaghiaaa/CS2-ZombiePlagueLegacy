@@ -51,7 +51,7 @@ public class ZPLGlobals
     public Dictionary<int, ZombieIdleState> g_ZombieIdleStates = new();
     public CancellationTokenSource? g_IdleTimer { get; set; } = null;
 
-    public Dictionary<IPlayer, (int endTick, int fallEndTick, Vector originalVelocity)> jumpBoostState = new();
+    public Dictionary<int, (int endTick, int fallEndTick, Vector originalVelocity)> jumpBoostState = new();
 
     public Dictionary<int, ZombieRegenState> g_ZombieRegenStates = new();
 
@@ -61,7 +61,7 @@ public class ZPLGlobals
 
     public Dictionary<int, bool> g_IsInvisible = new();
 
-    public Dictionary<CCSPlayerController, GlowEntity> GlowEntity = new Dictionary<CCSPlayerController, GlowEntity>();
+    public Dictionary<int, GlowEntity> GlowEntity = new Dictionary<int, GlowEntity>();
 
     public CancellationTokenSource? AssassinTimer;
 

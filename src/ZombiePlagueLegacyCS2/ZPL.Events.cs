@@ -96,6 +96,7 @@ public partial class ZPLEvents
         _core.Event.OnClientConnected += Event_OnClientConnected;
         _core.Event.OnEntityTakeDamage += Event_OnEntityTakeDamage;
         _core.Event.OnMapLoad += Event_OnMapLoad;
+        _core.Event.OnMapUnload += Event_OnMapUnload;
         _core.Event.OnWeaponServicesCanUseHook += Event_OnWeaponServicesCanUseHook;
         _core.Event.OnPrecacheResource += Event_OnPrecacheResource;
         _core.Event.OnTick += Event_OnTickSpeed;
@@ -158,6 +159,7 @@ public partial class ZPLEvents
         _core.Event.OnClientConnected            -= Event_OnClientConnected;
         _core.Event.OnEntityTakeDamage           -= Event_OnEntityTakeDamage;
         _core.Event.OnMapLoad                    -= Event_OnMapLoad;
+        _core.Event.OnMapUnload                  -= Event_OnMapUnload;
         _core.Event.OnWeaponServicesCanUseHook   -= Event_OnWeaponServicesCanUseHook;
         _core.Event.OnPrecacheResource           -= Event_OnPrecacheResource;
         _core.Event.OnTick                       -= Event_OnTickSpeed;
@@ -1093,6 +1095,103 @@ public partial class ZPLEvents
         });
     }
 
+    private void Event_OnMapUnload(IOnMapUnloadEvent @event)
+    {
+        // ── Cleanup all map-level timers and state ────────────────────────────────
+        // Map changes do not trigger per-entity unload, so we must explicitly
+        // clean up all timers, handles, and dictionaries keyed by per-map data.
+
+        // Cancel all round/game timers
+        _globals.g_hRoundEndTimer?.Cancel();
+        _globals.g_hRoundEndTimer = null;
+        _globals.g_hCountdown?.Cancel();
+        _globals.g_hCountdown = null;
+        _globals.g_IdleTimer?.Cancel();
+        _globals.g_IdleTimer = null;
+        _globals.g_ZombieRegenTimer?.Cancel();
+        _globals.g_ZombieRegenTimer = null;
+        _globals.g_hAmbMusic?.Cancel();
+        _globals.g_hAmbMusic = null;
+        _globals.AssassinTimer?.Cancel();
+        _globals.AssassinTimer = null;
+
+        // Clean up burn state timers
+        foreach (var timer in _globals.ActiveBurns.Values)
+        {
+            timer.timer?.Cancel();
+        }
+        _globals.ActiveBurns.Clear();
+
+        // Clean up mine think timers and state
+        foreach (var timer in _globals.MineThink.Values)
+        {
+            timer?.Cancel();
+        }
+        _globals.MineThink.Clear();
+        _globals.MineData.Clear();
+        _globals.MineBeam.Clear();
+        _globals.PlayerMineCounts.Clear();
+
+        // Clean up light timers
+        foreach (var timer in _globals.lightTimers.Values)
+        {
+            timer?.Cancel();
+        }
+        _globals.lightTimers.Clear();
+        _globals.activeLights.Clear();
+
+        // Clean up glow entities
+        _globals.GlowEntity.Clear();
+
+        // Reset round-level state flags
+        _globals.GameStart = false;
+        _globals.SafeRoundStart = false;
+        _globals.InfectionStartedThisRound = false;
+        _globals.AdminForcedModeThisRound = false;
+        _globals.MotherZombieWasSelected = false;
+        _globals.NormalRoundsStreak = 0;
+        _globals.RoundVoxGroup = null;
+
+        // Clear all per-player state dictionaries
+        _globals.IsZombie.Clear();
+        _globals.IsMother.Clear();
+        _globals.IsSurvivor.Clear();
+        _globals.IsSniper.Clear();
+        _globals.IsNemesis.Clear();
+        _globals.IsAssassin.Clear();
+        _globals.IsHero.Clear();
+        _globals.g_ZombieIdleStates.Clear();
+        _globals.g_ZombieRegenStates.Clear();
+        _globals.StopZombieTimers.Clear();
+        _globals.g_IsInvisible.Clear();
+        _globals.ThrowerIsZombie.Clear();
+        _globals.ScbaSuit.Clear();
+        _globals.GodState.Clear();
+        _globals.InfiniteAmmoState.Clear();
+        _globals.CanBuyWeaponsThisRound.Clear();
+        _globals.DamageAccumulator.Clear();
+        _globals.ExtraJumps.Clear();
+        _globals.JumpsUsed.Clear();
+        _globals.KnifeBlinkCharges.Clear();
+        _globals.KnifeBlinkCooldownEnd.Clear();
+        _globals.ZombieMadnessActive.Clear();
+        _globals.PrevJumpPressed.Clear();
+        _globals.PrevOnGround.Clear();
+        _globals.LeapCooldownEnd.Clear();
+        _globals.SpawnProtectionEndTime.Clear();
+        _globals.InfiniteClipState.Clear();
+        _globals.ExtraNoRecoilState.Clear();
+        _globals.TryderState.Clear();
+        _globals.ItemPurchaseCount.Clear();
+        _globals.HasJetpack.Clear();
+        _globals.JetpackFuel.Clear();
+        _globals.JetpackLastFuelTime.Clear();
+        _globals.HasReviveToken.Clear();
+        _globals.jumpBoostState.Clear();
+        _globals.SpecialRoleLastRound.Clear();
+        _globals.SpecialRoleThisRound.Clear();
+    }
+
     private void Event_OnEntityTakeDamage(SwiftlyS2.Shared.Events.IOnEntityTakeDamageEvent @event)
     {
         var victim = @event.Entity;
@@ -1254,6 +1353,9 @@ public partial class ZPLEvents
         _globals.GodState.Remove(id);
         _globals.InfiniteAmmoState.Remove(id);
         _globals.CanBuyWeaponsThisRound.Remove(id);
+
+        // Clean up Economy tracking
+        _ammoPacks.RemovePlayer(id);
 
         _globals.g_ZombieIdleStates.Remove(id);
         _globals.g_ZombieRegenStates.Remove(id);
