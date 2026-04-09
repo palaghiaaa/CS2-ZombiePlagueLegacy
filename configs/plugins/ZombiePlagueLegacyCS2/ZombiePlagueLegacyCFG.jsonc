@@ -236,9 +236,9 @@
 
     "Fog": {
       "Enable":     true,
-      "ColorR":     100,
-      "ColorG":     110,
-      "ColorB":     100,
+      "ColorR":     190,
+      "ColorG":     100,
+      "ColorB":     110,
       "StartDist":  128.0,
       "EndDist":    2048.0,
       "MaxDensity": 0.9,
@@ -256,7 +256,7 @@
 
     "AdminMenuPermission":       "hzp.adminmenu",
 
-    "ChatPrefix":                    "[red][INFO][default]",
+    "ChatPrefix":                    "[red][ZM][default]",
 
     "EnableCommandDebugLogs":        false,
 
@@ -267,7 +267,7 @@
   "ZPLVoxCFG": {
     "VoxList": [
       {
-        "Name":               "CSOL\u7537\u6027\u64ad\u62a5",
+        "Name":               "CSOL",
         "Enable":             true,
         "RoundMusicVox":      "han.zombie.round.class_start,han.zombie.round.class_startB",
         "SecRemainVox":       "han.zombie.round.20secremain",
@@ -288,7 +288,7 @@
         "PrecacheSoundEvent": "soundevents/hanroundvoxs.vsndevts"
       },
       {
-        "Name":               "CSOL\u5973\u6027\u64ad\u62a5",
+        "Name":               "CSOL Female",
         "Enable":             true,
         "RoundMusicVox":      "han.zombie.round.class_startC,han.zombie.round.class_startD",
         "SecRemainVox":       "han.zombie.round.fem20secremain",
@@ -309,7 +309,7 @@
         "PrecacheSoundEvent": "soundevents/hanzbplayers.vsndevts"
       },
       {
-        "Name":               "HL1\u7537\u6027\u64ad\u62a5",
+        "Name":               "HL1",
         "Enable":             true,
         "RoundMusicVox":      "han.zombieplague.round.start",
         "SecRemainVox":       "han.hl.round.remaining",
@@ -330,7 +330,7 @@
         "PrecacheSoundEvent": "soundevents/hanhl1zbvox.vsndevts"
       },
       {
-        "Name":               "HL1\u5973\u6027\u64ad\u62a5",
+        "Name":               "HL1 Female",
         "Enable":             true,
         "RoundMusicVox":      "han.zombieplague.round.start",
         "SecRemainVox":       "han.hl.round.femremaining",
@@ -351,7 +351,7 @@
         "PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts"
       },
       {
-        "Name":               "\u50f5\u5c38\u761f\u75ab\u64ad\u62a5",
+        "Name":               "Han",
         "Enable":             true,
         "RoundMusicVox":      "han.zombieplague.round.start,han.zombie.round.class_start",
         "SecRemainVox":       "han.zombie.round.20secremain",

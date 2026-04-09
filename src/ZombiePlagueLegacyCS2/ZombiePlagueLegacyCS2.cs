@@ -34,46 +34,67 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
 
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
     {
-        if (ServiceProvider == null) return;
+        if (ServiceProvider == null)
+        {
+            Core.Logger.LogError("[ZM] UseSharedInterface called but ServiceProvider is null! Load method may not have completed.");
+            return;
+        }
 
         var ammoPacks = ServiceProvider.GetRequiredService<AmmoPacksService>();
 
         // ── Economy plugin ────────────────────────────────────────────────────
         try
         {
+            Core.Logger.LogInformation("[ZM] UseSharedInterface: Checking for Economy.API.v1...");
+            
             if (interfaceManager.HasSharedInterface("Economy.API.v1"))
             {
+                Core.Logger.LogInformation("[ZM] UseSharedInterface: Economy.API.v1 found, attempting to get interface...");
+                
                 var economyApi = interfaceManager.GetSharedInterface<IEconomyAPIv1>("Economy.API.v1");
                 if (economyApi != null)
                 {
+                    Core.Logger.LogInformation("[ZM] UseSharedInterface: Economy API retrieved successfully. Setting up AmmoPacksService...");
+                    
                     ammoPacks.SetApi(economyApi);
                     ammoPacks.EnsureWalletKind();
 
                     // If the Economy API becomes available while players are already connected,
                     // make sure their economy data is loaded and cached.
+                    int playerCount = 0;
                     foreach (var player in Core.PlayerManager.GetAllPlayers())
                     {
                         if (player != null && player.IsValid && !player.IsFakeClient)
                         {
+                            playerCount++;
+                            Core.Logger.LogDebug("[ZM] UseSharedInterface: Loading economy data for player {PlayerId}", player.PlayerID);
                             ammoPacks.LoadData(player);
                             ammoPacks.RefreshBalance(player);
                         }
                     }
+                    
+                    Core.Logger.LogInformation("[ZM] UseSharedInterface: Economy setup complete. Reloaded {PlayerCount} connected players.", playerCount);
+                }
+                else
+                {
+                    Core.Logger.LogError("[ZM] UseSharedInterface: Economy.API.v1 interface returned null!");
                 }
             }
             else
             {
-                Core.Logger.LogWarning("[ZPL] Economy plugin not found – ammo packs will not function until the Economy plugin is loaded.");
+                Core.Logger.LogWarning("[ZM] Economy plugin not found – ammo packs will not function until the Economy plugin is loaded.");
             }
         }
         catch (Exception ex)
         {
-            Core.Logger.LogWarning("[ZPL] Economy API lookup failed: {Ex}", ex.Message);
+            Core.Logger.LogError("[ZM] Economy API lookup failed: {Ex}\n{StackTrace}", ex.Message, ex.StackTrace);
         }
     }
 
     public override void Load(bool hotReload)
     {
+        Core.Logger.LogInformation("[ZM] Load() called. hotReload={HotReload}. Initializing configurations...", hotReload);
+        
         // Guard Configure() calls with !hotReload.
         // SwiftlyS2's PluginConfigurationService.Manager is a lazy singleton that is
         // never reset between hot-reloads (map changes).  Calling AddJsonFile on it
@@ -89,7 +110,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
                 builder.SetFileLoadExceptionHandler(ctx =>
                 {
-                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLMainCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    Core.Logger.LogError("[ZM] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLMainCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
                     ctx.Ignore = true;
                 });
             });
@@ -98,7 +119,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
                 builder.SetFileLoadExceptionHandler(ctx =>
                 {
-                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLVoxCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    Core.Logger.LogError("[ZM] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLVoxCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
                     ctx.Ignore = true;
                 });
             });
@@ -107,7 +128,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 builder.AddJsonFile("ZombieClassesCFG.jsonc", false, true);
                 builder.SetFileLoadExceptionHandler(ctx =>
                 {
-                    Core.Logger.LogError("[ZPL] Failed to load ZombieClassesCFG.jsonc (ZPLZombieClassCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    Core.Logger.LogError("[ZM] Failed to load ZombieClassesCFG.jsonc (ZPLZombieClassCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
                     ctx.Ignore = true;
                 });
             });
@@ -116,7 +137,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
                 builder.SetFileLoadExceptionHandler(ctx =>
                 {
-                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLSpecialClassCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    Core.Logger.LogError("[ZM] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLSpecialClassCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
                     ctx.Ignore = true;
                 });
             });
@@ -125,7 +146,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
                 builder.SetFileLoadExceptionHandler(ctx =>
                 {
-                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLWeaponsCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    Core.Logger.LogError("[ZM] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLWeaponsCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
                     ctx.Ignore = true;
                 });
             });
@@ -134,7 +155,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 builder.AddJsonFile("ExtraItemsCFG.jsonc", false, true);
                 builder.SetFileLoadExceptionHandler(ctx =>
                 {
-                    Core.Logger.LogError("[ZPL] Failed to load ExtraItemsCFG.jsonc (ZPLExtraItemsCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    Core.Logger.LogError("[ZM] Failed to load ExtraItemsCFG.jsonc (ZPLExtraItemsCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
                     ctx.Ignore = true;
                 });
             });
@@ -143,7 +164,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
                 builder.AddJsonFile("ZombiePlagueLegacyCFG.jsonc", false, true);
                 builder.SetFileLoadExceptionHandler(ctx =>
                 {
-                    Core.Logger.LogError("[ZPL] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLMineCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
+                    Core.Logger.LogError("[ZM] Failed to load ZombiePlagueLegacyCFG.jsonc (ZPLMineCFG): {Error}. Using last valid configuration.", ctx.Exception.Message);
                     ctx.Ignore = true;
                 });
             });
@@ -206,6 +227,8 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         collection.AddSingleton<ZPLGameMenu>();
         ServiceProvider = collection.BuildServiceProvider();
 
+        Core.Logger.LogInformation(\"[ZM] Load: ServiceProvider built successfully. Retrieving registered services...\");
+
         // Break circular dependency: inject ZPLServices into ZPLExtraItemsMenu post-build
         ServiceProvider.GetRequiredService<ZPLExtraItemsMenu>()
             .SetServices(ServiceProvider.GetRequiredService<ZPLServices>());
@@ -238,6 +261,8 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         _Events.HookZombieSoundEvents();
         _Commands.Command();
         _Commands.MenuCommands();
+        
+        Core.Logger.LogInformation(\"[ZM] Load() completed successfully. Plugin ready. Waiting for UseSharedInterface() for Economy integration...\");
     }
 
     public override void Unload()

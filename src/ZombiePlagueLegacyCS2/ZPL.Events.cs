@@ -1301,7 +1301,10 @@ public partial class ZPLEvents
         // Ensure the player's economy data is loaded so balance queries are reliable.
         var player = _core.PlayerManager.GetPlayer(id);
         if (player != null && player.IsValid && !player.IsFakeClient)
+        {
+            _logger.LogInformation("[ZM] OnClientConnected: Player {Id} connected (SteamID={SteamID}). Loading economy data...", id, player.SteamID);
             _ammoPacks.LoadData(player);
+        }
 
         if (_globals.GameStart)
         {

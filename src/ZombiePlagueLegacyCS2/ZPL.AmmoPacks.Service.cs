@@ -30,9 +30,13 @@ public class AmmoPacksService
             UnsubscribeEconomyEvents();
 
         _api = api;
+        _logger.LogInformation("[ZPL-AP] SetApi: Economy API set up. Subscribing to events...");
+        
         _api.OnPlayerLoad += OnEconomyPlayerLoad;
         _api.OnPlayerBalanceChanged += OnEconomyPlayerBalanceChanged;
         _api.OnPlayerFundsTransferred += OnEconomyPlayerFundsTransferred;
+        
+        _logger.LogInformation("[ZPL-AP] SetApi: Event subscriptions complete.");
     }
 
     private string WalletKind => _mainCFG.CurrentValue.EconomyWalletKind;
@@ -78,9 +82,14 @@ public class AmmoPacksService
     private void OnEconomyPlayerLoad(IPlayer player)
     {
         if (player == null || !player.IsValid || player.IsFakeClient)
+        {
+            _logger.LogDebug("[ZPL-AP] OnPlayerLoad: Ignoring invalid/fake player");
             return;
+        }
 
         int id = player.PlayerID;
+        _logger.LogInformation("[ZPL-AP] OnEconomyPlayerLoad: Economy data ready for player {PlayerId} (SteamID={SteamID})", id, player.SteamID);
+        
         // Always refresh mappings: a player may be seen earlier with SteamID=0,
         // then receive the real SteamID after authorization.
         _playerMap[id] = player;
@@ -90,40 +99,59 @@ public class AmmoPacksService
         // Acum datele SUNT gata — citim balanța
         try
         {
-            _balanceCache[id] = Math.Max(0, (int)_api!.GetPlayerBalance(player, WalletKind));
-            _logger.LogDebug("[ZPL-AP] OnPlayerLoad: slot={Id} balance={Bal}", id, _balanceCache[id]);
+            string walletKind = WalletKind;
+            decimal balanceDecimal = _api!.GetPlayerBalance(player, walletKind);
+            int balanceInt = Math.Max(0, (int)balanceDecimal);
+            _balanceCache[id] = balanceInt;
+            _logger.LogInformation("[ZPL-AP] OnPlayerLoad: slot={Id} wallet={Kind} balance={Bal} (raw={RawBal})", id, walletKind, balanceInt, balanceDecimal);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("[ZPL-AP] OnPlayerLoad balance read failed for slot {Id}: {Ex}", id, ex.Message);
+            _logger.LogError("[ZPL-AP] OnPlayerLoad balance read failed for slot {Id}: {Ex}\n{StackTrace}", id, ex.Message, ex.StackTrace);
             _balanceCache[id] = 0;
         }
     }
 
     public void LoadData(IPlayer player)
     {
+        if (player == null || !player.IsValid)
+        {
+            _logger.LogWarning("[ZPL-AP] LoadData: Invalid player passed");
+            return;
+        }
+        
         int id = player.PlayerID;
+        _logger.LogInformation("[ZPL-AP] LoadData: Called for player {PlayerId} (SteamID={SteamID})", id, player.SteamID);
+        
         _playerMap[id] = player;
         if (player.SteamID != 0)
             _steamToSlot[player.SteamID] = id;
 
-        if (_api == null) return;
+        if (_api == null)
+        {
+            _logger.LogWarning("[ZPL-AP] LoadData: Economy API not set up yet. Will retry when Economy loads.");
+            return;
+        }
 
         // Setăm 0 ca valoare temporară — va fi actualizat în OnEconomyPlayerLoad
         _balanceCache[id] = 0;
 
         // Avoid loading against SteamID=0; wait for Economy's own player-load flow.
         if (player.SteamID == 0)
+        {
+            _logger.LogDebug("[ZPL-AP] LoadData: Deferring load for player {Id} - SteamID not yet authorized", id);
             return;
+        }
 
         try
         {
+            _logger.LogInformation("[ZPL-AP] LoadData: Requesting Economy to load data for player {Id}", id);
             // Aceasta declanșează încărcarea async; OnPlayerLoad va fi apelat când e gata
             _api.LoadData(player);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("[ZPL-AP] LoadData({Id}) failed: {Ex}", id, ex.Message);
+            _logger.LogError("[ZPL-AP] LoadData({Id}) failed: {Ex}\n{StackTrace}", id, ex.Message, ex.StackTrace);
         }
     }
 
@@ -243,10 +271,31 @@ public class AmmoPacksService
 
     public void EnsureWalletKind()
     {
-        if (_api == null) return;
+        if (_api == null)
+        {
+            _logger.LogWarning("[ZPL-AP] EnsureWalletKind: Economy API not set up yet.");
+            return;
+        }
+        
         var walletKind = WalletKind;
-        if (!_api.WalletKindExists(walletKind))
-            _api.EnsureWalletKind(walletKind);
+        _logger.LogInformation("[ZPL-AP] EnsureWalletKind: Checking wallet '{Kind}'...", walletKind);
+        
+        try
+        {
+            if (!_api.WalletKindExists(walletKind))
+            {
+                _logger.LogInformation("[ZPL-AP] EnsureWalletKind: Creating wallet '{Kind}'...", walletKind);
+                _api.EnsureWalletKind(walletKind);
+            }
+            else
+            {
+                _logger.LogInformation("[ZPL-AP] EnsureWalletKind: Wallet '{Kind}' already exists.", walletKind);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("[ZPL-AP] EnsureWalletKind: Failed to ensure wallet '{Kind}': {Ex}", walletKind, ex.Message);
+        }
     }
 
     // Dezabonare la cleanup

@@ -99,7 +99,7 @@ Integrat din [H-AN/HanLaserTripmineS2](https://github.com/H-AN/HanLaserTripmineS
 - `HumanKnockBackGroundMultiply` *(implicit: 1.0)* — Multiplicator knockback când zombie-ul e pe sol.
 - `HumanKnockBackAirMultiply` *(implicit: 0.5)* — Multiplicator knockback când zombie-ul e în aer.
 - `HumanHeroKnockBackMultiply` *(implicit: 1.0)* — Multiplicator knockback separat pentru jucătorii Hero.
-- `ChatPrefix` *(implicit: "[ZPL]")* — Prefix afișat înaintea mesajelor de chat ale plugin-ului.
+- `ChatPrefix` *(implicit: "[ZM]")* — Prefix afișat înaintea mesajelor de chat ale plugin-ului.
 - `EconomyWalletKind` *(implicit: "ammo")* — Tipul de portofel Economy folosit pentru Ammo Packs.
 - `EnableCommandDebugLogs` *(implicit: false)* — Loghează comenzile în consola serverului.
 - `EnableCommandDebugChatReply` *(implicit: false)* — Răspunde în chat la invocarea comenzilor (debug).

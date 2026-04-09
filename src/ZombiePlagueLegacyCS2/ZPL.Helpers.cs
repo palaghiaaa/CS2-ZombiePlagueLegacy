@@ -1220,7 +1220,7 @@ public partial class ZPLHelpers
             fogController = _core.EntitySystem.CreateEntityByDesignerName<CFogController>("env_fog_controller");
             if (fogController == null || !fogController.IsValid || !fogController.IsValidEntity)
             {
-                _logger.LogWarning("[ZPL] Failed to create env_fog_controller entity – fog will not be applied this attempt.");
+                _logger.LogWarning("[ZM] Failed to create env_fog_controller entity – fog will not be applied this attempt.");
                 return;
             }
             fogController.DispatchSpawn();
@@ -1304,7 +1304,7 @@ public partial class ZPLHelpers
 
         if (!_safeSkynamePattern.IsMatch(skyName))
         {
-            _logger.LogWarning("[ZPL] Skybox name '{Name}' contains invalid characters and was not applied.", skyName);
+            _logger.LogWarning("[ZM] Skybox name '{Name}' contains invalid characters and was not applied.", skyName);
             return;
         }
 
