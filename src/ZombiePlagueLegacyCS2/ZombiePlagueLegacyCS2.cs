@@ -227,7 +227,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         collection.AddSingleton<ZPLGameMenu>();
         ServiceProvider = collection.BuildServiceProvider();
 
-        Core.Logger.LogInformation(\"[ZM] Load: ServiceProvider built successfully. Retrieving registered services...\");
+        Core.Logger.LogInformation("[ZM] Load: ServiceProvider built successfully. Retrieving registered services...");
 
         // Break circular dependency: inject ZPLServices into ZPLExtraItemsMenu post-build
         ServiceProvider.GetRequiredService<ZPLExtraItemsMenu>()
@@ -262,7 +262,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         _Commands.Command();
         _Commands.MenuCommands();
         
-        Core.Logger.LogInformation(\"[ZM] Load() completed successfully. Plugin ready. Waiting for UseSharedInterface() for Economy integration...\");
+        Core.Logger.LogInformation("[ZM] Load() completed successfully. Plugin ready. Waiting for UseSharedInterface() for Economy integration...");
     }
 
     public override void Unload()
