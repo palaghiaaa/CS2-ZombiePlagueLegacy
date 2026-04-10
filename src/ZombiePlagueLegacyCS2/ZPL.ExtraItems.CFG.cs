@@ -49,6 +49,12 @@ public class ZPLExtraItemsCFG
     // ── Zombie Madness ────────────────────────────────────────────────────────
     /// <summary>Duration in seconds of the Zombie Madness invulnerability.</summary>
     public float MadnessDuration { get; set; } = 10f;
+    /// <summary>Glow red channel (0–255) applied while Zombie Madness is active.</summary>
+    public byte MadnessGlowR { get; set; } = 255;
+    /// <summary>Glow green channel (0–255) applied while Zombie Madness is active.</summary>
+    public byte MadnessGlowG { get; set; } = 0;
+    /// <summary>Glow blue channel (0–255) applied while Zombie Madness is active.</summary>
+    public byte MadnessGlowB { get; set; } = 0;
 
     // ── Antidote ──────────────────────────────────────────────────────────────
     // (uses the existing TVaccine / MakeHuman logic; no extra scalar needed)

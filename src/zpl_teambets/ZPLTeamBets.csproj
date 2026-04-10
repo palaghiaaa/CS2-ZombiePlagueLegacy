@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>ZPLTeamBets</AssemblyName>
+    <RootNamespace>ZPLTeamBets</RootNamespace>
+    <OutputPath>$(MSBuildThisFileDirectory)../../build/</OutputPath>
+    <PublishDir>$(OutputPath)publish/ZPLTeamBets</PublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SwiftlyS2 CS2 framework -->
+    <PackageReference Include="SwiftlyS2.CS2" Version="1.1.5-beta.27" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- ZombiePlagueLegacyCS2 API contract (zombie-state queries + events).
+         Private="false" so ZombiePlagueLegacyAPI.dll is NOT copied to this plugin's
+         output directory.  The single copy deployed by ZombiePlagueLegacyCS2 is
+         reused at runtime, which keeps the type identity consistent across plugins
+         and prevents the "No keyed service for type IZombiePlagueLegacyAPI" error. -->
+    <ProjectReference Include="../IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj" Private="false" />
+    <!-- Economy plugin contract (AP wallet management) -->
+    <Reference Include="Economy.Contract">
+      <HintPath>../ZombiePlagueLegacyCS2/lib/Economy.Contract.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Bundle the plugin's own translation files -->
+  <ItemGroup>
+    <Content Include="translations/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>resources/translations/%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
+  <!-- Bundle the default config so operators have a reference copy -->
+  <ItemGroup>
+    <Content Include="../../configs/plugins/ZPLTeamBets/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>configs/%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
+</Project>

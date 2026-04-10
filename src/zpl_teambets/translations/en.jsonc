@@ -1,0 +1,63 @@
+{
+    // ── ZPLTeamBets – English translations ─────────────────────────────────────
+    // {0}, {1} … are positional arguments filled in at runtime.
+
+    // ── Round announcements ───────────────────────────────────────────────────
+    // Broadcast when bets open. {0} = primary bet command (e.g. "bet").
+    "BetsOpenAnnounce": "[gold]🎲 Bets are OPEN! Type [green]!{0}[gold] to bet on Humans or Zombies!",
+
+    // Broadcast when freeze time ends and bets lock. {0} = number of active bets.
+    "BetsLocked": "[gold]🔒 Bets are now LOCKED. [{0}] bets placed.",
+
+    // Broadcast at round end with payout summary. {0} = winning team, {1} = winners count, {2} = total AP paid.
+    "RoundEndSummary": "[gold]🏆 [green]{0}[gold] win! [green]{1}[gold] bettor(s) received [green]{2} AP[gold] total.",
+
+    // ── Per-player messages ───────────────────────────────────────────────────
+    // Sent when player's bet wins. {0} = stake, {1} = payout.
+    "BetWon": "[gold]✓ You bet [green]{0} AP[gold] and WON [green]{1} AP[gold]! Congratulations!",
+
+    // Sent when player's bet loses. {0} = stake.
+    "BetLost": "[red]✗ You bet [green]{0} AP[red] and lost. Better luck next round!",
+
+    // Sent when player places a bet. {0} = amount, {1} = team name.
+    "BetPlaced": "[gold]✓ Bet of [green]{0} AP[gold] placed on [green]{1}[gold]!",
+
+    // Shown in menu / command when player already has a bet this round. {0} = team, {1} = amount.
+    "AlreadyBet": "[yellow]You already bet [green]{1} AP[yellow] on [green]{0}[yellow] this round.",
+
+    // Short version used in direct command form.
+    "AlreadyBetShort": "[yellow]You already have an active bet this round.",
+
+    // ── Error messages ────────────────────────────────────────────────────────
+    // Bets are closed (outside freeze time).
+    "BetsClosed": "[red]Bets are closed. Wait for the next round!",
+
+    // Economy plugin offline.
+    "EconomyOffline": "[red]Economy service is offline. Bets are unavailable.",
+
+    // Invalid team argument. 
+    "InvalidSide": "[red]Invalid team. Use: [green]humans[red] or [green]zombies[red].",
+
+    // Invalid amount argument.
+    "InvalidAmount": "[red]Invalid amount. Usage: [green]!bet <amount> <humans|zombies>",
+
+    // Bet below minimum. {0} = MinBet.
+    "BetTooSmall": "[red]Minimum bet is [green]{0} AP[red].",
+
+    // Bet above maximum. {0} = MaxBet.
+    "BetTooBig": "[red]Maximum bet is [green]{0} AP[red].",
+
+    // Not enough balance. {0} = current balance, {1} = required.
+    "NotEnoughAP": "[red]Not enough AP. You have [green]{0}[red], need [green]{1}[red].",
+
+    // ── Menu strings ──────────────────────────────────────────────────────────
+    // Menu title.
+    "MenuTitle": "🎲 Team Bets",
+
+    // One bet entry line. {0} = team, {1} = AP amount.
+    "MenuBetEntry": "Bet [green]{1} AP[default] on [gold]{0}",
+
+    // ── Team names ────────────────────────────────────────────────────────────
+    "TeamHumans": "Humans",
+    "TeamZombies": "Zombies"
+}

@@ -146,6 +146,19 @@ Plugin VIP complet integrat cu `IZombiePlagueLegacyAPI` și Economy plugin:
 - Meniu `!vips` cu VIP-ii online (`VipsListCommand`)
 - Anunț la conectare VIP (`JoinAnnounceEnabled`)
 
+### 🎲 zpl_teambets — Team Bets cu Ammo Packs
+
+Plugin de pariuri pe echipe integrat cu Economy (Ammo Packs):
+
+- Pariurile se deschid automat la `EventRoundStart` și se blochează la `EventRoundFreezeEnd`
+- Jucătorii pariază AP pe **Humans** sau **Zombies** câștigând runda
+- Comanda principală: `!bet` (deschide meniu) sau `!bet <sumă> <humans|zombies>` (direct)
+- Preset-uri rapide configurabile (`QuickBetAmounts`): 10, 25, 50, 100, 250 AP
+- Multiplicator de câștig configurabil (`WinMultiplier`, default 2.0×)
+- Minim și maxim de pariu configurabile (`MinBet` / `MaxBet`)
+- Plata automată la round-end; anunț broadcast cu câștigătorii și totalul AP distribuit
+- Lifecycle complet: unregister comenzi, unhook events, close menus la `Unload()`
+
 ---
 
 ## 🐛 Bug Fix-uri
@@ -164,6 +177,9 @@ Plugin VIP complet integrat cu `IZombiePlagueLegacyAPI` și Economy plugin:
 - **Detectare VIP greșită** — Permisiunea VIP nu era verificată corect. Rezolvat cu `IsValidRealPlayer`.
 - **Fog lipsă după schimbare hartă** — Fog-ul nu persista la schimbarea hărții. Aplicat din nou în evenimentul `OnMapStart`.
 - **Nume tăiate în meniul top** — Numele lungi depășeau limita de caractere a meniului. Acum trunchiate corect la afișare.
+- **Glow Tryder oprit la deconectare** — `SetGlow` în `NextWorldUpdate` nu verifica validitatea pawn-ului. Adăugat try/catch și guard de validitate.
+- **Knife Blink prin pereți** — Teleportarea folosea calcul naiv (origine + direcție × distanță) fără trace de geometrie. Înlocuit cu trace `MaskTrace.Solid` care oprește la primul perete.
+- **Mine damage de la gloanțe** — Minele puteau fi distruse de orice glonț. Înlocuit cu detecție de atac corp la corp (knife proximity) pe swingul zombiei, care reflectă mai bine tema gameplay-ului.
 
 ---
 
@@ -177,6 +193,9 @@ Plugin VIP complet integrat cu `IZombiePlagueLegacyAPI` și Economy plugin:
 - **Cheie API redenumită** — `"HanZombiePlague"` → `"ZombiePlagueLegacy"` pentru consistență cu noul brand.
 - **Navigare meniu standardizată** — Toate plugin-urile folosesc acum keybind-urile implicite SwiftlyS2. Fără mai multe chei hard-codate.
 - **CI/CD cu GitHub Actions** — Job-uri de build separate pentru `zpl_vip` (ZPLVIP) și `zpl_rank` (ZPLRank) alături de plugin-ul principal.
+- **Glow Zombie Madness (roșu)** — Zombie Madness aplică acum un glow roșu pe durata activării. Culoarea este configurabilă via `MadnessGlowR/G/B` în `ExtraItemsCFG.jsonc`.
+- **Mine HP + HUD** — Fiecare tip de mină acceptă acum un câmp `MineHealth`. Când > 0, zombii pot distruge mina prin atac corp la corp (knife swing în raza `ZombieAttackRange`). Proprietarul minei vede live HUD-ul: `Mine HP: <current> / <max>`. Raza și daunele per atac sunt configurabile (`ZombieAttackRange`, `ZombieAttackDamage`).
+- **HP Mother Zombie scalat cu numărul de jucători** — HP-ul Mother Zombie se interpolează liniar între `MotherZombieHPMinMultiplier` (1 jucător) și `MotherZombieHPMultiplier` (≥ `MotherZombieHPMaxPlayers` jucători). Oprește HP-ul abuziv de mare pe servere cu 2–4 jucători. Poate fi dezactivat cu `MotherZombieHPPlayerScaleEnabled: false`.
 
 ---
 
@@ -187,6 +206,7 @@ Plugin VIP complet integrat cu `IZombiePlagueLegacyAPI` și Economy plugin:
 - `configs/plugins/ZombiePlagueLegacyCS2/ExtraItemsCFG.jsonc` — Prețuri shop și recompense AP.
 - `configs/plugins/ZPLVIP/ZPLVIP.jsonc` — Config plugin VIP.
 - `configs/plugins/ZPLRank/ZPLRankCFG.jsonc` — Config plugin Rank/Top.
+- `configs/plugins/ZPLTeamBets/ZPLTeamBets.jsonc` — Config plugin Team Bets.
 - `gamemode_casual.cfg` — Config gamemode CS2 (friendly-fire, solid teammates, boți).
 - `gamemode_casual_server.cfg` — Config server specific gamemode.
 - `server.cfg` — Config general server.

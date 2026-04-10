@@ -307,11 +307,35 @@ public class ZPLMainCFG
 
     // ── Mother zombie HP multiplier ───────────────────────────────────────────
     /// <summary>
-    /// HP multiplier applied to the very first (mother) zombie selected each round.
-    /// 1.0 = no change (default), 2.5 = 2.5× the normal mother-zombie HP.
+    /// HP multiplier applied to the very first (mother) zombie selected each round
+    /// when MotherZombieHPPlayerScaleEnabled is false (flat multiplier mode).
+    /// Also acts as the MAXIMUM multiplier when player-count scaling is enabled.
+    /// 1.0 = no change, 2.5 = 2.5× the normal mother-zombie HP.
     /// Mirrors <c>zp_zombie_first_hp</c> from ZombiePlague CS 1.6 (default there was 2.0).
     /// </summary>
     public float MotherZombieHPMultiplier { get; set; } = 2.5f;
+
+    /// <summary>
+    /// When true, the mother-zombie HP multiplier scales linearly with the number
+    /// of connected human players: at 1 player it equals MotherZombieHPMinMultiplier;
+    /// at MotherZombieHPMaxPlayers or above it equals MotherZombieHPMultiplier.
+    /// This prevents 50 000 HP mother zombies on low-pop servers.
+    /// </summary>
+    public bool MotherZombieHPPlayerScaleEnabled { get; set; } = true;
+
+    /// <summary>
+    /// HP multiplier used when only 1 player is connected (minimum scale point).
+    /// At this player count the mother zombie receives no HP bonus beyond the base.
+    /// Only used when MotherZombieHPPlayerScaleEnabled is true.
+    /// </summary>
+    public float MotherZombieHPMinMultiplier { get; set; } = 1.0f;
+
+    /// <summary>
+    /// Player count at which MotherZombieHPMultiplier (the maximum) fully applies.
+    /// Servers with this many or more connected players give the mother zombie full
+    /// bonus HP.  Only used when MotherZombieHPPlayerScaleEnabled is true.
+    /// </summary>
+    public int MotherZombieHPMaxPlayers { get; set; } = 20;
 
     // ── Spawn protection ─────────────────────────────────────────────────────
     /// <summary>

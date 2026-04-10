@@ -22,19 +22,20 @@
 ## 📋 Table of Contents
 
 1. [Features](#-features)
-2. [Dependencies & Setup](#-dependencies--setup)
-3. [Workshop Assets](#-workshop-assets)
-4. [Installation](#-installation)
-5. [Commands](#-commands)
-6. [Game Modes](#-game-modes)
-7. [Zombie Classes](#-zombie-classes)
-8. [Special Classes](#-special-classes)
-9. [Extra Items Shop](#-extra-items-shop)
-10. [Grenades & Weapons](#-grenades--weapons)
-11. [Ammo Packs & Rewards](#-ammo-packs--rewards)
-12. [Configuration Reference](#️-configuration-reference)
-13. [Translations](#-translations)
-14. [API](#-api)
+2. [Changelog](#-changelog)
+3. [Dependencies & Setup](#-dependencies--setup)
+4. [Workshop Assets](#-workshop-assets)
+5. [Installation](#-installation)
+6. [Commands](#-commands)
+7. [Game Modes](#-game-modes)
+8. [Zombie Classes](#-zombie-classes)
+9. [Special Classes](#-special-classes)
+10. [Extra Items Shop](#-extra-items-shop)
+11. [Grenades & Weapons](#-grenades--weapons)
+12. [Ammo Packs & Rewards](#-ammo-packs--rewards)
+13. [Configuration Reference](#️-configuration-reference)
+14. [Translations](#-translations)
+15. [API](#-api)
 
 ---
 
@@ -54,12 +55,12 @@
   <td>Nemesis, Assassin, Mother Zombie, Survivor, Sniper, Hero — buy-able mid-round via the shop</td>
 </tr>
 <tr>
-  <td>📊 <strong>Permanent Status HUD</strong></td>
-  <td>Live center display showing round type, player class, and Ammo Packs balance — always visible</td>
+  <td>🌟 <strong>Player Glows</strong></td>
+  <td>Tryder players glow blue (configurable RGB); Zombie Madness players glow red (configurable RGB)</td>
 </tr>
 <tr>
   <td>🛒 <strong>Extra Items Shop</strong></td>
-  <td>Armor, Grenades, Jetpack, Laser Mines, SCBA Suit, Revive Token, Multi-Jump, Knife Blink, and more</td>
+  <td>Armor, Grenades, Jetpack, Laser Mines, SCBA Suit, Revive Token, Multi-Jump, Knife Blink, Tryder, and more</td>
 </tr>
 <tr>
   <td>💰 <strong>Ammo Pack Economy</strong></td>
@@ -67,11 +68,15 @@
 </tr>
 <tr>
   <td>💣 <strong>Laser Trip Mines</strong></td>
-  <td>Plant beam traps or explosive mines using the <code>!mine</code> menu</td>
+  <td>Plant beam traps or explosive mines using the <code>!mine</code> menu; optional HP system lets zombies melee-attack mines to destroy them</td>
 </tr>
 <tr>
   <td>🚀 <strong>Jetpack</strong></td>
-  <td>Hold CTRL + SPACE to fly; fuel depletes over time and resets each round</td>
+  <td>Hold CTRL + SPACE to fly with full omnidirectional thrust (WASD + eye yaw horizontal); fuel resets each round</td>
+</tr>
+<tr>
+  <td>🗡️ <strong>Knife Blink</strong></td>
+  <td>Swing knife to teleport forward; geometry trace stops the blink at walls — no more clipping out of the map</td>
 </tr>
 <tr>
   <td>⚡ <strong>Knockback System</strong></td>
@@ -90,6 +95,44 @@
   <td><code>IZombiePlagueLegacyAPI</code> — hook events, query player state, and set roles from external plugins</td>
 </tr>
 </table>
+
+---
+
+## 📝 Changelog
+
+### Latest changes
+
+**Tryder glow fix**
+- Fixed: glow entities were created but never rendered because `CBodyComponent.SceneNode.Owner.Entity.Flags` threw before the entity was spawned — wrapped in `try/catch` matching the mine-service pattern; added pawn validity check inside the `NextWorldUpdate` closure.
+
+**Zombie Madness — red glow**
+- Zombie Madness now applies a coloured glow for the duration of the effect and removes it on expiry.
+- Default colour is red (255, 0, 0). Configurable via `MadnessGlowR`, `MadnessGlowG`, `MadnessGlowB` in `ExtraItemsCFG.jsonc`.
+
+**Lasermine HP system + centre HUD (zombie melee)**
+- Each mine type in `ZombiePlagueLegacyCFG.jsonc` now accepts a `MineHealth` field (default `0` = invincible).
+- When `MineHealth > 0`, **zombies can destroy mines by knife-swinging** within `ZombieAttackRange` units (default 80u). Each swing deals `ZombieAttackDamage` (default 150).
+- Each hit shows the mine owner a live centre-screen HUD: `Mine HP: <current> / <max>`.
+- When HP reaches 0 the mine explodes (uses the standard `CreateGrenadeAndExplode` path for `CanExplorer` mines).
+
+**Knife Blink — geometry trace (no more out-of-map)**
+- The destination is now computed with a `SimpleTrace` (`MaskTrace.Solid`) from the player's eye position.
+- If the trace hits a wall, the blink stops 20 units before the surface.
+- The result is converted from eye-space to feet-space so the player lands at ground level regardless of look angle.
+- Blink passes through other players (solid-only mask) — zombies do not block the blink.
+
+**Mother Zombie HP — player-count scaling**
+- Mother Zombie HP now scales linearly with the number of connected players.
+- At 1–2 players the multiplier equals `MotherZombieHPMinMultiplier` (default 1.0 → no HP bonus).
+- At ≥ `MotherZombieHPMaxPlayers` players (default 20) the full `MotherZombieHPMultiplier` (default 2.5) applies.
+- Prevents 50 000 HP mother zombies on 2–4 player servers. Disable with `MotherZombieHPPlayerScaleEnabled: false`.
+
+**ZPLTeamBets — new standalone plugin**
+- New plugin `zpl_teambets` lets players bet **Ammo Packs** on Humans or Zombies winning the round.
+- Bets open at `EventRoundStart` and lock at `EventRoundFreezeEnd`.
+- Commands: `!bet` (opens menu) or `!bet <amount> <humans|zombies>` (direct).
+- Configurable: `QuickBetAmounts`, `MinBet`, `MaxBet`, `WinMultiplier`, `BetCommands`.
+- Uses Economy API (same wallet as main plugin). Full lifecycle cleanup.
 
 ---
 
@@ -115,7 +158,7 @@ Ammo Packs are stored exclusively through the Economy plugin — no MySQL or dat
 
 | Asset | Workshop ID |
 |-------|-------------|
-| 🔊 Sounds + Models + Lasemine | [3678630823](https://steamcommunity.com/sharedfiles/filedetails/?id=3678630823) |
+| 🔊 Sounds + Models + Lasermine | [3678630823](https://steamcommunity.com/sharedfiles/filedetails/?id=3678630823) |
 
 ---
 
@@ -211,10 +254,13 @@ Open with `!zextra` or via the main menu (`!zmenu`). Everything is purchased wit
 | 🌀 **Teleport Grenade** | 3 AP | Teleports the thrower on detonation |
 | 🧪 **SCBA Suit** | 5 AP | Blocks one zombie infection |
 | 🦘 **Multi-Jump** | 4 AP | +1 extra jump (stackable) |
-| 🗡️ **Knife Blink** | 5 AP | 3 charges — blink forward on each knife swing |
-| 🚀 **Jetpack** | 10 AP | CTRL+SPACE to fly; fuel resets each round |
-| 💣 **Laser Mine** | 6 AP | Opens mine menu — Tripwire or Explosive |
+| 🗡️ **Knife Blink** | 5 AP | 3 charges — blink forward on knife swing; stops at walls |
+| 🚀 **Jetpack** | 10 AP | CTRL+SPACE to fly with WASD directional thrust; fuel resets each round |
+| 💣 **Laser Mine** | 6 AP | Opens mine menu — Tripwire or Explosive; optional HP lets zombies melee-attack mines |
 | ❤️ **Revive Token** | 8 AP | Auto-respawn once if you die |
+| 🔵 **Tryder** | 15 AP | Bonus HP + armor + infinite clip + blue glow |
+| ♾️ **Unlimited Clip** | 8 AP | Infinite magazine |
+| 🎯 **No Recoil** | 6 AP | Zero weapon spread |
 | 🏹 **Become Survivor** | 20 AP | Transform into Survivor mid-round |
 | 🎯 **Become Sniper** | 15 AP | Transform into Sniper mid-round |
 
@@ -222,8 +268,8 @@ Open with `!zextra` or via the main menu (`!zmenu`). Everything is purchased wit
 
 | Item | Price | Description |
 |------|-------|-------------|
-| 💊 **Antidote** | 8 AP | Revert back to human |
-| 🛡️ **Zombie Madness** | 6 AP | Temporary invulnerability (10 s) |
+| 💊 **Antidote** | 8 AP | Revert back to human (max 3 per round) |
+| 🔴 **Zombie Madness** | 6 AP | 10 s invulnerability + red glow (max 5 per round) |
 | 🧬 **T-Virus Grenade** | 6 AP | Infect nearby humans on detonation |
 | 💀 **Become Nemesis** | 20 AP | Transform into Nemesis mid-round |
 | 🥷 **Become Assassin** | 15 AP | Transform into Assassin mid-round |
@@ -234,17 +280,40 @@ Open with `!zextra` or via the main menu (`!zmenu`). Everything is purchased wit
 ### Jetpack Details
 
 - Hold **CTRL + SPACE** to activate thrust (consumes fuel).
-- Horizontal velocity is preserved — only vertical force is applied.
-- Configure in `ExtraItemsCFG.jsonc`: `JetpackMaxFuel`, `JetpackThrustForce`, `JetpackFuelConsumeRate`.
+- Thrust direction follows your **eye yaw + WASD keys** — full omnidirectional flight.
+- Configure in `ExtraItemsCFG.jsonc`: `JetpackMaxFuel`, `JetpackThrustForce`, `JetpackHorizontalForce`, `JetpackFuelConsumeRate`.
+
+### Knife Blink Details
+
+- Swing the knife to use one charge.
+- A geometry trace (`MaskTrace.Solid`) fires from the eye position in the look direction.
+- If a wall is within `KnifeBlinkDistance` units, the blink stops **20 units before the surface** — no clipping through walls or falling out of the map.
+- Configure in `ExtraItemsCFG.jsonc`: `KnifeBlinkCharges`, `KnifeBlinkDistance`, `KnifeBlinkCooldown`.
 
 ### Laser Trip Mines
 
-| Type | Price | Behavior | Limit |
-|------|-------|----------|-------|
-| 💚 **Laser Tripwire** | 6 AP | Continuous beam damage (10 dmg per 0.1 s tick) | 2 per player |
-| 🔴 **Explosive Mine** | 10 AP | Explodes on beam cross (radius 360 u, up to 2 600 dmg) | 2 per player |
+| Type | Price | Behavior | HP | Limit |
+|------|-------|----------|----|-------|
+| 💚 **Laser Tripwire** | 6 AP | Continuous beam damage (10 dmg per 0.1 s tick) | 0 (invincible by default) | 2 per player |
+| 🔴 **Explosive Mine** | 10 AP | Explodes on beam cross (radius 360 u, up to 2 600 dmg) | 0 (invincible by default) | 2 per player |
 
-> Plant with `!mine` after purchasing. Visuals, colors, sounds, and limits are fully configurable in `ZombiePlagueLegacyCFG.jsonc` (`ZPLMineCFG` section).
+**Mine HP System:**
+- Set `MineHealth` to any positive value in `ZombiePlagueLegacyCFG.jsonc` to make a mine destroyable by zombie **knife melee** attacks.
+- Each knife swing within `ZombieAttackRange` (default 80 units) reduces HP by `ZombieAttackDamage`; the mine owner sees a live centre-screen HUD: **`Mine HP: <current> / <max>`**.
+- At 0 HP the mine explodes using the standard explosion path (same effect as a beam trigger on an Explosive Mine).
+- Default `0` keeps the original invincible behaviour.
+
+### Tryder Details
+
+- Grants bonus HP (`TryderHealth`), full armor (`TryderArmor`), and infinite clip.
+- While active, the player has a **blue glow** (configurable `TryderGlowR/G/B`).
+- Glow is removed on death or infection.
+
+### Zombie Madness Details
+
+- 10-second invulnerability window (duration configurable via `MadnessDuration`).
+- While active, the player has a **red glow** (configurable `MadnessGlowR/G/B`, default `255 0 0`).
+- Glow is removed automatically when the timer expires.
 
 ---
 
@@ -349,22 +418,32 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
       "Name": "Laser Tripwire",
       "CanExplorer": false,
       "Price": 6,  "Limit": 2,  "Team": "ct",
-      "LaserRate": 0.1,  "LaserDamage": 10.0,  "LaserKnockBack": 100.0
+      "LaserRate": 0.1,  "LaserDamage": 10.0,  "LaserKnockBack": 100.0,
+      "GlowColor": "0,255,0,255",  "LaserColor": "0,0,255,255",
+      "ModelAngleFix": 90.0,
+      "MineHealth": 500,        // HP for zombie melee attacks; 0 = invincible
+      "ZombieAttackDamage": 150 // damage per zombie knife swing within ZombieAttackRange
     },
     {
       "Name": "Explosive Mine",
       "CanExplorer": true,
       "Price": 10,  "Limit": 2,  "Team": "ct",
-      "ExplorerRadius": 360,  "ExplorerDamage": 2600
+      "ExplorerRadius": 360,  "ExplorerDamage": 2600,
+      "GlowColor": "255,0,0,255",  "LaserColor": "255,0,0,255",
+      "ModelAngleFix": 0.0,
+      "MineHealth": 750,        // HP for zombie melee attacks; 0 = invincible
+      "ZombieAttackDamage": 150 // damage per zombie knife swing within ZombieAttackRange
     }
   ]
 }
 ```
 
+> **`MineHealth`** — when > 0, zombies can **melee attack** (knife swing) the mine within `ZombieAttackRange` units. Each hit deals `ZombieAttackDamage` and shows the owner a live centre-screen HP readout. At 0 HP the mine explodes.
+
 </details>
 
 <details>
-<summary><strong>ExtraItemsCFG.jsonc — Shop items & AP rewards</strong></summary>
+<summary><strong>ExtraItemsCFG.jsonc — Shop items, AP rewards & item settings</strong></summary>
 
 ```jsonc
 "ZPLExtraItemsCFG": {
@@ -372,6 +451,30 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
   "ZombieKillReward": 2,
   "HumanDamageRewardThreshold": 600,
   "HumanDamageReward": 1,
+
+  // ── Tryder ─────────────────────────────────────────────────────────────────
+  "TryderHealth": 1000,
+  "TryderArmor":  500,
+  "TryderGlowR":  0,     // Blue glow by default (R=0 G=127 B=255)
+  "TryderGlowG":  127,
+  "TryderGlowB":  255,
+
+  // ── Zombie Madness ──────────────────────────────────────────────────────────
+  "MadnessDuration": 10.0,
+  "MadnessGlowR": 255,   // Red glow by default
+  "MadnessGlowG": 0,
+  "MadnessGlowB": 0,
+
+  // ── Knife Blink ─────────────────────────────────────────────────────────────
+  "KnifeBlinkCharges":  3,
+  "KnifeBlinkDistance": 300.0,  // Max blink distance in units (trace stops at walls)
+  "KnifeBlinkCooldown": 2.0,
+
+  // ── Jetpack ──────────────────────────────────────────────────────────────────
+  "JetpackMaxFuel":         250.0,
+  "JetpackThrustForce":     350.0,
+  "JetpackHorizontalForce": 300.0,
+  "JetpackFuelConsumeRate":  30.0,
 
   "Items": [
     { "Key": "armor",            "Price": 3,  "Team": "Human"  },
@@ -386,11 +489,14 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
     { "Key": "jetpack",          "Price": 10, "Team": "Human"  },
     { "Key": "laser_mine",       "Price": 6,  "Team": "Human"  },
     { "Key": "revive_token",     "Price": 8,  "Team": "Human"  },
+    { "Key": "tryder",           "Price": 15, "Team": "Human"  },
+    { "Key": "unlimited_clip",   "Price": 8,  "Team": "Human"  },
+    { "Key": "no_recoil",        "Price": 6,  "Team": "Human"  },
     { "Key": "buy_survivor",     "Price": 20, "Team": "Human",  "Enable": true },
     { "Key": "buy_sniper",       "Price": 15, "Team": "Human",  "Enable": true },
-    { "Key": "antidote",         "Price": 8,  "Team": "Zombie" },
-    { "Key": "zombie_madness",   "Price": 6,  "Team": "Zombie" },
-    { "Key": "t_virus_grenade",  "Price": 6,  "Team": "Zombie" },
+    { "Key": "antidote",         "Price": 8,  "Team": "Zombie", "PurchaseLimit": 3 },
+    { "Key": "zombie_madness",   "Price": 6,  "Team": "Zombie", "PurchaseLimit": 5 },
+    { "Key": "t_virus_grenade",  "Price": 6,  "Team": "Zombie", "PurchaseLimit": 3 },
     { "Key": "buy_nemesis",      "Price": 20, "Team": "Zombie", "Enable": true },
     { "Key": "buy_assassin",     "Price": 15, "Team": "Zombie", "Enable": true }
   ]

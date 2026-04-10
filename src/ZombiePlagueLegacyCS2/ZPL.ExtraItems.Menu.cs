@@ -467,15 +467,18 @@ public class ZPLExtraItemsMenu
             return;
         }
 
-        float duration = _extraItemsCFG.CurrentValue.MadnessDuration;
+        var cfg = _extraItemsCFG.CurrentValue;
+        float duration = cfg.MadnessDuration;
         _globals.ZombieMadnessActive[playerId] = true;
 
+        _helpers.SetGlow(player, cfg.MadnessGlowR, cfg.MadnessGlowG, cfg.MadnessGlowB, 255);
         _helpers.SendChatT(player, "ExtraItemsMadnessSuccess", duration, remainingAP);
 
         _core.Scheduler.DelayBySeconds(duration, () =>
         {
             if (!player.IsValid) return;
             _globals.ZombieMadnessActive[playerId] = false;
+            _helpers.RemoveGlow(player);
             _helpers.SendChatT(player, "ExtraItemsMadnessEnd");
         });
     }
@@ -819,9 +822,12 @@ public class ZPLExtraItemsMenu
         var origin = pawn.AbsOrigin;
         if (origin == null) return;
 
-        // Compute destination: eye forward direction * distance
+        var eyePos = pawn.EyePosition;
+        if (eyePos == null) return;
+
+        // Compute destination: trace forward from eye position to stop at solid geometry
         QAngle eyeAngles = pawn.EyeAngles;
-        float yawRad = eyeAngles.Y * MathF.PI / 180f;
+        float yawRad   = eyeAngles.Y * MathF.PI / 180f;
         float pitchRad = eyeAngles.X * MathF.PI / 180f;
 
         float cosPitch = MathF.Cos(pitchRad);
@@ -829,10 +835,30 @@ public class ZPLExtraItemsMenu
         float fwdY = cosPitch * MathF.Sin(yawRad);
         float fwdZ = -MathF.Sin(pitchRad);
 
+        var traceStart = new Vector(eyePos.Value.X, eyePos.Value.Y, eyePos.Value.Z);
+        var traceEnd   = traceStart + new Vector(fwdX, fwdY, fwdZ) * cfg.KnifeBlinkDistance;
+
+        var blinkTrace = new CGameTrace();
+        _core.Trace.SimpleTrace(
+            traceStart, traceEnd,
+            RayType_t.RAY_TYPE_LINE,
+            RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic,
+            MaskTrace.Solid,
+            MaskTrace.Empty, MaskTrace.Empty,
+            CollisionGroup.Player,
+            ref blinkTrace, pawn);
+
+        // If trace hit geometry, step back 20 units from the wall; otherwise use full distance
+        float safeDist = (blinkTrace.DidHit && blinkTrace.Fraction < 1.0f)
+            ? MathF.Max(0f, blinkTrace.Fraction * cfg.KnifeBlinkDistance - 20f)
+            : cfg.KnifeBlinkDistance;
+
+        // Convert from eye-space back to feet-space destination
+        float eyeHeight = eyePos.Value.Z - origin.Value.Z;
         var dest = new Vector(
-            origin.Value.X + fwdX * cfg.KnifeBlinkDistance,
-            origin.Value.Y + fwdY * cfg.KnifeBlinkDistance,
-            origin.Value.Z + fwdZ * cfg.KnifeBlinkDistance
+            traceStart.X + fwdX * safeDist,
+            traceStart.Y + fwdY * safeDist,
+            traceStart.Z + fwdZ * safeDist - eyeHeight
         );
 
         pawn.Teleport(dest, eyeAngles, Vector.Zero);

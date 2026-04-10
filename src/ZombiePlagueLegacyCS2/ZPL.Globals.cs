@@ -157,6 +157,10 @@ public class ZPLGlobals
     public Dictionary<ulong, Dictionary<string, HashSet<uint>>> PlayerMineCounts = new();
     /// <summary>Beam entity handle Raw for each mine, keyed by mine entity handle Raw.</summary>
     public Dictionary<uint, uint> MineBeam = new();
+    /// <summary>Current HP for mines that have a MineHealth > 0, keyed by mine entity handle Raw.</summary>
+    public Dictionary<uint, int> MineCurrentHP = new();
+    /// <summary>PlayerID of the mine's owner, keyed by mine entity handle Raw.</summary>
+    public Dictionary<uint, int> MineOwnerPlayerID = new();
 
     // ── Revive Token ──────────────────────────────────────────────────────────
     /// <summary>True if the player has an active revive token that will trigger on death.</summary>
@@ -235,5 +239,11 @@ public class MineData
     public string LaserOpenSound      { get; set; } = string.Empty;
     public string LaserTouchSound     { get; set; } = string.Empty;
     public float  ModelAngleFix       { get; set; }
+    /// <summary>Maximum HP for this mine (0 = invincible).</summary>
+    public int    MineHealth          { get; set; }
+    /// <summary>Damage per zombie knife swing that lands within ZombieAttackRange.</summary>
+    public int    ZombieAttackDamage  { get; set; }
+    /// <summary>World position where this mine was planted (set after NextWorldUpdate teleport).</summary>
+    public Vector SpawnOrigin         { get; set; }
 }
 

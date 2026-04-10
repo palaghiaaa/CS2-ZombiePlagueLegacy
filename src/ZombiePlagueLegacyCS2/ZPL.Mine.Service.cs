@@ -137,10 +137,17 @@ public class ZPLMineService
                 LaserOpenSound      = mineConfig.LaserOpenSound,
                 LaserTouchSound     = mineConfig.LaserTouchSound,
                 ModelAngleFix       = mineConfig.ModelAngleFix,
+                MineHealth          = mineConfig.MineHealth,
+                ZombieAttackDamage  = mineConfig.ZombieAttackDamage,
             };
 
             _globals.MineData[mineHandle.Raw] = mineData;
             mineSet.Add(mineHandle.Raw);
+
+            // ── HP + owner tracking ───────────────────────────────────────────
+            _globals.MineOwnerPlayerID[mineHandle.Raw] = player.PlayerID;
+            if (mineConfig.MineHealth > 0)
+                _globals.MineCurrentHP[mineHandle.Raw] = mineConfig.MineHealth;
 
             // ── Configure entity properties and position (must run in world update) ──
             var endPos = trace.EndPos;
@@ -159,6 +166,8 @@ public class ZPLMineService
                         t?.Cancel();
                         _globals.MineThink.Remove(mineHandle.Raw);
                     }
+                    _globals.MineCurrentHP.Remove(mineHandle.Raw);
+                    _globals.MineOwnerPlayerID.Remove(mineHandle.Raw);
                     _globals.MineData.Remove(mineHandle.Raw);
                     mineSet.Remove(mineHandle.Raw);
                     ent.AcceptInput("Kill", 0);
@@ -175,6 +184,7 @@ public class ZPLMineService
                 ent.MoveType  = MoveType_t.MOVETYPE_NONE;
                 ent.MoveTypeUpdated();
                 ent.Teleport(endPos, angle, null);
+                mineData.SpawnOrigin = endPos; // store world position for zombie proximity checks
 
                 SetGlow(ent, mineData.GlowColor, mineData.Model, mineData.Team);
             });
@@ -388,6 +398,8 @@ public class ZPLMineService
             _globals.MineThink.Remove(mineHandle.Raw);
         }
 
+        _globals.MineCurrentHP.Remove(mineHandle.Raw);
+        _globals.MineOwnerPlayerID.Remove(mineHandle.Raw);
         _globals.MineData.Remove(mineHandle.Raw);
         _globals.MineBeam.Remove(mineHandle.Raw);
 
@@ -455,6 +467,8 @@ public class ZPLMineService
         _globals.MineData.Clear();
         _globals.MineBeam.Clear();
         _globals.PlayerMineCounts.Clear();
+        _globals.MineCurrentHP.Clear();
+        _globals.MineOwnerPlayerID.Clear();
     }
 
     /// <summary>Kills all mines owned by <paramref name="steamId"/> and updates tracking.</summary>
@@ -472,6 +486,9 @@ public class ZPLMineService
                     task?.Cancel();
                     _globals.MineThink.Remove(raw);
                 }
+
+                _globals.MineCurrentHP.Remove(raw);
+                _globals.MineOwnerPlayerID.Remove(raw);
                 _globals.MineData.Remove(raw);
 
                 // Capture beam raw for closure before removing from dictionary
@@ -500,6 +517,74 @@ public class ZPLMineService
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    //  Mine HP damage handler
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Called by the entity-damage event when a mine entity takes damage.
+    /// Reduces the mine's HP, sends a centre-HUD update to the owner, and
+    /// triggers an explosion when HP reaches 0.
+    /// </summary>
+    public void HandleMineDamage(uint mineRaw, float damage)
+    {
+        if (!_globals.MineCurrentHP.TryGetValue(mineRaw, out int currentHP)) return;
+        if (!_globals.MineData.TryGetValue(mineRaw, out var mineData)) return;
+        if (mineData.MineHealth <= 0) return;
+
+        int newHP = Math.Max(0, currentHP - (int)damage);
+        _globals.MineCurrentHP[mineRaw] = newHP;
+
+        // ── HUD update to mine owner ───────────────────────────────────────────
+        if (_globals.MineOwnerPlayerID.TryGetValue(mineRaw, out int ownerID))
+        {
+            var owner = _core.PlayerManager.GetPlayer(ownerID);
+            if (owner != null && owner.IsValid && !owner.IsFakeClient)
+                owner.SendMessage(MessageType.Center, $"Mine HP: {newHP} / {mineData.MineHealth}");
+        }
+
+        if (newHP > 0) return;
+
+        // ── HP depleted – explode ──────────────────────────────────────────────
+        var mineHandle = new CHandle<CBaseModelEntity>(mineRaw);
+        if (!mineHandle.IsValid) return;
+
+        // Look up the beam (may not exist yet if beam creation delay hasn't fired)
+        if (!_globals.MineBeam.TryGetValue(mineRaw, out uint beamRaw))
+        {
+            // Beam not ready yet – cancel think and kill the mine directly
+            _globals.MineCurrentHP.Remove(mineRaw);
+            _globals.MineOwnerPlayerID.Remove(mineRaw);
+            if (_globals.MineThink.TryGetValue(mineRaw, out var t)) { t?.Cancel(); _globals.MineThink.Remove(mineRaw); }
+            _globals.MineData.Remove(mineRaw);
+            RemoveMineFromAllPlayerCounts(mineRaw);
+            KillMineEntity(mineRaw);
+            return;
+        }
+
+        var beamHandle = new CHandle<CBeam>(beamRaw);
+
+        if (_globals.MineOwnerPlayerID.TryGetValue(mineRaw, out int explosionOwnerID))
+        {
+            var explosionOwner = _core.PlayerManager.GetPlayer(explosionOwnerID);
+            if (explosionOwner != null && explosionOwner.IsValid)
+            {
+                CreateGrenadeAndExplode(explosionOwner, mineHandle, beamHandle, mineData);
+                return;
+            }
+        }
+
+        // Owner gone – clean up manually without spawning grenade
+        _globals.MineCurrentHP.Remove(mineRaw);
+        _globals.MineOwnerPlayerID.Remove(mineRaw);
+        if (_globals.MineThink.TryGetValue(mineRaw, out var task)) { task?.Cancel(); _globals.MineThink.Remove(mineRaw); }
+        _globals.MineData.Remove(mineRaw);
+        _globals.MineBeam.Remove(mineRaw);
+        RemoveMineFromAllPlayerCounts(mineRaw);
+        KillMineEntity(mineRaw);
+        KillBeamEntity(beamRaw);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     //  Config helper
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -521,6 +606,16 @@ public class ZPLMineService
     private void RemoveMineFromPlayerCount(ulong steamId, uint raw)
     {
         if (_globals.PlayerMineCounts.TryGetValue(steamId, out var playerMines))
+        {
+            foreach (var mineSet in playerMines.Values)
+                mineSet.Remove(raw);
+        }
+    }
+
+    /// <summary>Removes a mine handle from every player's mine-count set (used when the owner is unknown).</summary>
+    private void RemoveMineFromAllPlayerCounts(uint raw)
+    {
+        foreach (var playerMines in _globals.PlayerMineCounts.Values)
         {
             foreach (var mineSet in playerMines.Values)
                 mineSet.Remove(raw);

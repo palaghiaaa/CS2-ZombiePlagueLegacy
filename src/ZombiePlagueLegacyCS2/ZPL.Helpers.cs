@@ -398,15 +398,16 @@ public partial class ZPLHelpers
 
         _core.Scheduler.NextWorldUpdate(() =>
         {
+            if (pawn == null || !pawn.IsValid) return;
 
-            modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2));
+            try { modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2)); } catch { }
             modelRelay.SetModel(modelName);
             modelRelay.Spawnflags = 256u;
             modelRelay.Render = new Color(1, 1, 1, 1);
             modelRelay.RenderMode = RenderMode_t.kRenderNone;
             modelRelay.DispatchSpawn();
 
-            modelGlow.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2));
+            try { modelGlow.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= unchecked((uint)~(1 << 2)); } catch { }
             modelGlow.SetModel(modelName);
             modelGlow.Spawnflags = 256u;
             modelGlow.DispatchSpawn();
@@ -415,7 +416,6 @@ public partial class ZPLHelpers
             modelGlow.Glow.GlowTeam = -1;
             modelGlow.Glow.GlowType = 3;
             modelGlow.Glow.GlowRangeMin = 100;
-
 
             modelRelay.AcceptInput("FollowEntity", "!activator", pawn, modelRelay);
             modelGlow.AcceptInput("FollowEntity", "!activator", modelRelay, modelGlow);

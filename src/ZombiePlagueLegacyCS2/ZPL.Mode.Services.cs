@@ -443,7 +443,25 @@ public partial class ZPLServices
             posszombie(player, zombieClass, true);
 
             // Apply mother-zombie HP multiplier (zp_zombie_first_hp equivalent).
-            float hpMulti = _mainCFG.CurrentValue.MotherZombieHPMultiplier;
+            // When player-count scaling is enabled the multiplier is linearly
+            // interpolated between MotherZombieHPMinMultiplier (low pop) and
+            // MotherZombieHPMultiplier (full server), preventing absurdly high
+            // HP values on servers with only 2–4 players.
+            var cfg = _mainCFG.CurrentValue;
+            float hpMulti;
+            if (cfg.MotherZombieHPPlayerScaleEnabled)
+            {
+                int maxP = Math.Max(2, cfg.MotherZombieHPMaxPlayers);
+                int playerCount = Math.Max(1,
+                    _core.PlayerManager.GetAllPlayers().Count(p => p != null && p.IsValid && !p.IsFakeClient));
+                float t = Math.Clamp((playerCount - 1f) / (maxP - 1f), 0f, 1f);
+                hpMulti = cfg.MotherZombieHPMinMultiplier +
+                          t * (cfg.MotherZombieHPMultiplier - cfg.MotherZombieHPMinMultiplier);
+            }
+            else
+            {
+                hpMulti = cfg.MotherZombieHPMultiplier;
+            }
             if (hpMulti > 1.0f)
             {
                 var pawn = player.PlayerPawn;

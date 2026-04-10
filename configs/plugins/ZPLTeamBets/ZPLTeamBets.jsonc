@@ -1,0 +1,29 @@
+{
+  "ZPLTeamBets": {
+
+    // Commands players type in chat to open the bet menu (without ! or /)
+    "BetCommands": [ "bet", "teambets" ],
+
+    // Prefix shown before every ZPLTeamBets chat message
+    "ChatPrefix": "[red][TeamBets][default]",
+
+    // Wallet kind in the Economy plugin — must match ZombiePlagueLegacyCS2's wallet
+    "WalletKind": "ammo",
+
+    // Minimum bet in Ammo Packs
+    "MinBet": 5,
+
+    // Maximum bet in Ammo Packs (0 = unlimited)
+    "MaxBet": 500,
+
+    // Win multiplier: 2.0 means you get back 2× your stake on a correct bet
+    "WinMultiplier": 2.0,
+
+    // How many seconds before freeze-end to lock bets (0 = lock exactly at freeze-end)
+    "BetsLockLeadSeconds": 0.0,
+
+    // Quick-bet presets shown as menu buttons (players can also type !bet 200 humans)
+    "QuickBetAmounts": [ 10, 25, 50, 100, 250 ]
+
+  }
+}

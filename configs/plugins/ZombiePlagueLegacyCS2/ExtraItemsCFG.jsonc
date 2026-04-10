@@ -15,6 +15,9 @@
     "ArmorAmount":                  100,
 
     "MadnessDuration":              10.0,
+    "MadnessGlowR":                 255,
+    "MadnessGlowG":                 0,
+    "MadnessGlowB":                 0,
 
     "MultijumpIncrement":           1,
     "MultijumpMax":                 3,
