@@ -112,7 +112,6 @@ public class ZPLMineMenu
                 _core.Scheduler.NextTick(() =>
                 {
                     if (!clicker.IsValid) return;
-                    if (!_globals.GameStart) return;
                     _globals.IsZombie.TryGetValue(clicker.PlayerID, out bool isZombie);
                     if (isZombie)
                     {
