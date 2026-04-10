@@ -566,21 +566,6 @@ public partial class ZPLServices
             _globals.g_hCountdown?.Cancel();
             _globals.g_hCountdown = null;
 
-            // Guard: if there aren't enough players for infection to start, restart the
-            // round immediately.  Without this check the game would set GameStart = true
-            // but SelectMotherZombie would return early (candidates < MinPlayersForInfection),
-            // leaving every player alive as a human with no win-condition path.  The solo
-            // player would then be stuck until the natural round timer expired.
-            var allPlayers = _core.PlayerManager.GetAllPlayers()
-                .Where(p => p != null && p.IsValid)
-                .ToList();
-            if (allPlayers.Count < _mainCFG.CurrentValue.MinPlayersForInfection)
-            {
-                _helpers.SendCenterToAllT("NotEnoughPlayersRestart");
-                _helpers.restartgame();
-                return;
-            }
-
             _globals.GameStart = true;
 
             if (_api != null)
