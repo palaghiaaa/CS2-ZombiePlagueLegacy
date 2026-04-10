@@ -27,6 +27,14 @@ jobs:
             csproj: src/zpl_rank/ZPLRank.csproj
             output: ZPLRank
             copy_economy: false
+          - name: ZPLFlashlight
+            csproj: src/zpl_flashlight/ZPLFlashlight.csproj
+            output: ZPLFlashlight
+            copy_economy: false
+          - name: ZPLDarkFog
+            csproj: src/zpl_darkfog/ZPLDarkFog.csproj
+            output: ZPLDarkFog
+            copy_economy: false
 
     steps:
       - name: Checkout
