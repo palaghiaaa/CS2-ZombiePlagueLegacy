@@ -844,7 +844,7 @@ public class ZPLExtraItemsMenu
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    //  Jetpack – upward thrust only (no horizontal rocket push)
+    //  Jetpack – omnidirectional thrust (upward + WASD-based horizontal)
     // ─────────────────────────────────────────────────────────────────────────
 
     // Named constants for internal physics values
@@ -880,13 +880,45 @@ public class ZPLExtraItemsMenu
         _globals.JetpackFuel[id] = Math.Max(0f, fuel - fuelUsed);
         _globals.JetpackLastFuelTime[id] = now;
 
-        // Apply upward thrust only – preserve existing horizontal velocity
+        // ── Horizontal thrust from WASD keys relative to eye yaw ──────────────
+        bool wPressed = (player.PressedButtons & GameButtonFlags.W) != 0;
+        bool sPressed = (player.PressedButtons & GameButtonFlags.S) != 0;
+        bool aPressed = (player.PressedButtons & GameButtonFlags.A) != 0;
+        bool dPressed = (player.PressedButtons & GameButtonFlags.D) != 0;
+
         var vel = pawn.AbsVelocity;
+        float newVelX = vel.X;
+        float newVelY = vel.Y;
+
+        if (wPressed || sPressed || aPressed || dPressed)
+        {
+            QAngle eyeAngles = pawn.EyeAngles;
+            float yawRad = eyeAngles.Y * MathF.PI / 180f;
+            float cosYaw = MathF.Cos(yawRad);
+            float sinYaw = MathF.Sin(yawRad);
+
+            // Forward/backward along eye yaw, strafe perpendicular
+            float dirX = 0f, dirY = 0f;
+            if (wPressed) { dirX += cosYaw; dirY += sinYaw; }
+            if (sPressed) { dirX -= cosYaw; dirY -= sinYaw; }
+            if (dPressed) { dirX += sinYaw; dirY -= cosYaw; }
+            if (aPressed) { dirX -= sinYaw; dirY += cosYaw; }
+
+            float mag = MathF.Sqrt(dirX * dirX + dirY * dirY);
+            if (mag > 0.001f)
+            {
+                float hForce = cfg.JetpackHorizontalForce;
+                newVelX = (dirX / mag) * hForce;
+                newVelY = (dirY / mag) * hForce;
+            }
+        }
+
+        // Apply thrust: upward override + horizontal (WASD-driven or preserve existing)
         float force = cfg.JetpackThrustForce;
 
         var newVel = new Vector(
-            vel.X,
-            vel.Y,
+            newVelX,
+            newVelY,
             force  // fixed upward velocity override (counters gravity + lifts)
         );
 

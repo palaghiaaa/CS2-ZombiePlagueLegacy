@@ -25,6 +25,7 @@
 
     "JetpackMaxFuel":               250.0,
     "JetpackThrustForce":           350.0,
+    "JetpackHorizontalForce":       300.0,
     "JetpackFuelConsumeRate":       30.0,
 
     "ReviveTokenRespawnDelay":      1.5,
