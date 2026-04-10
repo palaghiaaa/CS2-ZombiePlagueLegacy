@@ -241,6 +241,16 @@ public partial class ZPLEvents
                 _globals.RoundVoxGroup = _helpers.PickRandomActiveGroup(VoxList);
             }
 
+            // Not enough real players to run an infection round.
+            // Cancel any stale countdown and let the natural round timer expire.
+            if (playerCount < CFG.MinPlayersForInfection)
+            {
+                _globals.g_hCountdown?.Cancel();
+                _globals.g_hCountdown = null;
+                _helpers.SendCenterToAllT("ServerGameWaitingForPlayers");
+                return HookResult.Continue;
+            }
+
             if (CFG.RoundReadyTime > 0)
             {
                 //_logger.LogInformation($"开始倒计时: {CFG.RoundReadyTime}秒");

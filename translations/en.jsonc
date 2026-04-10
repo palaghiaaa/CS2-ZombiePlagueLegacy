@@ -2,6 +2,7 @@
     "ServerInfoHotReload": "Configuration file ZPLMainCFG has been hot reloaded!",
     "ServerGameBegin": "The game will restart in [green]1 second",
     "NotEnoughPlayersRestart": "Not enough players to start infection. Restarting round...",
+    "ServerGameWaitingForPlayers": "Waiting for more players to start the infection...",
     "ServerGameHumanWin": "Humans WIN !!!",
     "ServerGameZombieWin": "Zombies WIN !!!",
     "GameInfoBecomeHero": "Player [green]{0}[default] has become a [green]Hero[default]!!",
