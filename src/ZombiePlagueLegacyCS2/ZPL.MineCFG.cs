@@ -8,6 +8,12 @@ public class ZPLMineCFG
 {
     public List<LaserMine> MineList { get; set; } = new();
 
+    /// <summary>
+    /// Radius in engine units within which a zombie's knife swing damages a mine.
+    /// Increase this if zombies have trouble hitting mines in gameplay.
+    /// </summary>
+    public float ZombieAttackRange { get; set; } = 80f;
+
     public class LaserMine
     {
         /// <summary>Whether this mine type is enabled and visible in the mine menu.</summary>
@@ -61,9 +67,15 @@ public class ZPLMineCFG
         /// <summary>Yaw angle correction in degrees applied to the mine model to fix orientation.</summary>
         public float ModelAngleFix { get; set; } = 90f;
         /// <summary>
-        /// HP pool for this mine. Players can shoot the mine to damage it; when HP reaches 0 it explodes.
-        /// 0 (default) = invincible mine (cannot be destroyed by shooting).
+        /// HP pool for this mine. Zombies can melee-attack the mine to damage it; when HP reaches 0 it explodes.
+        /// 0 (default) = invincible mine (cannot be destroyed by zombies).
         /// </summary>
         public int MineHealth { get; set; } = 0;
+
+        /// <summary>
+        /// Damage dealt to this mine per zombie knife swing that lands within ZombieAttackRange.
+        /// Only applies when MineHealth > 0.
+        /// </summary>
+        public int ZombieAttackDamage { get; set; } = 150;
     }
 }

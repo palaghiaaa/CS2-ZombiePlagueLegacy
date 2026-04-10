@@ -517,6 +517,9 @@
   },
 
   "ZPLMineCFG": {
+    // Radius (engine units) within which a zombie knife swing damages a mine.
+    // Knife melee range in CS2 is ~32–64 units; 80 gives a forgiving but fair hitbox.
+    "ZombieAttackRange": 80.0,
     "MineList": [
       {
         "Enable":               true,
@@ -541,7 +544,9 @@
         "LaserTouchSound":      "n4a_csdm_sentry.elrocket_lghtning",
         "PrecacheSoundEvent":   "soundevents/n4a_csdm_sentry.vsndevts",
         "ModelAngleFix":        90.0,
-        "MineHealth":           0
+        // Zombies need ~3–4 hits to destroy this mine (150 dmg × 4 = 600 > 500)
+        "MineHealth":           500,
+        "ZombieAttackDamage":   150
       },
       {
         "Enable":               true,
@@ -566,7 +571,9 @@
         "LaserTouchSound":      "n4a_csdm_sentry.elrocket_lghtning",
         "PrecacheSoundEvent":   "soundevents/n4a_csdm_sentry.vsndevts",
         "ModelAngleFix":        0.0,
-        "MineHealth":           0
+        // Zombies need ~5 hits to destroy this mine (150 dmg × 5 = 750 ≥ 750)
+        "MineHealth":           750,
+        "ZombieAttackDamage":   150
       }
     ]
   }

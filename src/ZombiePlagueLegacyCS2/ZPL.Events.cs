@@ -1142,7 +1142,6 @@ public partial class ZPLEvents
         _globals.MineBeam.Clear();
         _globals.PlayerMineCounts.Clear();
         _globals.MineCurrentHP.Clear();
-        _globals.MineEntityIndexToHandle.Clear();
         _globals.MineOwnerPlayerID.Clear();
 
         // Clean up light timers
@@ -1210,15 +1209,6 @@ public partial class ZPLEvents
         var victim = @event.Entity;
         if (victim == null || !victim.IsValid)
             return;
-
-        // ── Mine entity damage ─────────────────────────────────────────────────
-        if (_globals.MineEntityIndexToHandle.TryGetValue(victim.Index, out uint mineRaw))
-        {
-            _mineService.HandleMineDamage(mineRaw, @event.Info.Damage);
-            @event.Info.Damage = 0; // absorb; we manage HP ourselves
-            return;
-        }
-        // ──────────────────────────────────────────────────────────────────────
 
         var VictimPawn = victim.As<CCSPlayerPawn>();
         if (VictimPawn == null || !VictimPawn.IsValid)
@@ -1804,8 +1794,16 @@ public partial class ZPLEvents
 
         var Id = player.PlayerID;
         _globals.IsZombie.TryGetValue(Id, out bool IsZombie);
-        if(IsZombie)
+
+        // ── Zombie knife → mine proximity damage ──────────────────────────────
+        if (IsZombie)
+        {
+            var knifeWeapon = pawn.WeaponServices?.ActiveWeapon.Value;
+            if (knifeWeapon?.DesignerName == "weapon_knife" && _globals.MineCurrentHP.Count > 0)
+                CheckZombieMineAttack(player, pawn);
             return HookResult.Continue;
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         _globals.IsSurvivor.TryGetValue(Id, out bool IsSurvivor);
         _globals.IsSniper.TryGetValue(Id, out bool IsSniper);
@@ -1909,6 +1907,33 @@ public partial class ZPLEvents
         _service.RandomSpawnPoint(player, !isZombie);
 
         return HookResult.Continue;
+    }
+
+    /// <summary>
+    /// When a zombie swings their knife, check for any placed mines within melee range.
+    /// Deals ZombieAttackDamage to each mine in range (may trigger explosion when HP → 0).
+    /// </summary>
+    private void CheckZombieMineAttack(IPlayer player, CCSPlayerPawn pawn)
+    {
+        var origin = pawn.AbsOrigin;
+        if (origin == null) return;
+
+        float range   = _mineCFG.CurrentValue.ZombieAttackRange;
+        float rangeSq = range * range;
+
+        foreach (var kvp in _globals.MineCurrentHP)
+        {
+            uint mineRaw = kvp.Key;
+            if (!_globals.MineData.TryGetValue(mineRaw, out var mineData)) continue;
+            if (mineData.MineHealth <= 0 || mineData.ZombieAttackDamage <= 0) continue;
+
+            var sp = mineData.SpawnOrigin;
+            float dx = origin.Value.X - sp.X;
+            float dy = origin.Value.Y - sp.Y;
+            float dz = origin.Value.Z - sp.Z;
+            if (dx * dx + dy * dy + dz * dz <= rangeSq)
+                _mineService.HandleMineDamage(mineRaw, mineData.ZombieAttackDamage);
+        }
     }
 
     private HookResult OnGrenadeThrown(EventGrenadeThrown @event)

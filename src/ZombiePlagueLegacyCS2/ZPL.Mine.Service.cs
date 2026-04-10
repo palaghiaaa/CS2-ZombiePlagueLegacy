@@ -138,7 +138,7 @@ public class ZPLMineService
                 LaserTouchSound     = mineConfig.LaserTouchSound,
                 ModelAngleFix       = mineConfig.ModelAngleFix,
                 MineHealth          = mineConfig.MineHealth,
-                EntityIndex         = mineEntity.Index,
+                ZombieAttackDamage  = mineConfig.ZombieAttackDamage,
             };
 
             _globals.MineData[mineHandle.Raw] = mineData;
@@ -147,10 +147,7 @@ public class ZPLMineService
             // ── HP + owner tracking ───────────────────────────────────────────
             _globals.MineOwnerPlayerID[mineHandle.Raw] = player.PlayerID;
             if (mineConfig.MineHealth > 0)
-            {
-                _globals.MineCurrentHP[mineHandle.Raw]             = mineConfig.MineHealth;
-                _globals.MineEntityIndexToHandle[mineEntity.Index] = mineHandle.Raw;
-            }
+                _globals.MineCurrentHP[mineHandle.Raw] = mineConfig.MineHealth;
 
             // ── Configure entity properties and position (must run in world update) ──
             var endPos = trace.EndPos;
@@ -170,7 +167,6 @@ public class ZPLMineService
                         _globals.MineThink.Remove(mineHandle.Raw);
                     }
                     _globals.MineCurrentHP.Remove(mineHandle.Raw);
-                    _globals.MineEntityIndexToHandle.Remove(mineData.EntityIndex);
                     _globals.MineOwnerPlayerID.Remove(mineHandle.Raw);
                     _globals.MineData.Remove(mineHandle.Raw);
                     mineSet.Remove(mineHandle.Raw);
@@ -188,6 +184,7 @@ public class ZPLMineService
                 ent.MoveType  = MoveType_t.MOVETYPE_NONE;
                 ent.MoveTypeUpdated();
                 ent.Teleport(endPos, angle, null);
+                mineData.SpawnOrigin = endPos; // store world position for zombie proximity checks
 
                 SetGlow(ent, mineData.GlowColor, mineData.Model, mineData.Team);
             });
@@ -403,7 +400,6 @@ public class ZPLMineService
 
         _globals.MineCurrentHP.Remove(mineHandle.Raw);
         _globals.MineOwnerPlayerID.Remove(mineHandle.Raw);
-        _globals.MineEntityIndexToHandle.Remove(mineData.EntityIndex);
         _globals.MineData.Remove(mineHandle.Raw);
         _globals.MineBeam.Remove(mineHandle.Raw);
 
@@ -472,7 +468,6 @@ public class ZPLMineService
         _globals.MineBeam.Clear();
         _globals.PlayerMineCounts.Clear();
         _globals.MineCurrentHP.Clear();
-        _globals.MineEntityIndexToHandle.Clear();
         _globals.MineOwnerPlayerID.Clear();
     }
 
@@ -492,8 +487,6 @@ public class ZPLMineService
                     _globals.MineThink.Remove(raw);
                 }
 
-                if (_globals.MineData.TryGetValue(raw, out var md))
-                    _globals.MineEntityIndexToHandle.Remove(md.EntityIndex);
                 _globals.MineCurrentHP.Remove(raw);
                 _globals.MineOwnerPlayerID.Remove(raw);
                 _globals.MineData.Remove(raw);
@@ -561,7 +554,6 @@ public class ZPLMineService
             // Beam not ready yet – cancel think and kill the mine directly
             _globals.MineCurrentHP.Remove(mineRaw);
             _globals.MineOwnerPlayerID.Remove(mineRaw);
-            _globals.MineEntityIndexToHandle.Remove(mineData.EntityIndex);
             if (_globals.MineThink.TryGetValue(mineRaw, out var t)) { t?.Cancel(); _globals.MineThink.Remove(mineRaw); }
             _globals.MineData.Remove(mineRaw);
             RemoveMineFromAllPlayerCounts(mineRaw);
@@ -584,7 +576,6 @@ public class ZPLMineService
         // Owner gone – clean up manually without spawning grenade
         _globals.MineCurrentHP.Remove(mineRaw);
         _globals.MineOwnerPlayerID.Remove(mineRaw);
-        _globals.MineEntityIndexToHandle.Remove(mineData.EntityIndex);
         if (_globals.MineThink.TryGetValue(mineRaw, out var task)) { task?.Cancel(); _globals.MineThink.Remove(mineRaw); }
         _globals.MineData.Remove(mineRaw);
         _globals.MineBeam.Remove(mineRaw);
