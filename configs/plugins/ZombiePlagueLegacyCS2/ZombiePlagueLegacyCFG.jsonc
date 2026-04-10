@@ -540,7 +540,8 @@
         "LaserOpenSound":       "n4a_csdm_sentry.mine_activate",
         "LaserTouchSound":      "n4a_csdm_sentry.elrocket_lghtning",
         "PrecacheSoundEvent":   "soundevents/n4a_csdm_sentry.vsndevts",
-        "ModelAngleFix":        90.0
+        "ModelAngleFix":        90.0,
+        "MineHealth":           0
       },
       {
         "Enable":               true,
@@ -564,7 +565,8 @@
         "LaserOpenSound":       "n4a_csdm_sentry.mine_activate",
         "LaserTouchSound":      "n4a_csdm_sentry.elrocket_lghtning",
         "PrecacheSoundEvent":   "soundevents/n4a_csdm_sentry.vsndevts",
-        "ModelAngleFix":        0.0
+        "ModelAngleFix":        0.0,
+        "MineHealth":           0
       }
     ]
   }
