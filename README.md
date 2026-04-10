@@ -68,7 +68,7 @@
 </tr>
 <tr>
   <td>💣 <strong>Laser Trip Mines</strong></td>
-  <td>Plant beam traps or explosive mines using the <code>!mine</code> menu; optional HP system lets zombies shoot mines to destroy them</td>
+  <td>Plant beam traps or explosive mines using the <code>!mine</code> menu; optional HP system lets zombies melee-attack mines to destroy them</td>
 </tr>
 <tr>
   <td>🚀 <strong>Jetpack</strong></td>
@@ -109,11 +109,11 @@
 - Zombie Madness now applies a coloured glow for the duration of the effect and removes it on expiry.
 - Default colour is red (255, 0, 0). Configurable via `MadnessGlowR`, `MadnessGlowG`, `MadnessGlowB` in `ExtraItemsCFG.jsonc`.
 
-**Lasermine HP system + centre HUD**
+**Lasermine HP system + centre HUD (zombie melee)**
 - Each mine type in `ZombiePlagueLegacyCFG.jsonc` now accepts a `MineHealth` field (default `0` = invincible).
-- When `MineHealth > 0`, zombies can shoot the mine to damage it. Each hit shows the owner a live centre-screen HUD: `Mine HP: <current> / <max>`.
+- When `MineHealth > 0`, **zombies can destroy mines by knife-swinging** within `ZombieAttackRange` units (default 80u). Each swing deals `ZombieAttackDamage` (default 150).
+- Each hit shows the mine owner a live centre-screen HUD: `Mine HP: <current> / <max>`.
 - When HP reaches 0 the mine explodes (uses the standard `CreateGrenadeAndExplode` path for `CanExplorer` mines).
-- Damage is absorbed by the plugin — the prop entity's own health counter is not changed.
 
 **Knife Blink — geometry trace (no more out-of-map)**
 - The destination is now computed with a `SimpleTrace` (`MaskTrace.Solid`) from the player's eye position.
@@ -121,8 +121,18 @@
 - The result is converted from eye-space to feet-space so the player lands at ground level regardless of look angle.
 - Blink passes through other players (solid-only mask) — zombies do not block the blink.
 
-**Jetpack omnidirectional thrust**
-- Horizontal thrust now follows the player's eye yaw and WASD keys instead of being vertical-only, giving full directional flight.
+**Mother Zombie HP — player-count scaling**
+- Mother Zombie HP now scales linearly with the number of connected players.
+- At 1–2 players the multiplier equals `MotherZombieHPMinMultiplier` (default 1.0 → no HP bonus).
+- At ≥ `MotherZombieHPMaxPlayers` players (default 20) the full `MotherZombieHPMultiplier` (default 2.5) applies.
+- Prevents 50 000 HP mother zombies on 2–4 player servers. Disable with `MotherZombieHPPlayerScaleEnabled: false`.
+
+**ZPLTeamBets — new standalone plugin**
+- New plugin `zpl_teambets` lets players bet **Ammo Packs** on Humans or Zombies winning the round.
+- Bets open at `EventRoundStart` and lock at `EventRoundFreezeEnd`.
+- Commands: `!bet` (opens menu) or `!bet <amount> <humans|zombies>` (direct).
+- Configurable: `QuickBetAmounts`, `MinBet`, `MaxBet`, `WinMultiplier`, `BetCommands`.
+- Uses Economy API (same wallet as main plugin). Full lifecycle cleanup.
 
 ---
 
@@ -246,7 +256,7 @@ Open with `!zextra` or via the main menu (`!zmenu`). Everything is purchased wit
 | 🦘 **Multi-Jump** | 4 AP | +1 extra jump (stackable) |
 | 🗡️ **Knife Blink** | 5 AP | 3 charges — blink forward on knife swing; stops at walls |
 | 🚀 **Jetpack** | 10 AP | CTRL+SPACE to fly with WASD directional thrust; fuel resets each round |
-| 💣 **Laser Mine** | 6 AP | Opens mine menu — Tripwire or Explosive; optional HP lets zombies shoot mines |
+| 💣 **Laser Mine** | 6 AP | Opens mine menu — Tripwire or Explosive; optional HP lets zombies melee-attack mines |
 | ❤️ **Revive Token** | 8 AP | Auto-respawn once if you die |
 | 🔵 **Tryder** | 15 AP | Bonus HP + armor + infinite clip + blue glow |
 | ♾️ **Unlimited Clip** | 8 AP | Infinite magazine |
@@ -288,8 +298,8 @@ Open with `!zextra` or via the main menu (`!zmenu`). Everything is purchased wit
 | 🔴 **Explosive Mine** | 10 AP | Explodes on beam cross (radius 360 u, up to 2 600 dmg) | 0 (invincible by default) | 2 per player |
 
 **Mine HP System:**
-- Set `MineHealth` to any positive value in `ZombiePlagueLegacyCFG.jsonc` to make a mine destroyable by shooting.
-- Each bullet hit reduces HP; the mine owner sees a live centre-screen HUD: **`Mine HP: <current> / <max>`**.
+- Set `MineHealth` to any positive value in `ZombiePlagueLegacyCFG.jsonc` to make a mine destroyable by zombie **knife melee** attacks.
+- Each knife swing within `ZombieAttackRange` (default 80 units) reduces HP by `ZombieAttackDamage`; the mine owner sees a live centre-screen HUD: **`Mine HP: <current> / <max>`**.
 - At 0 HP the mine explodes using the standard explosion path (same effect as a beam trigger on an Explosive Mine).
 - Default `0` keeps the original invincible behaviour.
 
@@ -411,7 +421,8 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
       "LaserRate": 0.1,  "LaserDamage": 10.0,  "LaserKnockBack": 100.0,
       "GlowColor": "0,255,0,255",  "LaserColor": "0,0,255,255",
       "ModelAngleFix": 90.0,
-      "MineHealth": 0           // 0 = invincible; set > 0 to allow shooting mines
+      "MineHealth": 500,        // HP for zombie melee attacks; 0 = invincible
+      "ZombieAttackDamage": 150 // damage per zombie knife swing within ZombieAttackRange
     },
     {
       "Name": "Explosive Mine",
@@ -420,13 +431,14 @@ Ammo Packs (AP) are the in-game currency for the Extra Items shop. All balances 
       "ExplorerRadius": 360,  "ExplorerDamage": 2600,
       "GlowColor": "255,0,0,255",  "LaserColor": "255,0,0,255",
       "ModelAngleFix": 0.0,
-      "MineHealth": 0           // 0 = invincible; set > 0 to allow shooting mines
+      "MineHealth": 750,        // HP for zombie melee attacks; 0 = invincible
+      "ZombieAttackDamage": 150 // damage per zombie knife swing within ZombieAttackRange
     }
   ]
 }
 ```
 
-> **`MineHealth`** — when > 0, zombies can shoot the mine to damage it. The owner receives a live centre-screen HP readout on every hit. At 0 HP the mine explodes.
+> **`MineHealth`** — when > 0, zombies can **melee attack** (knife swing) the mine within `ZombieAttackRange` units. Each hit deals `ZombieAttackDamage` and shows the owner a live centre-screen HP readout. At 0 HP the mine explodes.
 
 </details>
 

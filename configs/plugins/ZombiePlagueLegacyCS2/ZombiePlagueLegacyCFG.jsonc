@@ -157,7 +157,13 @@
 
     "EnableWeaponNoRecoil":      true,
 
-    "MotherZombieHPMultiplier":  2.5,
+    "MotherZombieHPMultiplier":          2.5,
+    // Scale mother zombie HP with player count (prevents 50k HP on 2-player servers)
+    "MotherZombieHPPlayerScaleEnabled":  true,
+    // Multiplier at 1 connected player (no bonus HP on empty/near-empty server)
+    "MotherZombieHPMinMultiplier":       1.0,
+    // Player count at which the full MotherZombieHPMultiplier applies
+    "MotherZombieHPMaxPlayers":          20,
 
     "ZombieInfectHealthReward":  500,
 
