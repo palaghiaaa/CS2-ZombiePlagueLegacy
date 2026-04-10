@@ -220,23 +220,6 @@ public partial class ZPLEvents
             }
             _globals.ServerIsEmpty = false;
 
-            // Early MinPlayersForInfection guard: if there aren't enough players, skip
-            // the full countdown and restart immediately with a message. Without this
-            // the 22-second countdown runs to completion before the round restarts,
-            // which is confusing for a solo player or near-empty server.
-            {
-                int minPlayers = _mainCFG.CurrentValue.MinPlayersForInfection;
-                var earlyPlayerList = _core.PlayerManager.GetAllPlayers()
-                    .Where(p => p != null && p.IsValid)
-                    .ToList();
-                if (earlyPlayerList.Count < minPlayers)
-                {
-                    _helpers.SendCenterToAllT("NotEnoughPlayersRestart");
-                    _core.Scheduler.DelayBySeconds(3.0f, () => _helpers.restartgame());
-                    return HookResult.Continue;
-                }
-            }
-
             var CFG = _mainCFG.CurrentValue;
             var VoxCFG = _voxCFG.CurrentValue;
             var VoxList = VoxCFG.VoxList;
