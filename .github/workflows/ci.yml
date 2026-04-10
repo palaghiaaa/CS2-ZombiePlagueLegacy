@@ -19,18 +19,26 @@ jobs:
             csproj: src/ZombiePlagueLegacyCS2/ZombiePlagueLegacyCS2.csproj
             output: ZombiePlagueLegacyCS2
             copy_economy: true
+            copy_cookies: true
+            copy_zpl_api: false
           - name: ZPLVIP
             csproj: src/zpl_vip/ZPLVIP.csproj
             output: ZPLVIP
             copy_economy: true
+            copy_cookies: false
+            copy_zpl_api: true
           - name: ZPLRank
             csproj: src/zpl_rank/ZPLRank.csproj
             output: ZPLRank
             copy_economy: false
+            copy_cookies: false
+            copy_zpl_api: true
           - name: ZPLFlashlight
             csproj: src/zpl_flashlight/ZPLFlashlight.csproj
             output: ZPLFlashlight
             copy_economy: false
+            copy_cookies: false
+            copy_zpl_api: true
           - name: ZPLDarkFog
             csproj: src/zpl_darkfog/ZPLDarkFog.csproj
             output: ZPLDarkFog
@@ -62,6 +70,16 @@ jobs:
       - name: Copy Economy contract
         if: matrix.copy_economy
         run: cp src/ZombiePlagueLegacyCS2/lib/Economy.Contract.dll ${{ matrix.output }}/
+
+      - name: Copy Cookies contract
+        if: matrix.copy_cookies
+        run: cp src/ZombiePlagueLegacyCS2/lib/Cookies.Contract.dll ${{ matrix.output }}/
+
+      - name: Copy ZPL API contract
+        if: matrix.copy_zpl_api
+        run: |
+          dotnet build src/IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj -c Release -o /tmp/zplapi
+          cp /tmp/zplapi/ZombiePlagueLegacyAPI.dll ${{ matrix.output }}/
 
       - name: Package artifact
         run: zip -r ${{ matrix.name }}-net10.0.zip ${{ matrix.output }}

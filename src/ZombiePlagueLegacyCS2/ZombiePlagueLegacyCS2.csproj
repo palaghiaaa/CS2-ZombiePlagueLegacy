@@ -23,6 +23,10 @@
 			<HintPath>lib/Economy.Contract.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="Cookies.Contract">
+			<HintPath>lib/Cookies.Contract.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="../../translations/**/*">

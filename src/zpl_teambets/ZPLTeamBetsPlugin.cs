@@ -148,7 +148,7 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         _activeBets.Clear();
         _betsOpen = true;
-        BroadcastChat(T("BetsOpenAnnounce", _config.BetCommands.FirstOrDefault() ?? "bet"));
+        BroadcastChatT("BetsOpenAnnounce", _config.BetCommands.FirstOrDefault() ?? "bet");
         return HookResult.Continue;
     }
 
@@ -156,7 +156,7 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         _betsOpen = false;
         if (_activeBets.Count > 0)
-            BroadcastChat(T("BetsLocked", _activeBets.Count));
+            BroadcastChatT("BetsLocked", _activeBets.Count);
         return HookResult.Continue;
     }
 
@@ -190,21 +190,27 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 {
                     winnersCount++;
                     totalPaid += payout;
-                    SendChat(player, T("BetWon", amount, payout));
+                    SendChatT(player, "BetWon", amount, payout);
                 }
             }
             else
             {
-                SendChat(player, T("BetLost", amount));
+                SendChatT(player, "BetLost", amount);
             }
         }
 
         _activeBets.Clear();
 
         if (winnersCount > 0)
-            BroadcastChat(T("RoundEndSummary",
-                winningSide == BetSide.Humans ? T("TeamHumans") : T("TeamZombies"),
-                winnersCount, totalPaid));
+        {
+            string teamKey = winningSide == BetSide.Humans ? "TeamHumans" : "TeamZombies";
+            foreach (var p in Core.PlayerManager.GetAllPlayers())
+            {
+                if (p == null || !p.IsValid || p.IsFakeClient) continue;
+                string teamName = T(p, teamKey);
+                p.SendMessage(MessageType.Chat, $" {_config.ChatPrefix} {T(p, "RoundEndSummary", teamName, winnersCount, totalPaid)}");
+            }
+        }
 
         return HookResult.Continue;
     }
@@ -228,7 +234,7 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         if (_economyApi == null)
         {
-            SendChat(caller, T("EconomyOffline"));
+            SendChatT(caller, "EconomyOffline");
             return;
         }
 
@@ -239,7 +245,7 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             if (!int.TryParse(args[0], out int amount))
             {
-                SendChat(caller, T("InvalidAmount"));
+                SendChatT(caller, "InvalidAmount");
                 return;
             }
 
@@ -250,7 +256,7 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
             if (!side.HasValue)
             {
-                SendChat(caller, T("InvalidSide"));
+                SendChatT(caller, "InvalidSide");
                 return;
             }
 
@@ -268,21 +274,21 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         if (!_betsOpen)
         {
-            SendChat(player, T("BetsClosed"));
+            SendChatT(player, "BetsClosed");
             return;
         }
 
         if (_activeBets.TryGetValue(player.PlayerID, out var existing))
         {
-            SendChat(player, T("AlreadyBet",
-                existing.Side == BetSide.Humans ? T("TeamHumans") : T("TeamZombies"),
-                existing.Amount));
+            SendChatT(player, "AlreadyBet",
+                existing.Side == BetSide.Humans ? T(player, "TeamHumans") : T(player, "TeamZombies"),
+                existing.Amount);
             return;
         }
 
         var menuCfg = new MenuConfiguration
         {
-            Title           = T("MenuTitle"),
+            Title           = T(player, "MenuTitle"),
             FreezePlayer    = false,
             MaxVisibleItems = 6,
             PlaySound       = false,
@@ -294,13 +300,13 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
         // Build a button for each side × quick-bet amount combination
         foreach (var side in new[] { BetSide.Humans, BetSide.Zombies })
         {
-            string sideLabel = side == BetSide.Humans ? T("TeamHumans") : T("TeamZombies");
+            string sideLabel = side == BetSide.Humans ? T(player, "TeamHumans") : T(player, "TeamZombies");
             foreach (int preset in _config.QuickBetAmounts)
             {
                 int capturedAmount = preset;
                 BetSide capturedSide = side;
 
-                var btn = new ButtonMenuOption(T("MenuBetEntry", sideLabel, capturedAmount))
+                var btn = new ButtonMenuOption(T(player, "MenuBetEntry", sideLabel, capturedAmount))
                 {
                     TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
                     CloseAfterClick = true,
@@ -327,44 +333,44 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         if (!_betsOpen)
         {
-            SendChat(player, T("BetsClosed"));
+            SendChatT(player, "BetsClosed");
             return;
         }
 
         if (_activeBets.ContainsKey(player.PlayerID))
         {
-            SendChat(player, T("AlreadyBetShort"));
+            SendChatT(player, "AlreadyBetShort");
             return;
         }
 
         if (amount < _config.MinBet)
         {
-            SendChat(player, T("BetTooSmall", _config.MinBet));
+            SendChatT(player, "BetTooSmall", _config.MinBet);
             return;
         }
 
         if (_config.MaxBet > 0 && amount > _config.MaxBet)
         {
-            SendChat(player, T("BetTooBig", _config.MaxBet));
+            SendChatT(player, "BetTooBig", _config.MaxBet);
             return;
         }
 
         int balance = GetBalance(player);
         if (balance < amount)
         {
-            SendChat(player, T("NotEnoughAP", balance, amount));
+            SendChatT(player, "NotEnoughAP", balance, amount);
             return;
         }
 
         if (!TrySpendBalance(player, amount))
         {
-            SendChat(player, T("EconomyOffline"));
+            SendChatT(player, "EconomyOffline");
             return;
         }
 
         _activeBets[player.PlayerID] = (side, amount);
-        string sideLabel = side == BetSide.Humans ? T("TeamHumans") : T("TeamZombies");
-        SendChat(player, T("BetPlaced", amount, sideLabel));
+        string sideLabel = side == BetSide.Humans ? T(player, "TeamHumans") : T(player, "TeamZombies");
+        SendChatT(player, "BetPlaced", amount, sideLabel);
     }
 
     // ── Economy helpers ───────────────────────────────────────────────────────
@@ -381,9 +387,9 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
         if (_economyApi == null) return false;
         try
         {
-            int bal = GetBalance(player);
-            _economyApi.SetPlayerBalance(player, _config.WalletKind, Math.Max(0, bal - amount));
-            _economyApi.SaveData(player);
+            if (!_economyApi.HasSufficientFunds(player, _config.WalletKind, amount))
+                return false;
+            _economyApi.SubtractPlayerBalance(player, _config.WalletKind, amount);
             return true;
         }
         catch { return false; }
@@ -395,7 +401,6 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
         try
         {
             _economyApi.AddPlayerBalance(player, _config.WalletKind, amount);
-            _economyApi.SaveData(player);
             return true;
         }
         catch { return false; }
@@ -403,25 +408,21 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     // ── Chat / translation helpers ────────────────────────────────────────────
 
-    private void SendChat(IPlayer player, string msg)
-        => player.SendMessage(MessageType.Chat, $" {_config.ChatPrefix} {msg}");
+    private void SendChatT(IPlayer player, string key, params object[] args)
+        => player.SendMessage(MessageType.Chat, $" {_config.ChatPrefix} {T(player, key, args)}");
 
-    private void BroadcastChat(string msg)
+    private void BroadcastChatT(string key, params object[] args)
     {
         foreach (var p in Core.PlayerManager.GetAllPlayers())
         {
             if (p == null || !p.IsValid || p.IsFakeClient) continue;
-            p.SendMessage(MessageType.Chat, $" {_config.ChatPrefix} {msg}");
+            p.SendMessage(MessageType.Chat, $" {_config.ChatPrefix} {T(p, key, args)}");
         }
     }
 
-    private string T(string key, params object[] args)
+    private string T(IPlayer player, string key, params object[] args)
     {
-        try
-        {
-            var loc = Core.Translation.GetPlayerLocalizer(null!);
-            return args.Length == 0 ? loc[key] : loc[key, args];
-        }
-        catch { return key; }
+        var loc = Core.Translation.GetPlayerLocalizer(player);
+        return args.Length == 0 ? loc[key] : loc[key, args];
     }
 }

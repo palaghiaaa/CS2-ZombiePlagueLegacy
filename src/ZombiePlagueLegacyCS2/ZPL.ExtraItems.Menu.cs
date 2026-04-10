@@ -853,12 +853,25 @@ public class ZPLExtraItemsMenu
             ? MathF.Max(0f, blinkTrace.Fraction * cfg.KnifeBlinkDistance - 20f)
             : cfg.KnifeBlinkDistance;
 
-        // Convert from eye-space back to feet-space destination
+        // Convert from eye-space back to feet-space destination.
+        // When the ray hits a floor-like surface (HitNormal.Z > 0.5), the trace endpoint is
+        // already at the surface; placing feet at that Z prevents teleporting underground.
         float eyeHeight = eyePos.Value.Z - origin.Value.Z;
+        float rawDestZ  = traceStart.Z + fwdZ * safeDist - eyeHeight;
+        float destZ;
+        if (blinkTrace.DidHit && blinkTrace.Fraction < 1.0f && blinkTrace.HitNormal.Z > 0.5f)
+        {
+            // Hit a mostly-horizontal (floor) surface — put feet on the surface
+            destZ = blinkTrace.HitPoint.Z;
+        }
+        else
+        {
+            destZ = rawDestZ;
+        }
         var dest = new Vector(
             traceStart.X + fwdX * safeDist,
             traceStart.Y + fwdY * safeDist,
-            traceStart.Z + fwdZ * safeDist - eyeHeight
+            destZ
         );
 
         pawn.Teleport(dest, eyeAngles, Vector.Zero);

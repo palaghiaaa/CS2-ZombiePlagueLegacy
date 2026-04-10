@@ -241,7 +241,6 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         try
         {
             _economyApi.AddPlayerBalance(player, _config.WalletKind, amount);
-            _economyApi.SaveData(player);
             int total = Math.Max(0, (int)_economyApi.GetPlayerBalance(player, _config.WalletKind));
             SendChat(player, T(player, "VipApReward", amount, total));
         }
