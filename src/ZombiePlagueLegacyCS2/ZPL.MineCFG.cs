@@ -60,5 +60,10 @@ public class ZPLMineCFG
         public string PrecacheSoundEvent { get; set; } = string.Empty;
         /// <summary>Yaw angle correction in degrees applied to the mine model to fix orientation.</summary>
         public float ModelAngleFix { get; set; } = 90f;
+        /// <summary>
+        /// HP pool for this mine. Players can shoot the mine to damage it; when HP reaches 0 it explodes.
+        /// 0 (default) = invincible mine (cannot be destroyed by shooting).
+        /// </summary>
+        public int MineHealth { get; set; } = 0;
     }
 }

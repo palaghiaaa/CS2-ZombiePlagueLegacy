@@ -1141,6 +1141,9 @@ public partial class ZPLEvents
         _globals.MineData.Clear();
         _globals.MineBeam.Clear();
         _globals.PlayerMineCounts.Clear();
+        _globals.MineCurrentHP.Clear();
+        _globals.MineEntityIndexToHandle.Clear();
+        _globals.MineOwnerPlayerID.Clear();
 
         // Clean up light timers
         foreach (var timer in _globals.lightTimers.Values)
@@ -1207,6 +1210,15 @@ public partial class ZPLEvents
         var victim = @event.Entity;
         if (victim == null || !victim.IsValid)
             return;
+
+        // ── Mine entity damage ─────────────────────────────────────────────────
+        if (_globals.MineEntityIndexToHandle.TryGetValue(victim.Index, out uint mineRaw))
+        {
+            _mineService.HandleMineDamage(mineRaw, @event.Info.Damage);
+            @event.Info.Damage = 0; // absorb; we manage HP ourselves
+            return;
+        }
+        // ──────────────────────────────────────────────────────────────────────
 
         var VictimPawn = victim.As<CCSPlayerPawn>();
         if (VictimPawn == null || !VictimPawn.IsValid)
