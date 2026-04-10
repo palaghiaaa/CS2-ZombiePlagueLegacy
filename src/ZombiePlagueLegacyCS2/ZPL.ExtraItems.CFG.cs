@@ -66,6 +66,8 @@ public class ZPLExtraItemsCFG
     public float JetpackMaxFuel { get; set; } = 250f;
     /// <summary>Upward thrust velocity applied each second while flying (units/s).</summary>
     public float JetpackThrustForce { get; set; } = 350f;
+    /// <summary>Horizontal thrust velocity applied in the WASD movement direction while flying (units/s; default 300).</summary>
+    public float JetpackHorizontalForce { get; set; } = 300f;
     /// <summary>Fuel units consumed per second while flying.</summary>
     public float JetpackFuelConsumeRate { get; set; } = 30f;
 
