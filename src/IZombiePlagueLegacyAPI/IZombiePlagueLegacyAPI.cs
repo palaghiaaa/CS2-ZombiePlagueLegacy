@@ -460,24 +460,6 @@ public interface IZombiePlagueLegacyAPI
     /// </summary>
     event Action<ulong, string?>? ZPL_OnPreferenceChanged;
 
-    // ── Ammo Packs helpers (safe, cache-backed, no Economy DB calls) ──────────
 
-    /// <summary>
-    /// Returns the cached Ammo Pack balance for the given player slot.<br/>
-    /// Safe to call at any time – reads from the local cache, never hits the Economy DB.
-    /// </summary>
-    int ZPL_GetAmmoPacks(int playerId);
 
-    /// <summary>
-    /// Adds <paramref name="amount"/> Ammo Packs to the player's balance.<br/>
-    /// Uses the internal cache; never calls Economy.SaveData, avoiding the Dommel SIGSEGV.
-    /// </summary>
-    void ZPL_AddAmmoPacks(int playerId, int amount);
-
-    /// <summary>
-    /// Deducts <paramref name="cost"/> Ammo Packs from the player's balance.<br/>
-    /// Returns <c>true</c> on success, <c>false</c> if the player has insufficient funds
-    /// or the Economy service is unavailable.
-    /// </summary>
-    bool ZPL_SpendAmmoPacks(int playerId, int cost);
 }

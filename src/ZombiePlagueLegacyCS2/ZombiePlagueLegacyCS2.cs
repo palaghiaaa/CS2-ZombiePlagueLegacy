@@ -243,8 +243,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
             ServiceProvider.GetRequiredService<PlayerZombieState>(),
             ServiceProvider.GetRequiredService<IOptionsMonitor<ZPLZombieClassCFG>>(),
             ServiceProvider.GetRequiredService<IOptionsMonitor<ZPLSpecialClassCFG>>(),
-            ServiceProvider.GetRequiredService<ZPLGameMode>(),
-            ServiceProvider.GetRequiredService<AmmoPacksService>()
+            ServiceProvider.GetRequiredService<ZPLGameMode>()
         );
 
         _Globals = ServiceProvider.GetRequiredService<ZPLGlobals>();

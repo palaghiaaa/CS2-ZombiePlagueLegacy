@@ -377,24 +377,30 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     private int GetBalance(IPlayer player)
     {
-        if (_zplApi == null) return 0;
-        try { return _zplApi.ZPL_GetAmmoPacks(player.PlayerID); }
+        if (_economyApi == null) return 0;
+        try { return Math.Max(0, (int)_economyApi.GetPlayerBalance(player, _config.WalletKind)); }
         catch { return 0; }
     }
 
     private bool TrySpendBalance(IPlayer player, int amount)
     {
-        if (_zplApi == null) return false;
-        try { return _zplApi.ZPL_SpendAmmoPacks(player.PlayerID, amount); }
+        if (_economyApi == null) return false;
+        try
+        {
+            if (!_economyApi.HasSufficientFunds(player, _config.WalletKind, amount))
+                return false;
+            _economyApi.SubtractPlayerBalance(player, _config.WalletKind, amount);
+            return true;
+        }
         catch { return false; }
     }
 
     private bool TryAddBalance(IPlayer player, int amount)
     {
-        if (_zplApi == null) return false;
+        if (_economyApi == null) return false;
         try
         {
-            _zplApi.ZPL_AddAmmoPacks(player.PlayerID, amount);
+            _economyApi.AddPlayerBalance(player, _config.WalletKind, amount);
             return true;
         }
         catch { return false; }

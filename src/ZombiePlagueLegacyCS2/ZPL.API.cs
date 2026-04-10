@@ -26,7 +26,6 @@ public partial class ZombiePlagueLegacyAPI : IZombiePlagueLegacyAPI, IDisposable
     private IOptionsMonitor<ZPLZombieClassCFG> _zombieClassCFG = null!;
     private IOptionsMonitor<ZPLSpecialClassCFG> _specialClassCFG = null!;
     private ZPLGameMode _gameMode = null!;
-    private AmmoPacksService? _ammoPacksService;
 
     private void ThrowIfDisposed()
     {
@@ -41,8 +40,7 @@ public partial class ZombiePlagueLegacyAPI : IZombiePlagueLegacyAPI, IDisposable
         IOptionsMonitor<ZPLMainCFG> mainCFG, PlayerZombieState zombieState,
         IOptionsMonitor<ZPLZombieClassCFG> zombieClassCFG,
         IOptionsMonitor<ZPLSpecialClassCFG> specialClassCFG,
-        ZPLGameMode gameMode,
-        AmmoPacksService ammoPacksService)
+        ZPLGameMode gameMode)
     {
         _core = core;
         _logger = logger;
@@ -54,7 +52,6 @@ public partial class ZombiePlagueLegacyAPI : IZombiePlagueLegacyAPI, IDisposable
         _zombieClassCFG = zombieClassCFG;
         _specialClassCFG = specialClassCFG;
         _gameMode = gameMode;
-        _ammoPacksService = ammoPacksService;
     }
 
     public ZombiePlagueLegacyAPI() { 
@@ -664,26 +661,6 @@ public partial class ZombiePlagueLegacyAPI : IZombiePlagueLegacyAPI, IDisposable
             HpRegenHp = zombieClass.Stats.HpRegenHp,
             ModelPath = zombieClass.Models.ModelPath
         };
-    }
-
-    // ── Ammo Packs helpers ────────────────────────────────────────────────────
-
-    public int ZPL_GetAmmoPacks(int playerId)
-    {
-        ThrowIfDisposed();
-        return _ammoPacksService?.GetBalance(playerId) ?? 0;
-    }
-
-    public void ZPL_AddAmmoPacks(int playerId, int amount)
-    {
-        ThrowIfDisposed();
-        _ammoPacksService?.AddBalance(playerId, amount);
-    }
-
-    public bool ZPL_SpendAmmoPacks(int playerId, int cost)
-    {
-        ThrowIfDisposed();
-        return _ammoPacksService?.SpendBalance(playerId, cost) ?? false;
     }
 
     public void Dispose()
