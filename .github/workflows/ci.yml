@@ -35,6 +35,10 @@ jobs:
             csproj: src/zpl_darkfog/ZPLDarkFog.csproj
             output: ZPLDarkFog
             copy_economy: false
+          - name: ZPLTeamBets
+            csproj: src/zpl_teambets/ZPLTeamBets.csproj
+            output: ZPLTeamBets
+            copy_economy: false
 
     steps:
       - name: Checkout
