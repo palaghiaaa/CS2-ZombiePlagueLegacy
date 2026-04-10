@@ -14,7 +14,9 @@ public sealed class ZPLDarkFog_Config
 
     public bool HiddenExposureCommandEnabled { get; set; } = true;
 
-    public string HiddenExposureCommandName { get; set; } = "hauhdahsdasd";
+    // Hidden command name — deliberately obscure so it is not discoverable.
+    // Change this to any private string before deploying.
+    public string HiddenExposureCommandName { get; set; } = "zpl_priv_exposure";
 
     public List<ZPLDarkFog_ZombieGroupConfig> ZombieGroups { get; set; } = [];
 }

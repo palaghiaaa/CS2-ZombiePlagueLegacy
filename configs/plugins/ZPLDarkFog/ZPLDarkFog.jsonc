@@ -27,7 +27,7 @@
     "AdminCommandPermission": "admin.dex",
 
     "HiddenExposureCommandEnabled": true,
-    "HiddenExposureCommandName": "hauhdahsdasd",
+    "HiddenExposureCommandName": "zpl_priv_exposure",  // Change this to a private string before deploying
 
     "ZombieGroups": [
       // Example: give a specific zombie class full brightness
