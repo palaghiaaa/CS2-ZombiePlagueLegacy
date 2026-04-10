@@ -236,13 +236,12 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     player ??= Core.PlayerManager.GetPlayer(playerId);
     if (player == null || !player.IsValid) return;
 
-    if (_economyApi != null)
+    if (_zplApi != null)
     {
         try
         {
-            _economyApi.AddPlayerBalance(player, _config.WalletKind, amount);
-            _economyApi.SaveData(player);
-            int total = Math.Max(0, (int)_economyApi.GetPlayerBalance(player, _config.WalletKind));
+            _zplApi.ZPL_AddAmmoPacks(playerId, amount);
+            int total = _zplApi.ZPL_GetAmmoPacks(playerId);
             SendChat(player, T(player, "VipApReward", amount, total));
         }
         catch (Exception ex)
