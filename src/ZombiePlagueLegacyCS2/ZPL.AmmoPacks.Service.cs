@@ -231,8 +231,11 @@ public class AmmoPacksService
         {
             int clamped = Math.Max(0, amount);
             _api.SetPlayerBalance(playerId, WalletKind, clamped);
-            _api.SaveData(playerId);
-            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(playerId, WalletKind));
+            // Do NOT call _api.SaveData() or _api.GetPlayerBalance() here --
+            // both paths invoke Dommel's SqlExpression visitor which causes a
+            // JIT SIGSEGV.  Economy auto-saves on disconnect and fires
+            // OnPlayerBalanceChanged to keep our cache consistent.
+            _balanceCache[playerId] = clamped;
         }
         catch (Exception ex)
         {
@@ -246,8 +249,13 @@ public class AmmoPacksService
         try
         {
             _api.AddPlayerBalance(playerId, WalletKind, amount);
-            _api.SaveData(playerId);
-            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(playerId, WalletKind));
+            // Do NOT call _api.SaveData() or _api.GetPlayerBalance() here --
+            // both paths invoke Dommel's SqlExpression visitor which causes a
+            // JIT SIGSEGV.  Economy auto-saves on disconnect and fires
+            // OnPlayerBalanceChanged to keep our cache consistent.
+            // cur defaults to 0 when the player has no cached entry yet.
+            _balanceCache.TryGetValue(playerId, out int cur);
+            _balanceCache[playerId] = Math.Max(0, cur + amount);
         }
         catch (Exception ex)
         {
@@ -265,8 +273,12 @@ public class AmmoPacksService
                 return false;
 
             _api.SubtractPlayerBalance(playerId, WalletKind, cost);
-            _api.SaveData(playerId);
-            _balanceCache[playerId] = Math.Max(0, (int)_api.GetPlayerBalance(playerId, WalletKind));
+            // Do NOT call _api.SaveData() or _api.GetPlayerBalance() here --
+            // both paths invoke Dommel's SqlExpression visitor which causes a
+            // JIT SIGSEGV.  Economy auto-saves on disconnect and fires
+            // OnPlayerBalanceChanged to keep our cache consistent.
+            _balanceCache.TryGetValue(playerId, out int cur);
+            _balanceCache[playerId] = Math.Max(0, cur - cost);
             return true;
         }
         catch (Exception ex)
