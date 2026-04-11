@@ -34,6 +34,12 @@
       <HintPath>../ZombiePlagueLegacyCS2/lib/Admins.Core.Contract.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!-- Cookies.Contract (deployed alongside Cookies plugin DLL at runtime).
+         Private="false" so the single runtime copy is reused. -->
+    <Reference Include="Cookies.Contract">
+      <HintPath>../ZombiePlagueLegacyCS2/lib/Cookies.Contract.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <!-- Bundle the plugin's own translation files -->

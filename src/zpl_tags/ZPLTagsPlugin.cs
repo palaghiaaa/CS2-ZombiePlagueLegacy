@@ -1,4 +1,5 @@
 using Admins.Core.Contract;
+using Cookies.Contract;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -32,8 +33,9 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private ServiceProvider?              _sp;
 
     // Shared interfaces — both are optional; the plugin degrades gracefully.
-    private ITagApi?        _tagsApi;
-    private IAdminsManager? _adminsManager;
+    private ITagApi?              _tagsApi;
+    private IAdminsManager?       _adminsManager;
+    private IPlayerCookiesAPIv1?  _cookiesApi;
 
     // SteamID64 → ALL eligible GroupTagEntry items, sorted desc by Priority.
     private readonly Dictionary<ulong, List<GroupTagEntry>> _eligibleTags = new();
@@ -47,8 +49,10 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private CancellationTokenSource? _refreshCts;
 
     // Must be shorter than cs2-tags' 1 s revalidation to avoid score-tag flicker.
-    private const float ScoreTagRefreshInterval = 0.8f;
-    private const string ConfigFile = "ZPLTagsCFG.jsonc";
+    private const float  ScoreTagRefreshInterval = 0.8f;
+    private const string ConfigFile              = "ZPLTagsCFG.jsonc";
+    private const string CookieKey               = "zpltags.selected";
+    private const string NullTagSentinel         = "__none__";
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -142,6 +146,25 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
             _logger?.LogInformation("[ZPLTags] Admins API not found – group-based tag matching disabled (permission-only mode).");
         }
 
+        // ── Cookies plugin (optional) ─────────────────────────────────────────
+        if (interfaceManager.HasSharedInterface("Cookies.Player.v1"))
+        {
+            try
+            {
+                _cookiesApi = interfaceManager.GetSharedInterface<IPlayerCookiesAPIv1>("Cookies.Player.v1");
+                if (_cookiesApi != null)
+                    _logger?.LogInformation("[ZPLTags] Connected to Cookies API – tag selections will persist across sessions.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger?.LogWarning("[ZPLTags] Cookies API unavailable: {Error}", ex.Message);
+            }
+        }
+        else
+        {
+            _logger?.LogInformation("[ZPLTags] Cookies API not found – tag selections will not persist across sessions.");
+        }
+
         Core.Scheduler.NextWorldUpdate(RebuildAllPlayers);
     }
 
@@ -168,6 +191,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
             _adminsManager.OnAdminLoad -= OnAdminLoad;
             _adminsManager = null;
         }
+
+        _cookiesApi = null;
 
         Core.Event.OnClientConnected    -= OnClientConnected;
         Core.Event.OnClientDisconnected -= OnClientDisconnected;
@@ -245,6 +270,37 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         _tagsApi.SetAttribute(player, TagType.ScoreTag, score);
     }
 
+    // ── Cookie helpers ────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns the composite cookie value for <paramref name="entry"/>.
+    /// Used as the persistent key stored in the Cookies plugin.
+    /// </summary>
+    private static string MakeCookieValue(GroupTagEntry entry)
+        => $"{entry.GroupName}|{entry.Permission}";
+
+    /// <summary>
+    /// Finds the first entry in <paramref name="eligible"/> whose composite key
+    /// matches <paramref name="cookieVal"/>.
+    /// </summary>
+    private static GroupTagEntry? FindEntryByCookieValue(string cookieVal, List<GroupTagEntry> eligible)
+    {
+        foreach (var e in eligible)
+            if (MakeCookieValue(e) == cookieVal) return e;
+        return null;
+    }
+
+    /// <summary>
+    /// Persists <paramref name="cookieVal"/> for <paramref name="player"/> and
+    /// triggers an async save.  Safe to fire-and-forget.
+    /// </summary>
+    private void SaveTagCookie(IPlayer player, string cookieVal)
+    {
+        if (_cookiesApi == null) return;
+        _cookiesApi.Set(player, CookieKey, cookieVal);
+        _ = _cookiesApi.Save(player);
+    }
+
     // ── ScoreTag refresh loop ─────────────────────────────────────────────────
 
     private void ScheduleScoreTagRefreshLoop(CancellationToken ct)
@@ -289,8 +345,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     }
 
     /// <summary>
-    /// Computes eligible tags for one player and auto-selects the top-priority
-    /// entry if the player has no active choice yet.
+    /// Computes eligible tags for one player and restores their saved cookie
+    /// preference, or auto-selects the top-priority entry if none is saved.
     /// Must run on the game thread.
     /// </summary>
     private void InitPlayer(IPlayer player)
@@ -306,6 +362,35 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         }
 
         _eligibleTags[sid] = eligible;
+
+        // Try to restore from the player's saved cookie preference.
+        // The Cookies plugin loads each player's data on steam-authorize (before
+        // OnClientConnected), so the data is available by the time InitPlayer runs.
+        if (_cookiesApi != null && _cookiesApi.Has(player, CookieKey))
+        {
+            var cookieVal = _cookiesApi.Get<string>(player, CookieKey);
+
+            if (cookieVal == NullTagSentinel)
+            {
+                // Player explicitly saved "no tag".
+                _activeTag[sid] = null;
+                ApplyScoreTag(player, null);
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(cookieVal))
+            {
+                var found = FindEntryByCookieValue(cookieVal, eligible);
+                if (found != null)
+                {
+                    _activeTag[sid] = found;
+                    ApplyScoreTag(player, found);
+                    return;
+                }
+                // Saved entry is no longer eligible (group/permission removed) —
+                // fall through to auto-select.
+            }
+        }
 
         // Auto-select top-priority only if the player has no existing choice.
         if (!_activeTag.ContainsKey(sid))
@@ -475,6 +560,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                         _tagsApi.SetPlayerChatSound(clicker, capturedEntry.ChatSound);
                     }
 
+                    SaveTagCookie(clicker, MakeCookieValue(capturedEntry));
                     Chat(clicker, "TagSelected", capturedEntry.GetMenuLabel());
                 });
             };
@@ -511,6 +597,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                     _tagsApi.SetAttribute(clicker, TagType.NameColor, string.Empty);
                 }
 
+                SaveTagCookie(clicker, NullTagSentinel);
                 Chat(clicker, "TagRemoved");
             });
         };
