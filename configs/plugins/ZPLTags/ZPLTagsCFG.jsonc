@@ -1,0 +1,64 @@
+{
+  // ZPL Tags – tag-selection menu for any player with an eligible tag.
+  // Hot-reload: save and changes apply immediately (except MenuCommand).
+  //
+  // Eligibility per entry:
+  //   "GroupName"  → matched against Admins-plugin group membership
+  //   "Permission" → matched against a SwiftlyS2 permission flag
+  //   Either one matching qualifies the player for that entry.
+  //   Leave a field empty ("") to skip that check.
+  //
+  // Colour codes for ChatTag / ChatColor / NameColor:
+  //   [red] [blue] [green] [gold] [grey] [white] [orange] [purple]
+  //   [lightblue] [lime] [darkblue] [magenta] [lightred] [yellow]
+  //   [teamcolor]   (auto T/CT/Spec colour)
+  //   [default]     (reset to default colour)
+
+  "ZPLTags": {
+
+    "MenuCommand": "sw_tags",
+    "MenuTitle":   "Select a Tag",
+    "NoTagLabel":  "✖ Remove Tag",
+    "ChatPrefix":  "[green][ZPLTags][default]",
+
+    "GroupTags": [
+      {
+        // ── Owner ─────────────────────────────────────────────────────────────
+        "GroupName":   "Owner",
+        "Permission":  "@admins/owner",
+        "DisplayName": "Tag De Owner",
+        "Priority":    100,
+        "ScoreTag":    "[OWNER]",
+        "ChatTag":     "[red][OWNER][default] ",
+        "ChatColor":   "[green]",
+        "NameColor":   "[teamcolor]",
+        "ChatSound":   true
+      },
+      {
+        // ── Admin ─────────────────────────────────────────────────────────────
+        "GroupName":   "Admin",
+        "Permission":  "@admins/admin",
+        "DisplayName": "Tag De Admin",
+        "Priority":    50,
+        "ScoreTag":    "[ADMIN]",
+        "ChatTag":     "[blue][ADMIN][default] ",
+        "ChatColor":   "[white]",
+        "NameColor":   "[teamcolor]",
+        "ChatSound":   true
+      },
+      {
+        // ── VIP (permission-only, no Admins-plugin group needed) ──────────────
+        "GroupName":   "",
+        "Permission":  "@zplvip/vip",
+        "DisplayName": "Tag De VIP",
+        "Priority":    30,
+        "ScoreTag":    "[VIP]",
+        "ChatTag":     "[gold][VIP][default] ",
+        "ChatColor":   "[white]",
+        "NameColor":   "[teamcolor]",
+        "ChatSound":   true
+      }
+    ]
+
+  }
+}

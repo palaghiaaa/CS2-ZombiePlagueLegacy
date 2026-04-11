@@ -1,0 +1,20 @@
+{
+    // ── ZPL Tags – English translations ────────────────────────────────────────
+    // {0}, {1} … are positional arguments filled in at runtime.
+    // The chat prefix ([ZPLTags]) is added automatically from the config
+    // "ChatPrefix" field — do NOT include it here.
+    // Colour codes: [red] [blue] [green] [gold] [grey] [white] [orange] [purple]
+    //               [lightblue] [lime] [teamcolor] [default]
+
+    // ── Command feedback ──────────────────────────────────────────────────────
+
+    // Sent to the player after they pick a tag from the menu.
+    // {0} = tag display name (e.g. "Tag De Admin")
+    "TagSelected": "Tag selected: [gold]{0}",
+
+    // Sent to the player after they choose "Remove Tag" in the menu.
+    "TagRemoved": "Tag removed.",
+
+    // Sent when the player runs the command but has no eligible tags.
+    "NoTagsAvailable": "You have no tags available."
+}
