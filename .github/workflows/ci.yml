@@ -47,6 +47,12 @@ jobs:
             csproj: src/zpl_teambets/ZPLTeamBets.csproj
             output: ZPLTeamBets
             copy_economy: false
+          - name: ZPLTags
+            csproj: src/zpl_tags/ZPLTags.csproj
+            output: ZPLTags
+            copy_economy: false
+            copy_cookies: true
+
 
     steps:
       - name: Checkout
