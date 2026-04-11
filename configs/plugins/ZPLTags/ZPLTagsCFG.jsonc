@@ -19,6 +19,7 @@
     "MenuCommand": "sw_tags",
     "MenuTitle":   "Select a Tag",
     "NoTagLabel":  "✖ Remove Tag",
+    "ChatPrefix":  "[green][ZPLTags][default]",
 
     "GroupTags": [
       {

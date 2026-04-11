@@ -21,6 +21,12 @@ public class ZPLTagsCFG
     /// <summary>Label for the "remove current tag" entry at the bottom of the menu.</summary>
     public string NoTagLabel { get; set; } = "✖ Remove Tag";
 
+    /// <summary>
+    /// Prefix prepended to every chat message sent by this plugin.
+    /// Supports colour codes: [red], [green], [gold], [default], etc.
+    /// </summary>
+    public string ChatPrefix { get; set; } = "[green][ZPLTags][default]";
+
     // ── Tag entries ───────────────────────────────────────────────────────────
 
     /// <summary>
