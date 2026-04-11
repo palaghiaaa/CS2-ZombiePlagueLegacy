@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>ZPLTags</AssemblyName>
+    <RootNamespace>ZPLTags</RootNamespace>
+    <OutputPath>$(MSBuildThisFileDirectory)../../build/</OutputPath>
+    <PublishDir>$(OutputPath)publish/ZPLTags</PublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SwiftlyS2 CS2 framework -->
+    <PackageReference Include="SwiftlyS2.CS2" Version="1.1.5-beta.27" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- TagsApi contract (deployed alongside cs2-tags DLL at runtime).
+         Private="false" so TagsApi.dll is NOT copied to this plugin's output
+         directory.  The single copy deployed by cs2-tags is reused at runtime,
+         keeping the type identity consistent. -->
+    <Reference Include="TagsApi">
+      <HintPath>../ZombiePlagueLegacyCS2/lib/TagsApi.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- Admins.Core.Contract (deployed alongside Admins.Core DLL at runtime).
+         Same Private="false" reasoning as above. -->
+    <Reference Include="Admins.Core.Contract">
+      <HintPath>../ZombiePlagueLegacyCS2/lib/Admins.Core.Contract.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Bundle the default config so operators have a reference copy -->
+  <ItemGroup>
+    <Content Include="../../configs/plugins/ZPLTags/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>configs/%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
+</Project>

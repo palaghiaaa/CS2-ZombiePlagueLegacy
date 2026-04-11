@@ -1,0 +1,40 @@
+{
+  // ZPL Tags bridge – maps Admins-plugin groups to cs2-tags tag overrides.
+  // Full hot-reload: save the file and the new values apply immediately.
+
+  "ZPLTags": {
+
+    // List of admin group → tag entries.
+    // When a player belongs to multiple groups the entry with the highest
+    // "Priority" wins.  Group names are matched case-insensitively.
+    //
+    // Supported colour codes for ChatTag / ChatColor / NameColor:
+    //   [red] [blue] [green] [gold] [grey] [white] [orange] [purple]
+    //   [lightblue] [lime] [darkblue] [magenta] [lightred] [yellow]
+    //   [teamcolor]  (auto-uses T/CT/Spec colour)
+    //   [default]    (resets to default colour)
+    "GroupTags": [
+      {
+        // ── Owner ────────────────────────────────────────────────────────────
+        "GroupName": "Owner",
+        "Priority":  100,
+        "ScoreTag":  "[OWNER]",
+        "ChatTag":   "[red][OWNER][default] ",
+        "ChatColor": "[green]",
+        "NameColor": "[teamcolor]",
+        "ChatSound": true
+      },
+      {
+        // ── Admin ────────────────────────────────────────────────────────────
+        "GroupName": "Admin",
+        "Priority":  50,
+        "ScoreTag":  "[ADMIN]",
+        "ChatTag":   "[blue][ADMIN][default] ",
+        "ChatColor": "[white]",
+        "NameColor": "[teamcolor]",
+        "ChatSound": true
+      }
+    ]
+
+  }
+}
