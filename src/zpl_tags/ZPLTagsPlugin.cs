@@ -3,11 +3,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SwiftlyS2.Core.Menus.OptionsBase;
 using SwiftlyS2.Shared;
+using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Events;
+using SwiftlyS2.Shared.Menus;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
+using System.Drawing;
 using TagsApi;
 using static TagsApi.Tags;
 
@@ -15,44 +19,41 @@ namespace ZPLTags;
 
 [PluginMetadata(
     Id          = "ZPLTags",
-    Version     = "1.0.0",
+    Version     = "1.1.0",
     Name        = "ZPL Tags",
     Author      = "DeadPoolCS2",
-    Description = "Bridges the Admins plugin and cs2-tags: applies ChatTag/ChatColor/NameColor/ScoreTag " +
-                  "overrides for each Admins-plugin group without requiring SwiftlyS2 native permissions.")]
+    Description = "Tag-selection menu for any player with eligible tags (via Admins-plugin " +
+                  "group or SwiftlyS2 permission). Bridges cs2-tags without native permissions.")]
 public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 {
-    private ILogger<ZPLTagsPlugin>?        _logger;
-    private IOptionsMonitor<ZPLTagsCFG>?   _cfgMonitor;
-    private ZPLTagsCFG                     _config = new();
-    private ServiceProvider?               _sp;
+    private ILogger<ZPLTagsPlugin>?       _logger;
+    private IOptionsMonitor<ZPLTagsCFG>?  _cfgMonitor;
+    private ZPLTagsCFG                    _config = new();
+    private ServiceProvider?              _sp;
 
-    // Shared interfaces from other plugins (acquired in UseSharedInterface).
-    private ITagApi?       _tagsApi;
+    // Shared interfaces — both are optional; the plugin degrades gracefully.
+    private ITagApi?        _tagsApi;
     private IAdminsManager? _adminsManager;
 
-    // SteamID64 → best-matching GroupTagEntry for that admin.
-    // Populated on admin load / player connect.  Cleared on disconnect.
-    // All reads and writes happen on the game (world-update) thread.
-    private readonly Dictionary<ulong, GroupTagEntry> _adminTagCache = new();
+    // SteamID64 → ALL eligible GroupTagEntry items, sorted desc by Priority.
+    private readonly Dictionary<ulong, List<GroupTagEntry>> _eligibleTags = new();
 
-    // Cancellation for the periodic ScoreTag re-apply loop.
+    // SteamID64 → currently active entry.
+    //   key present + non-null  → a specific tag is active
+    //   key present + null      → player explicitly chose "no tag"
+    //   key absent              → no eligible tags found yet
+    private readonly Dictionary<ulong, GroupTagEntry?> _activeTag = new();
+
     private CancellationTokenSource? _refreshCts;
 
-    // How often to re-stamp admin ScoreTags.  Must be shorter than the cs2-tags
-    // revalidation interval (1 s) so the scoreboard never shows the wrong tag.
+    // Must be shorter than cs2-tags' 1 s revalidation to avoid score-tag flicker.
     private const float ScoreTagRefreshInterval = 0.8f;
-
     private const string ConfigFile = "ZPLTagsCFG.jsonc";
 
-    // ── Plugin lifecycle ──────────────────────────────────────────────────────
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     public override void Load(bool hotReload)
     {
-        // Guard with !hotReload: SwiftlyS2's PluginConfigurationService.Manager is a
-        // lazy singleton that is never reset between reloads.  Calling AddJsonFile on
-        // it again on every Load() appends a new FileSystemWatcher thread to the same
-        // ConfigurationManager, leaking one watcher thread per map change.
         if (!hotReload)
             Core.Configuration.InitializeJsonWithModel<ZPLTagsCFG>(ConfigFile, "ZPLTags")
                 .Configure(builder =>
@@ -61,7 +62,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                     builder.SetFileLoadExceptionHandler(ctx =>
                     {
                         Core.Logger.LogError(
-                            "[ZPLTags] Failed to load {File}: {Error}. Using last valid configuration.",
+                            "[ZPLTags] Failed to load {File}: {Error}. Using last valid config.",
                             ConfigFile, ctx.Exception.Message);
                         ctx.Ignore = true;
                     });
@@ -79,28 +80,25 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         _cfgMonitor.OnChange(cfg =>
         {
             _config = cfg;
-            // Rebuild the cache so priority changes / new groups take effect immediately.
-            Core.Scheduler.NextWorldUpdate(RebuildCacheForAllConnectedPlayers);
+            // Rebuild eligibility for all connected players on config change.
+            Core.Scheduler.NextWorldUpdate(RebuildAllPlayers);
         });
 
         Core.Event.OnClientConnected    += OnClientConnected;
         Core.Event.OnClientDisconnected += OnClientDisconnected;
 
-        // Start the ScoreTag refresh loop.
+        Core.Command.RegisterCommand(_config.MenuCommand, CmdTags, true);
+
         _refreshCts = new CancellationTokenSource();
         ScheduleScoreTagRefreshLoop(_refreshCts.Token);
 
         if (hotReload)
-            Core.Scheduler.NextWorldUpdate(RebuildCacheForAllConnectedPlayers);
+            Core.Scheduler.NextWorldUpdate(RebuildAllPlayers);
     }
 
-    /// <summary>
-    /// Called after all plugins have published their shared interfaces.
-    /// Connects to ITagApi (cs2-tags) and IAdminsManager (Admins plugin).
-    /// </summary>
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
     {
-        // ── cs2-tags API ──────────────────────────────────────────────────────
+        // ── cs2-tags ──────────────────────────────────────────────────────────
         if (interfaceManager.HasSharedInterface("Tags.Api"))
         {
             try
@@ -114,15 +112,15 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
             }
             catch (InvalidOperationException ex)
             {
-                _logger?.LogWarning("[ZPLTags] Failed to acquire Tags API: {Error} – chat tag overrides disabled.", ex.Message);
+                _logger?.LogWarning("[ZPLTags] Tags API unavailable: {Error}", ex.Message);
             }
         }
         else
         {
-            _logger?.LogWarning("[ZPLTags] Tags API (\"Tags.Api\") not found – chat tag overrides disabled. Is cs2-tags loaded?");
+            _logger?.LogWarning("[ZPLTags] Tags API not found – is cs2-tags loaded?");
         }
 
-        // ── Admins plugin API ─────────────────────────────────────────────────
+        // ── Admins plugin (optional) ──────────────────────────────────────────
         if (interfaceManager.HasSharedInterface("Admins.Admins.V1"))
         {
             try
@@ -136,33 +134,35 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
             }
             catch (InvalidOperationException ex)
             {
-                _logger?.LogWarning("[ZPLTags] Failed to acquire Admins API: {Error} – admin tag detection disabled.", ex.Message);
+                _logger?.LogWarning("[ZPLTags] Admins API unavailable: {Error} – group-based matching disabled.", ex.Message);
             }
         }
         else
         {
-            _logger?.LogWarning("[ZPLTags] Admins API (\"Admins.Admins.V1\") not found – admin tag detection disabled. Is the Admins plugin loaded?");
+            _logger?.LogInformation("[ZPLTags] Admins API not found – group-based tag matching disabled (permission-only mode).");
         }
 
-        // Populate cache now that both APIs are wired up.
-        Core.Scheduler.NextWorldUpdate(RebuildCacheForAllConnectedPlayers);
+        Core.Scheduler.NextWorldUpdate(RebuildAllPlayers);
     }
 
     public override void Unload()
     {
-        // Cancel the ScoreTag refresh loop before any other cleanup.
         _refreshCts?.Cancel();
         _refreshCts?.Dispose();
         _refreshCts = null;
 
-        // Unsubscribe from ITagApi events.
+        foreach (var player in Core.PlayerManager.GetAllPlayers())
+        {
+            if (player != null && player.IsValid)
+                Core.MenusAPI.CloseActiveMenu(player);
+        }
+
         if (_tagsApi != null)
         {
             _tagsApi.OnMessageProcessPre -= OnMessageProcessPre;
             _tagsApi = null;
         }
 
-        // Unsubscribe from Admins events.
         if (_adminsManager != null)
         {
             _adminsManager.OnAdminLoad -= OnAdminLoad;
@@ -172,78 +172,95 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.Event.OnClientConnected    -= OnClientConnected;
         Core.Event.OnClientDisconnected -= OnClientDisconnected;
 
-        _adminTagCache.Clear();
+        _eligibleTags.Clear();
+        _activeTag.Clear();
         _sp?.Dispose();
         _sp = null;
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // ── Eligibility helpers ───────────────────────────────────────────────────
 
     private static bool IsValidRealPlayer(IPlayer? player)
         => player != null && player.IsValid && !player.IsFakeClient && player.SteamID != 0;
 
     /// <summary>
-    /// Returns the highest-priority <see cref="GroupTagEntry"/> from the current
-    /// config that matches any of <paramref name="admin"/>'s group names, or
-    /// <c>null</c> when no match exists.
+    /// Returns true when <paramref name="player"/> qualifies for
+    /// <paramref name="entry"/> via either admin group OR SwiftlyS2 permission.
+    /// Safe to call from any thread (only reads _adminsManager, config, and
+    /// Core.Permission — all thread-safe for reads).
     /// </summary>
-    private GroupTagEntry? FindBestEntry(IAdmin admin)
+    private bool PlayerMatchesEntry(IPlayer player, GroupTagEntry entry)
     {
-        var cfg = _config;
-        GroupTagEntry? best = null;
-
-        foreach (var groupName in admin.Groups)
+        // 1) Admins-plugin group match
+        if (!string.IsNullOrEmpty(entry.GroupName) && _adminsManager != null)
         {
-            foreach (var entry in cfg.GroupTags)
+            var admin = _adminsManager.GetAdmin(player);
+            if (admin != null)
             {
-                if (!string.Equals(entry.GroupName, groupName, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                if (best == null || entry.Priority > best.Priority)
-                    best = entry;
+                foreach (var g in admin.Groups)
+                {
+                    if (string.Equals(g, entry.GroupName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
             }
         }
 
-        return best;
+        // 2) SwiftlyS2 native permission match
+        if (!string.IsNullOrEmpty(entry.Permission))
+        {
+            if (Core.Permission.PlayerHasPermission(player.SteamID, entry.Permission))
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
-    /// Applies a ScoreTag to <paramref name="player"/> via the Tags API.
-    /// Must be called on the game (world-update) thread.
+    /// Builds the sorted (desc Priority) list of all eligible entries for
+    /// <paramref name="player"/>.
     /// </summary>
-    private void ApplyScoreTag(IPlayer player, GroupTagEntry entry)
+    private List<GroupTagEntry> BuildEligibleList(IPlayer player)
     {
-        if (_tagsApi == null) return;
-        if (!IsValidRealPlayer(player)) return;
+        var cfg    = _config;
+        var result = new List<GroupTagEntry>();
 
-        // SetAttribute writes player.Controller.Clan (and fires ClanUpdated +
-        // EventNextlevelChanged to refresh the scoreboard).
-        // Note: cs2-tags' 1-second revalidation loop will reset this value for
-        // players without native SwiftlyS2 permissions.  The ScoreTagRefreshLoop
-        // re-applies it at a shorter interval (ScoreTagRefreshInterval) to ensure
-        // the scoreboard always shows the correct admin tag.
-        _tagsApi.SetAttribute(player, TagType.ScoreTag, entry.ScoreTag ?? string.Empty);
+        foreach (var entry in cfg.GroupTags)
+        {
+            // Skip entries with neither condition set — they'd match everyone.
+            if (string.IsNullOrEmpty(entry.GroupName) && string.IsNullOrEmpty(entry.Permission))
+                continue;
+
+            if (PlayerMatchesEntry(player, entry))
+                result.Add(entry);
+        }
+
+        result.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+        return result;
     }
 
-    // ── ScoreTag periodic re-apply loop ──────────────────────────────────────
+    private void ApplyScoreTag(IPlayer player, GroupTagEntry? entry)
+    {
+        if (_tagsApi == null || !IsValidRealPlayer(player)) return;
+        string score = entry != null ? (entry.ScoreTag ?? string.Empty) : string.Empty;
+        _tagsApi.SetAttribute(player, TagType.ScoreTag, score);
+    }
+
+    // ── ScoreTag refresh loop ─────────────────────────────────────────────────
 
     private void ScheduleScoreTagRefreshLoop(CancellationToken ct)
     {
         Core.Scheduler.DelayBySeconds(ScoreTagRefreshInterval, () =>
         {
             if (ct.IsCancellationRequested) return;
-
             Core.Scheduler.NextWorldUpdate(() =>
             {
                 if (ct.IsCancellationRequested) return;
 
-                // Re-apply the ScoreTag for every cached admin so the cs2-tags
-                // revalidation loop cannot permanently strip admin score tags.
                 foreach (var player in Core.PlayerManager.GetAllPlayers())
                 {
                     if (!IsValidRealPlayer(player)) continue;
-                    if (!_adminTagCache.TryGetValue(player!.SteamID, out var entry)) continue;
-                    if (!string.IsNullOrEmpty(entry.ScoreTag))
+                    if (!_activeTag.TryGetValue(player!.SteamID, out var entry)) continue;
+                    if (entry != null && !string.IsNullOrEmpty(entry.ScoreTag))
                         ApplyScoreTag(player, entry);
                 }
 
@@ -254,86 +271,89 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     // ── Cache management ──────────────────────────────────────────────────────
 
-    private void RebuildCacheForAllConnectedPlayers()
+    /// <summary>
+    /// Rebuilds eligible-tag lists for every connected real player.
+    /// Called on plugin load/hot-reload and on config change.
+    /// Must run on the game thread.
+    /// </summary>
+    private void RebuildAllPlayers()
     {
-        if (_adminsManager == null) return;
-
-        _adminTagCache.Clear();
+        _eligibleTags.Clear();
+        _activeTag.Clear();
 
         foreach (var player in Core.PlayerManager.GetAllPlayers())
         {
             if (!IsValidRealPlayer(player)) continue;
+            InitPlayer(player!);
+        }
+    }
 
-            var admin = _adminsManager.GetAdmin(player);
-            if (admin == null) continue;
+    /// <summary>
+    /// Computes eligible tags for one player and auto-selects the top-priority
+    /// entry if the player has no active choice yet.
+    /// Must run on the game thread.
+    /// </summary>
+    private void InitPlayer(IPlayer player)
+    {
+        ulong sid      = player.SteamID;
+        var eligible   = BuildEligibleList(player);
 
-            var entry = FindBestEntry(admin);
-            if (entry == null) continue;
+        if (eligible.Count == 0)
+        {
+            _eligibleTags.Remove(sid);
+            _activeTag.Remove(sid);
+            return;
+        }
 
-            _adminTagCache[player!.SteamID] = entry;
-            ApplyScoreTag(player, entry);
+        _eligibleTags[sid] = eligible;
+
+        // Auto-select top-priority only if the player has no existing choice.
+        if (!_activeTag.ContainsKey(sid))
+        {
+            _activeTag[sid] = eligible[0];
+            ApplyScoreTag(player, eligible[0]);
         }
     }
 
     // ── Event handlers ────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Fired by the Admins plugin when an admin's data has been loaded for a
-    /// connected player.  May be invoked from a background thread; all mutable
-    /// state is touched only inside a NextWorldUpdate callback.
+    /// Fired by the Admins plugin when an admin's record finishes loading.
+    /// May come from a background thread; game-state writes deferred to
+    /// NextWorldUpdate.
     /// </summary>
     private void OnAdminLoad(IPlayer player, IAdmin admin)
     {
         if (player == null || player.SteamID == 0) return;
 
-        ulong steamId = player.SteamID;
-
-        // FindBestEntry reads only cfg and admin.Groups (both safe from any thread).
-        var entry = FindBestEntry(admin);
-
         Core.Scheduler.NextWorldUpdate(() =>
         {
             if (!IsValidRealPlayer(player)) return;
-
-            if (entry == null)
-            {
-                _adminTagCache.Remove(steamId);
-                return;
-            }
-
-            _adminTagCache[steamId] = entry;
-            ApplyScoreTag(player, entry);
+            InitPlayer(player);
         });
     }
 
-    /// <summary>
-    /// Fallback path for players who already have an admin record when they
-    /// connect (e.g. cached from a previous map).  We retry after a short delay
-    /// to allow the Admins plugin to finish its async data load.
-    /// </summary>
     private void OnClientConnected(IOnClientConnectedEvent @event)
     {
         int playerId = @event.PlayerId;
 
-        // Retry after a short delay so the Admins plugin can finish loading
-        // the player's admin record asynchronously.
-        Core.Scheduler.DelayBySeconds(1.5f, () =>
+        // Two retries: one early (permissions already available) and one later
+        // (waits for the Admins plugin to finish async data loading).
+        Core.Scheduler.DelayBySeconds(0.5f, () =>
         {
             Core.Scheduler.NextWorldUpdate(() =>
             {
-                if (_adminsManager == null) return;
-
                 var player = Core.PlayerManager.GetPlayer(playerId);
-                if (!IsValidRealPlayer(player)) return;
+                if (IsValidRealPlayer(player)) InitPlayer(player!);
+            });
+        });
 
-                var admin = _adminsManager.GetAdmin(player!);
-                if (admin == null) return;
-
-                var entry = FindBestEntry(admin);
-                if (entry == null) return;
-
-                _adminTagCache[player!.SteamID] = entry;
-                ApplyScoreTag(player, entry);
+        Core.Scheduler.DelayBySeconds(2.0f, () =>
+        {
+            Core.Scheduler.NextWorldUpdate(() =>
+            {
+                var player = Core.PlayerManager.GetPlayer(playerId);
+                if (IsValidRealPlayer(player)) InitPlayer(player!);
             });
         });
     }
@@ -341,44 +361,154 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private void OnClientDisconnected(IOnClientDisconnectedEvent @event)
     {
         var player = Core.PlayerManager.GetPlayer(@event.PlayerId);
-        if (player != null)
-            _adminTagCache.Remove(player.SteamID);
+        if (player == null) return;
+        _eligibleTags.Remove(player.SteamID);
+        _activeTag.Remove(player.SteamID);
     }
 
-    // ── Tags API: chat-message interception ───────────────────────────────────
+    // ── Chat interception ─────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Intercepts every chat message before cs2-tags renders it.
-    /// Overrides the Tag in <paramref name="mp"/> with the admin's configured
-    /// tag so the correct ChatTag/ChatColor/NameColor/ScoreTag appears in chat
-    /// regardless of the cs2-tags revalidation state.
-    /// </summary>
     private HookResult OnMessageProcessPre(MessageProcess mp)
     {
         if (mp?.Player == null) return HookResult.Continue;
         if (!IsValidRealPlayer(mp.Player)) return HookResult.Continue;
 
-        if (!_adminTagCache.TryGetValue(mp.Player.SteamID, out var entry))
+        // key absent  → no tags
+        // key present, null → player chose "no tag"
+        if (!_activeTag.TryGetValue(mp.Player.SteamID, out var entry) || entry == null)
             return HookResult.Continue;
 
-        // Modify in place – cs2-tags reads mp.Tag after all OnMessageProcessPre
-        // handlers have returned.
         var tag = mp.Tag;
-
-        if (!string.IsNullOrEmpty(entry.ChatTag))
-            tag.ChatTag = entry.ChatTag;
-
-        if (!string.IsNullOrEmpty(entry.ChatColor))
-            tag.ChatColor = entry.ChatColor;
-
-        if (!string.IsNullOrEmpty(entry.NameColor))
-            tag.NameColor = entry.NameColor;
-
-        if (!string.IsNullOrEmpty(entry.ScoreTag))
-            tag.ScoreTag = entry.ScoreTag;
-
+        if (!string.IsNullOrEmpty(entry.ChatTag))   tag.ChatTag   = entry.ChatTag;
+        if (!string.IsNullOrEmpty(entry.ChatColor)) tag.ChatColor = entry.ChatColor;
+        if (!string.IsNullOrEmpty(entry.NameColor)) tag.NameColor = entry.NameColor;
+        if (!string.IsNullOrEmpty(entry.ScoreTag))  tag.ScoreTag  = entry.ScoreTag;
         tag.ChatSound = entry.ChatSound;
 
         return HookResult.Continue;
+    }
+
+    // ── !sw_tags command & menu ───────────────────────────────────────────────
+
+    private void CmdTags(ICommandContext context)
+    {
+        var player = context.Sender;
+        if (!IsValidRealPlayer(player)) return;
+
+        ulong sid = player!.SteamID;
+
+        // Re-compute in case eligibility changed since connect (e.g. late admin load).
+        if (!_eligibleTags.TryGetValue(sid, out var eligible) || eligible.Count == 0)
+        {
+            // One last attempt to populate.
+            eligible = BuildEligibleList(player);
+            if (eligible.Count == 0)
+            {
+                player.SendMessage(MessageType.Chat, _config.NoTagsAvailableMessage);
+                return;
+            }
+            _eligibleTags[sid] = eligible;
+        }
+
+        OpenTagMenu(player, eligible);
+    }
+
+    private void OpenTagMenu(IPlayer player, List<GroupTagEntry> eligible)
+    {
+        ulong sid = player.SteamID;
+        _activeTag.TryGetValue(sid, out var current);
+
+        var menuCfg = new MenuConfiguration
+        {
+            Title                    = HtmlGradient.GenerateGradientText(_config.MenuTitle, Color.Gold, Color.Orange),
+            FreezePlayer             = false,
+            MaxVisibleItems          = 6,
+            PlaySound                = true,
+            AutoIncreaseVisibleItems = false,
+            HideFooter               = false
+        };
+
+        IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default, null, MenuOptionScrollStyle.LinearScroll);
+
+        // ── One button per eligible tag ───────────────────────────────────────
+        foreach (var entry in eligible)
+        {
+            var capturedEntry = entry;   // capture for async closure
+
+            bool isActive = current != null &&
+                            string.Equals(current.GroupName, entry.GroupName, StringComparison.Ordinal) &&
+                            string.Equals(current.Permission, entry.Permission, StringComparison.Ordinal);
+
+            string label = isActive ? $"✓ {entry.GetMenuLabel()}" : entry.GetMenuLabel();
+
+            var btn = new ButtonMenuOption(label)
+            {
+                TextStyle       = MenuOptionTextStyle.ScrollLeftLoop,
+                CloseAfterClick = true,
+                Tag             = capturedEntry
+            };
+
+            btn.Click += async (_, args) =>
+            {
+                var clicker = args.Player;
+                Core.Scheduler.NextTick(() =>
+                {
+                    if (!IsValidRealPlayer(clicker)) return;
+
+                    _activeTag[clicker.SteamID] = capturedEntry;
+
+                    if (_tagsApi != null)
+                    {
+                        _tagsApi.SetAttribute(clicker, TagType.ScoreTag,  capturedEntry.ScoreTag  ?? string.Empty);
+                        _tagsApi.SetAttribute(clicker, TagType.ChatTag,   capturedEntry.ChatTag   ?? string.Empty);
+                        _tagsApi.SetAttribute(clicker, TagType.ChatColor, capturedEntry.ChatColor ?? string.Empty);
+                        _tagsApi.SetAttribute(clicker, TagType.NameColor, capturedEntry.NameColor ?? string.Empty);
+                        _tagsApi.SetPlayerChatSound(clicker, capturedEntry.ChatSound);
+                    }
+
+                    clicker.SendMessage(MessageType.Chat,
+                        $"{{green}}[ZPLTags]{{default}} Tag selected: {capturedEntry.GetMenuLabel()}");
+                });
+            };
+
+            menu.AddOption(btn);
+        }
+
+        // ── "Remove tag" button ───────────────────────────────────────────────
+        // Shows ✓ when no tag is currently active.
+        string removeLabel = (current == null)
+            ? $"✓ {_config.NoTagLabel}"
+            : _config.NoTagLabel;
+
+        var removeBtn = new ButtonMenuOption(removeLabel)
+        {
+            TextStyle       = MenuOptionTextStyle.ScrollLeftLoop,
+            CloseAfterClick = true
+        };
+
+        removeBtn.Click += async (_, args) =>
+        {
+            var clicker = args.Player;
+            Core.Scheduler.NextTick(() =>
+            {
+                if (!IsValidRealPlayer(clicker)) return;
+
+                _activeTag[clicker.SteamID] = null;   // null = "no tag"
+
+                if (_tagsApi != null)
+                {
+                    _tagsApi.SetAttribute(clicker, TagType.ScoreTag,  string.Empty);
+                    _tagsApi.SetAttribute(clicker, TagType.ChatTag,   string.Empty);
+                    _tagsApi.SetAttribute(clicker, TagType.ChatColor, string.Empty);
+                    _tagsApi.SetAttribute(clicker, TagType.NameColor, string.Empty);
+                }
+
+                clicker.SendMessage(MessageType.Chat, $"{{green}}[ZPLTags]{{default}} Tag removed.");
+            });
+        };
+
+        menu.AddOption(removeBtn);
+
+        Core.MenusAPI.OpenMenuForPlayer(player, menu);
     }
 }
