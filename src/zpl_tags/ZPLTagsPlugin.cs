@@ -390,6 +390,12 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     // ── !sw_tags command & menu ───────────────────────────────────────────────
 
+    private string T(IPlayer player, string key, params object[] args)
+    {
+        var loc = Core.Translation.GetPlayerLocalizer(player);
+        return args.Length == 0 ? loc[key] : loc[key, args];
+    }
+
     private void CmdTags(ICommandContext context)
     {
         var player = context.Sender;
@@ -404,7 +410,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
             eligible = BuildEligibleList(player);
             if (eligible.Count == 0)
             {
-                player.SendMessage(MessageType.Chat, _config.NoTagsAvailableMessage);
+                player.SendMessage(MessageType.Chat, T(player, "NoTagsAvailable"));
                 return;
             }
             _eligibleTags[sid] = eligible;
@@ -466,8 +472,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                         _tagsApi.SetPlayerChatSound(clicker, capturedEntry.ChatSound);
                     }
 
-                    clicker.SendMessage(MessageType.Chat,
-                        $"{{green}}[ZPLTags]{{default}} Tag selected: {capturedEntry.GetMenuLabel()}");
+                    clicker.SendMessage(MessageType.Chat, T(clicker, "TagSelected", capturedEntry.GetMenuLabel()));
                 });
             };
 
@@ -503,7 +508,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                     _tagsApi.SetAttribute(clicker, TagType.NameColor, string.Empty);
                 }
 
-                clicker.SendMessage(MessageType.Chat, $"{{green}}[ZPLTags]{{default}} Tag removed.");
+                clicker.SendMessage(MessageType.Chat, T(clicker, "TagRemoved"));
             });
         };
 

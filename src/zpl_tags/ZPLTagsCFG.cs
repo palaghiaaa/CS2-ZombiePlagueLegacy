@@ -21,11 +21,6 @@ public class ZPLTagsCFG
     /// <summary>Label for the "remove current tag" entry at the bottom of the menu.</summary>
     public string NoTagLabel { get; set; } = "✖ Remove Tag";
 
-    /// <summary>
-    /// Message sent to a player who runs the command but has no eligible tags.
-    /// </summary>
-    public string NoTagsAvailableMessage { get; set; } = "{red}[ZPLTags]{default} You have no tags available.";
-
     // ── Tag entries ───────────────────────────────────────────────────────────
 
     /// <summary>

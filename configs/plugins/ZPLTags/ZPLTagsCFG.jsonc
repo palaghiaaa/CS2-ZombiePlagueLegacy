@@ -19,7 +19,6 @@
     "MenuCommand": "sw_tags",
     "MenuTitle":   "Select a Tag",
     "NoTagLabel":  "✖ Remove Tag",
-    "NoTagsAvailableMessage": "{red}[ZPLTags]{default} You have no tags available.",
 
     "GroupTags": [
       {

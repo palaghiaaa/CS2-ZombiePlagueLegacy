@@ -36,6 +36,14 @@
     </Reference>
   </ItemGroup>
 
+  <!-- Bundle the plugin's own translation files -->
+  <ItemGroup>
+    <Content Include="translations/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>resources/translations/%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
   <!-- Bundle the default config so operators have a reference copy -->
   <ItemGroup>
     <Content Include="../../configs/plugins/ZPLTags/**/*">
