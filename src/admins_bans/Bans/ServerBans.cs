@@ -253,7 +253,10 @@ public sealed class ServerBans
 
     private SqliteConnection OpenConnection()
     {
-        var conn = new SqliteConnection(_connectionString);
+        // _connectionString is guaranteed non-null by all callers (they check
+        // _ready && _connectionString is not null before calling), but we use
+        // the null-forgiving operator to make the contract explicit.
+        var conn = new SqliteConnection(_connectionString!);
         conn.Open();
         return conn;
     }
