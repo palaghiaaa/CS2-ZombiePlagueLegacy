@@ -1,0 +1,6 @@
+{
+  "AdminsBansCFG": {
+    // Path to the SQLite database file, relative to the game root.
+    "DatabasePath": "addons/swiftly/data/AdminsBans.db"
+  }
+}

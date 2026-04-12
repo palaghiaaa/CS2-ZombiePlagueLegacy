@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>AdminsBans</AssemblyName>
+    <RootNamespace>Admins.Bans</RootNamespace>
+    <OutputPath>$(MSBuildThisFileDirectory)../../build/</OutputPath>
+    <PublishDir>$(OutputPath)publish/AdminsBans</PublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.3" />
+    <PackageReference Include="SwiftlyS2.CS2" Version="1.1.5-beta.27" />
+  </ItemGroup>
+
+  <!-- Bundle the default config so operators have a reference copy -->
+  <ItemGroup>
+    <Content Include="../../configs/plugins/AdminsBans/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>configs/%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
+</Project>

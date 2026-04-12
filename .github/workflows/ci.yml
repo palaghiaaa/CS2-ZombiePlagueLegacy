@@ -52,6 +52,11 @@ jobs:
             output: ZPLTags
             copy_economy: false
             copy_cookies: true
+          - name: AdminsBans
+            csproj: src/admins_bans/AdminsBans.csproj
+            output: AdminsBans
+            copy_economy: false
+            copy_cookies: false
 
 
     steps:

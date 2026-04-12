@@ -20,24 +20,14 @@ class Program
         var asm = Assembly.LoadFrom("/tmp/nuget_restore/swiftlys2.cs2/1.1.5-beta.27/lib/net10.0/SwiftlyS2.CS2.dll");
         var types = asm.GetLoadableTypes();
         
-        // Find ENetworkDisconnectionReason 
-        var disconnType = types.FirstOrDefault(t => t.Name == "ENetworkDisconnectionReason");
-        if (disconnType != null)
-        {
-            Console.WriteLine("ENetworkDisconnectionReason values:");
-            foreach (var v in Enum.GetValues(disconnType))
-                Console.WriteLine($"  {v} = {(int)v}");
-        }
+        // Find ENetworkDisconnectionReason - what namespace?
+        var t = types.FirstOrDefault(x => x.Name == "ENetworkDisconnectionReason");
+        if (t != null) Console.WriteLine("Namespace: " + t.Namespace + " FullName: " + t.FullName);
         
-        // Check IScheduler for NextWorldUpdate
-        var schedulerType = types.FirstOrDefault(t => t.Name == "IScheduler");
-        if (schedulerType != null)
-        {
-            Console.WriteLine("IScheduler methods:");
-            foreach (var m in schedulerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-                if (!m.Name.StartsWith("get_"))
-                    Console.WriteLine($"  {m.ReturnType.Name} {m.Name}({string.Join(", ", m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name))})");
-        }
+        // Find related namespaces
+        foreach (var ns in types.Select(x => x.Namespace).Distinct().OrderBy(x => x))
+            if (ns != null && (ns.Contains("Network") || ns.Contains("Players") || ns.Contains("Misc")))
+                Console.WriteLine("NS: " + ns);
     }
 }
 
