@@ -8,6 +8,7 @@ using SwiftlyS2.Core.Menus.OptionsBase;
 using SwiftlyS2.Shared;
 using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Events;
+using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Menus;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Players;
@@ -50,6 +51,11 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private readonly Dictionary<ulong, GroupTagEntry?> _activeTag = new();
 
     private CancellationTokenSource? _refreshCts;
+
+    // Prevents duplicate EventNextlevelChanged fires within a single world update.
+    // Interlocked operations provide the required memory barriers; volatile is
+    // added as an extra marker for clarity.
+    private volatile int _scoreRefreshScheduled;
 
     // Must be shorter than cs2-tags' 1 s revalidation to avoid score-tag flicker.
     private const float  ScoreTagRefreshInterval = 0.8f;
@@ -118,7 +124,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         }
         else
         {
-            _logger?.LogWarning("[ZPLTags] Tags API not found – is cs2-tags loaded?");
+            _logger?.LogInformation("[ZPLTags] Tags API not found – score tags will be applied directly; chat tags require cs2-tags.");
         }
 
         // ── Admins plugin (optional) ──────────────────────────────────────────
@@ -288,8 +294,43 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     private void ApplyScoreTag(IPlayer player, GroupTagEntry? entry)
     {
-        if (_tagsBridge == null || !IsValidRealPlayer(player)) return;
-        _tagsBridge.ApplyScore(player, entry);
+        if (!IsValidRealPlayer(player)) return;
+        if (_tagsBridge != null)
+            _tagsBridge.ApplyScore(player, entry);
+        else
+            SetScoreTagDirect(player, entry?.ScoreTag);
+    }
+
+    /// <summary>
+    /// Applies a score (clan) tag directly via the player controller schema, used
+    /// when cs2-tags is not loaded.  Must be called from the game thread.
+    /// </summary>
+    private void SetScoreTagDirect(IPlayer player, string? score)
+    {
+        var ctrl = player?.Controller;
+        if (ctrl == null || !ctrl.IsValid) return;
+
+        var normalized = score ?? string.Empty;
+        if (ctrl.Clan != normalized)
+            ctrl.Clan = normalized;
+        // Notifies the game engine that the clan tag field changed so the
+        // scoreboard is updated without requiring a full state-baseline flush.
+        ctrl.ClanUpdated();
+        FireScoreTagRefresh();
+    }
+
+    /// <summary>
+    /// Fires <see cref="EventNextlevelChanged"/> at most once per world update to
+    /// refresh the scoreboard clan-tag column.
+    /// </summary>
+    private void FireScoreTagRefresh()
+    {
+        if (System.Threading.Interlocked.Exchange(ref _scoreRefreshScheduled, 1) == 1) return;
+        Core.Scheduler.NextWorldUpdate(() =>
+        {
+            System.Threading.Interlocked.Exchange(ref _scoreRefreshScheduled, 0);
+            Core.GameEvent.Fire<EventNextlevelChanged>();
+        });
     }
 
     // ── Cookie helpers ────────────────────────────────────────────────────────
@@ -554,7 +595,10 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                     if (!IsValidRealPlayer(clicker)) return;
 
                     _activeTag[clicker.SteamID] = capturedEntry;
-                    _tagsBridge?.ApplyFull(clicker, capturedEntry);
+                    if (_tagsBridge != null)
+                        _tagsBridge.ApplyFull(clicker, capturedEntry);
+                    else
+                        SetScoreTagDirect(clicker, capturedEntry.ScoreTag);
 
                     SaveTagCookie(clicker, MakeCookieValue(capturedEntry));
                     Chat(clicker, "TagSelected", capturedEntry.GetMenuLabel());
@@ -584,7 +628,10 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 if (!IsValidRealPlayer(clicker)) return;
 
                 _activeTag[clicker.SteamID] = null;   // null = "no tag"
-                _tagsBridge?.ClearFull(clicker);
+                if (_tagsBridge != null)
+                    _tagsBridge.ClearFull(clicker);
+                else
+                    SetScoreTagDirect(clicker, null);
 
                 SaveTagCookie(clicker, NullTagSentinel);
                 Chat(clicker, "TagRemoved");
