@@ -13,6 +13,7 @@ using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using TagsApi;
 using static TagsApi.Tags;
 
@@ -33,7 +34,9 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private ServiceProvider?              _sp;
 
     // Shared interfaces — both are optional; the plugin degrades gracefully.
-    private ITagApi?              _tagsApi;
+    // NOTE: _tagsBridge is a local (ZPLTags) type, so no TagsApi.dll resolution
+    //       is needed to JIT-compile any method that reads/writes this field.
+    private TagsBridge?           _tagsBridge;
     private IAdminsManager?       _adminsManager;
     private IPlayerCookiesAPIv1?  _cookiesApi;
 
@@ -103,21 +106,15 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
     {
         // ── cs2-tags ──────────────────────────────────────────────────────────
+        // IMPORTANT: all ITagApi / TagType / MessageProcess type references live
+        // inside TryConnectTagsBridge (a NoInlining helper).  This method itself
+        // never references any TagsApi type, so the JIT can compile it without
+        // loading TagsApi.dll.  TryConnectTagsBridge is only ever called when
+        // HasSharedInterface returns true, which means TagsApi.dll IS loaded, so
+        // its own JIT compilation succeeds.
         if (interfaceManager.HasSharedInterface("Tags.Api"))
         {
-            try
-            {
-                _tagsApi = interfaceManager.GetSharedInterface<ITagApi>("Tags.Api");
-                if (_tagsApi != null)
-                {
-                    _tagsApi.OnMessageProcessPre += OnMessageProcessPre;
-                    _logger?.LogInformation("[ZPLTags] Connected to Tags API (cs2-tags).");
-                }
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger?.LogWarning("[ZPLTags] Tags API unavailable: {Error}", ex.Message);
-            }
+            TryConnectTagsBridge(interfaceManager);
         }
         else
         {
@@ -168,6 +165,32 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.Scheduler.NextWorldUpdate(RebuildAllPlayers);
     }
 
+    /// <summary>
+    /// Isolates all <c>ITagApi</c> / <c>TagType</c> type references so the JIT
+    /// only loads <c>TagsApi.dll</c> when this method is actually called — i.e.
+    /// only after <c>HasSharedInterface("Tags.Api")</c> has confirmed the DLL is
+    /// present.  Must be <see cref="MethodImplOptions.NoInlining"/> so the
+    /// compiler cannot hoist these type tokens into the calling method.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void TryConnectTagsBridge(IInterfaceManager interfaceManager)
+    {
+        try
+        {
+            var api = interfaceManager.GetSharedInterface<ITagApi>("Tags.Api");
+            if (api != null)
+            {
+                _tagsBridge = new TagsBridge(api, _activeTag);
+                _tagsBridge.Subscribe();
+                _logger?.LogInformation("[ZPLTags] Connected to Tags API (cs2-tags).");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger?.LogWarning("[ZPLTags] Tags API unavailable: {Error}", ex.Message);
+        }
+    }
+
     public override void Unload()
     {
         _refreshCts?.Cancel();
@@ -180,11 +203,11 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 Core.MenusAPI.CloseActiveMenu(player);
         }
 
-        if (_tagsApi != null)
-        {
-            _tagsApi.OnMessageProcessPre -= OnMessageProcessPre;
-            _tagsApi = null;
-        }
+        // Unsubscribes from the cs2-tags event; TagsBridge.Unsubscribe() is
+        // [MethodImpl(NoInlining)] and references ITagApi in its body, so calling
+        // it here does NOT force TagsApi.dll to load when Unload() is JIT-compiled.
+        _tagsBridge?.Unsubscribe();
+        _tagsBridge = null;
 
         if (_adminsManager != null)
         {
@@ -265,9 +288,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     private void ApplyScoreTag(IPlayer player, GroupTagEntry? entry)
     {
-        if (_tagsApi == null || !IsValidRealPlayer(player)) return;
-        string score = entry != null ? (entry.ScoreTag ?? string.Empty) : string.Empty;
-        _tagsApi.SetAttribute(player, TagType.ScoreTag, score);
+        if (_tagsBridge == null || !IsValidRealPlayer(player)) return;
+        _tagsBridge.ApplyScore(player, entry);
     }
 
     // ── Cookie helpers ────────────────────────────────────────────────────────
@@ -452,26 +474,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     }
 
     // ── Chat interception ─────────────────────────────────────────────────────
-
-    private HookResult OnMessageProcessPre(MessageProcess mp)
-    {
-        if (mp?.Player == null) return HookResult.Continue;
-        if (!IsValidRealPlayer(mp.Player)) return HookResult.Continue;
-
-        // key absent  → no tags
-        // key present, null → player chose "no tag"
-        if (!_activeTag.TryGetValue(mp.Player.SteamID, out var entry) || entry == null)
-            return HookResult.Continue;
-
-        var tag = mp.Tag;
-        if (!string.IsNullOrEmpty(entry.ChatTag))   tag.ChatTag   = entry.ChatTag;
-        if (!string.IsNullOrEmpty(entry.ChatColor)) tag.ChatColor = entry.ChatColor;
-        if (!string.IsNullOrEmpty(entry.NameColor)) tag.NameColor = entry.NameColor;
-        if (!string.IsNullOrEmpty(entry.ScoreTag))  tag.ScoreTag  = entry.ScoreTag;
-        tag.ChatSound = entry.ChatSound;
-
-        return HookResult.Continue;
-    }
+    // Moved into TagsBridge to keep all MessageProcess / TagType references out
+    // of the main class (avoids JIT-time TagsApi.dll loading when cs2-tags is absent).
 
     // ── !sw_tags command & menu ───────────────────────────────────────────────
 
@@ -550,15 +554,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                     if (!IsValidRealPlayer(clicker)) return;
 
                     _activeTag[clicker.SteamID] = capturedEntry;
-
-                    if (_tagsApi != null)
-                    {
-                        _tagsApi.SetAttribute(clicker, TagType.ScoreTag,  capturedEntry.ScoreTag  ?? string.Empty);
-                        _tagsApi.SetAttribute(clicker, TagType.ChatTag,   capturedEntry.ChatTag   ?? string.Empty);
-                        _tagsApi.SetAttribute(clicker, TagType.ChatColor, capturedEntry.ChatColor ?? string.Empty);
-                        _tagsApi.SetAttribute(clicker, TagType.NameColor, capturedEntry.NameColor ?? string.Empty);
-                        _tagsApi.SetPlayerChatSound(clicker, capturedEntry.ChatSound);
-                    }
+                    _tagsBridge?.ApplyFull(clicker, capturedEntry);
 
                     SaveTagCookie(clicker, MakeCookieValue(capturedEntry));
                     Chat(clicker, "TagSelected", capturedEntry.GetMenuLabel());
@@ -588,14 +584,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 if (!IsValidRealPlayer(clicker)) return;
 
                 _activeTag[clicker.SteamID] = null;   // null = "no tag"
-
-                if (_tagsApi != null)
-                {
-                    _tagsApi.SetAttribute(clicker, TagType.ScoreTag,  string.Empty);
-                    _tagsApi.SetAttribute(clicker, TagType.ChatTag,   string.Empty);
-                    _tagsApi.SetAttribute(clicker, TagType.ChatColor, string.Empty);
-                    _tagsApi.SetAttribute(clicker, TagType.NameColor, string.Empty);
-                }
+                _tagsBridge?.ClearFull(clicker);
 
                 SaveTagCookie(clicker, NullTagSentinel);
                 Chat(clicker, "TagRemoved");
@@ -606,4 +595,94 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         Core.MenusAPI.OpenMenuForPlayer(player, menu);
     }
+}
+
+/// <summary>
+/// Isolates every <c>TagsApi</c> type reference (<c>ITagApi</c>, <c>TagType</c>,
+/// <c>MessageProcess</c>) inside a single sealed class whose methods are all
+/// <see cref="MethodImplOptions.NoInlining"/>.
+///
+/// <para>
+/// Because the .NET JIT compiles methods lazily (on first call), keeping TagsApi
+/// types out of <c>ZPLTagsPlugin</c>'s method bodies means those methods can be
+/// compiled even when <c>TagsApi.dll</c> is absent.  Methods on this class are
+/// only ever called after <c>IInterfaceManager.HasSharedInterface("Tags.Api")</c>
+/// has confirmed the DLL is present, so their JIT compilation always succeeds.
+/// </para>
+/// </summary>
+internal sealed class TagsBridge
+{
+    private readonly ITagApi _api;
+    private readonly Dictionary<ulong, GroupTagEntry?> _activeTag;
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public TagsBridge(ITagApi api, Dictionary<ulong, GroupTagEntry?> activeTag)
+    {
+        _api       = api;
+        _activeTag = activeTag;
+    }
+
+    /// <summary>Subscribes the chat-interception hook to the Tags API event.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void Subscribe()   => _api.OnMessageProcessPre += OnMessageProcessPre;
+
+    /// <summary>Unsubscribes the chat-interception hook from the Tags API event.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void Unsubscribe() => _api.OnMessageProcessPre -= OnMessageProcessPre;
+
+    /// <summary>Updates the scoreboard clan-tag slot for <paramref name="player"/>.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void ApplyScore(IPlayer player, GroupTagEntry? entry)
+    {
+        string score = entry?.ScoreTag ?? string.Empty;
+        _api.SetAttribute(player, TagType.ScoreTag, score);
+    }
+
+    /// <summary>
+    /// Applies all tag attributes (score, chat, colors, sound) from
+    /// <paramref name="entry"/> to <paramref name="player"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void ApplyFull(IPlayer player, GroupTagEntry entry)
+    {
+        _api.SetAttribute(player, TagType.ScoreTag,  entry.ScoreTag  ?? string.Empty);
+        _api.SetAttribute(player, TagType.ChatTag,   entry.ChatTag   ?? string.Empty);
+        _api.SetAttribute(player, TagType.ChatColor, entry.ChatColor ?? string.Empty);
+        _api.SetAttribute(player, TagType.NameColor, entry.NameColor ?? string.Empty);
+        _api.SetPlayerChatSound(player, entry.ChatSound);
+    }
+
+    /// <summary>Clears all tag attributes for <paramref name="player"/>.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void ClearFull(IPlayer player)
+    {
+        _api.SetAttribute(player, TagType.ScoreTag,  string.Empty);
+        _api.SetAttribute(player, TagType.ChatTag,   string.Empty);
+        _api.SetAttribute(player, TagType.ChatColor, string.Empty);
+        _api.SetAttribute(player, TagType.NameColor, string.Empty);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private HookResult OnMessageProcessPre(MessageProcess mp)
+    {
+        if (mp?.Player == null) return HookResult.Continue;
+        if (!IsValidPlayer(mp.Player)) return HookResult.Continue;
+
+        // key absent  → no tags
+        // key present, null → player chose "no tag"
+        if (!_activeTag.TryGetValue(mp.Player.SteamID, out var entry) || entry == null)
+            return HookResult.Continue;
+
+        var tag = mp.Tag;
+        if (!string.IsNullOrEmpty(entry.ChatTag))   tag.ChatTag   = entry.ChatTag;
+        if (!string.IsNullOrEmpty(entry.ChatColor)) tag.ChatColor = entry.ChatColor;
+        if (!string.IsNullOrEmpty(entry.NameColor)) tag.NameColor = entry.NameColor;
+        if (!string.IsNullOrEmpty(entry.ScoreTag))  tag.ScoreTag  = entry.ScoreTag;
+        tag.ChatSound = entry.ChatSound;
+
+        return HookResult.Continue;
+    }
+
+    private static bool IsValidPlayer(IPlayer? p)
+        => p != null && p.IsValid && !p.IsFakeClient && p.SteamID != 0;
 }
