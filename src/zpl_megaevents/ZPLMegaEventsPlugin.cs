@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using SwiftlyS2.Shared;
 using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
+using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
 using System.Data;
@@ -181,7 +182,7 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
     //  Event handlers
     // ─────────────────────────────────────────────────────────────────────────
 
-    private void OnRoundFreezeEnd(EventRoundFreezeEnd @event, GameEventInfo info)
+    private HookResult OnRoundFreezeEnd(EventRoundFreezeEnd @event)
     {
         // Reset per-round state
         _roundCts?.Cancel();
@@ -201,7 +202,7 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         // Determine active event for this round
         (_activeEvent, _innerEvent, _isHappyHour) = SelectEvent();
 
-        if (_activeEvent == MegaEventType.None) return;
+        if (_activeEvent == MegaEventType.None) return HookResult.Continue;
 
         AnnounceEventStart();
 
@@ -215,13 +216,15 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 AnnounceProgress();
             });
         }
+
+        return HookResult.Continue;
     }
 
-    private void OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    private HookResult OnRoundEnd(EventRoundEnd @event)
     {
         _roundCts?.Cancel();
 
-        if (_activeEvent == MegaEventType.None || _eventCompleted) return;
+        if (_activeEvent == MegaEventType.None || _eventCompleted) return HookResult.Continue;
 
         var resolvedEvent = _isHappyHour ? _innerEvent : _activeEvent;
 
@@ -248,24 +251,25 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         }
 
         _activeEvent = MegaEventType.None;
+        return HookResult.Continue;
     }
 
-    private void OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+    private HookResult OnPlayerDeath(EventPlayerDeath @event)
     {
-        if (_activeEvent == MegaEventType.None || _eventCompleted) return;
+        if (_activeEvent == MegaEventType.None || _eventCompleted) return HookResult.Continue;
         var resolvedEvent = _isHappyHour ? _innerEvent : _activeEvent;
-        if (resolvedEvent != MegaEventType.KillFrenzy) return;
+        if (resolvedEvent != MegaEventType.KillFrenzy) return HookResult.Continue;
 
-        var attacker = @event.Attacker;
-        var victim   = @event.Player;
-        if (attacker == null || victim == null || !attacker.IsValid || !victim.IsValid) return;
-        if (attacker.SteamID == 0) return;
-        if (_zplApi == null) return;
+        var attacker = @event.AttackerPlayer;
+        var victim   = @event.UserIdPlayer;
+        if (attacker == null || victim == null || !attacker.IsValid || !victim.IsValid) return HookResult.Continue;
+        if (attacker.SteamID == 0) return HookResult.Continue;
+        if (_zplApi == null) return HookResult.Continue;
 
         // Only count zombie-kills by humans
         bool attackerIsHuman = !_zplApi.ZPL_IsZombie(attacker.PlayerID);
         bool victimIsZombie  =  _zplApi.ZPL_IsZombie(victim.PlayerID);
-        if (!attackerIsHuman || !victimIsZombie) return;
+        if (!attackerIsHuman || !victimIsZombie) return HookResult.Continue;
 
         _killsThisRound.TryGetValue(attacker.SteamID, out int prev);
         int newCount = prev + 1;
@@ -280,19 +284,21 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
             DbRecordEvent(attacker.SteamID, ap);
             Announce($" {_config.ChatPrefix} [gold]🏆 {attacker.Name}[default] won the [gold]Kill Frenzy[default]! ({newCount}/{target} kills) → [gold]+{ap} AP");
         }
+
+        return HookResult.Continue;
     }
 
-    private void OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+    private HookResult OnPlayerHurt(EventPlayerHurt @event)
     {
-        if (_activeEvent == MegaEventType.None || _eventCompleted) return;
+        if (_activeEvent == MegaEventType.None || _eventCompleted) return HookResult.Continue;
         var resolvedEvent = _isHappyHour ? _innerEvent : _activeEvent;
-        if (resolvedEvent != MegaEventType.DamageMarathon) return;
+        if (resolvedEvent != MegaEventType.DamageMarathon) return HookResult.Continue;
 
-        var attacker = @event.Attacker;
-        if (attacker == null || !attacker.IsValid || attacker.SteamID == 0) return;
+        var attacker = @event.AttackerPlayer;
+        if (attacker == null || !attacker.IsValid || attacker.SteamID == 0) return HookResult.Continue;
 
         int dmg = @event.DmgHealth;
-        if (dmg <= 0) return;
+        if (dmg <= 0) return HookResult.Continue;
 
         _damageThisRound.TryGetValue(attacker.SteamID, out long prev);
         long newDmg = prev + dmg;
@@ -307,6 +313,8 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
             DbRecordEvent(attacker.SteamID, ap);
             Announce($" {_config.ChatPrefix} [gold]🏆 {attacker.Name}[default] won the [gold]Damage Marathon[default]! ({newDmg:N0}/{target:N0} damage) → [gold]+{ap} AP");
         }
+
+        return HookResult.Continue;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -626,7 +634,7 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
             foreach (var player in Core.PlayerManager.GetAllPlayers())
             {
                 if (player != null && player.IsValid && !player.IsFakeClient)
-                    player.SendMessage(SwiftlyS2.Shared.Misc.MessageType.Chat, msg);
+                    player.SendMessage(MessageType.Chat, msg);
             }
         });
     }
