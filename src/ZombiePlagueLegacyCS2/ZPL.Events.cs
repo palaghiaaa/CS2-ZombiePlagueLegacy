@@ -1424,6 +1424,10 @@ public partial class ZPLEvents
             if (!player.IsValid)
                 continue;
 
+            var controller = player.Controller;
+            if (controller == null || !controller.IsValid)
+                continue;
+
             var pawn = player.PlayerPawn;
             if (pawn == null || !pawn.IsValid)
                 continue;
@@ -1507,12 +1511,12 @@ public partial class ZPLEvents
                     continue;
             }
 
-            var pawn = player.PlayerPawn;
-            if (pawn == null || !pawn.IsValid)
-                continue;
-
             var controller = player.Controller;
             if (controller == null || !controller.IsValid)
+                continue;
+
+            var pawn = player.PlayerPawn;
+            if (pawn == null || !pawn.IsValid)
                 continue;
 
             var ControllerValue = controller.PlayerPawn.Value;
@@ -1552,6 +1556,10 @@ public partial class ZPLEvents
 
             _globals.ExtraJumps.TryGetValue(id, out int extraJumps);
             if (extraJumps <= 0)
+                continue;
+
+            var controller = player.Controller;
+            if (controller == null || !controller.IsValid)
                 continue;
 
             var pawn = player.PlayerPawn;
@@ -1639,6 +1647,9 @@ public partial class ZPLEvents
             }
 
             if (!leapEnabled) continue;
+
+            var controller = player.Controller;
+            if (controller == null || !controller.IsValid) continue;
 
             var pawn = player.PlayerPawn;
             if (pawn == null || !pawn.IsValid) continue;
