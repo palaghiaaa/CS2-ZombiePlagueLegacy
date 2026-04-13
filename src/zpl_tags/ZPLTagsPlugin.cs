@@ -316,6 +316,28 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     }
 
     /// <summary>
+    /// Applies ALL tag attributes (score, chat tag, chat color, name color) for
+    /// <paramref name="entry"/> when cs2-tags is loaded, or falls back to setting
+    /// only the scoreboard clan tag when cs2-tags is absent.
+    /// Use this on connect / restore so chat tags are active immediately.
+    /// </summary>
+    private void ApplyFullTag(IPlayer player, GroupTagEntry? entry)
+    {
+        if (!IsValidRealPlayer(player)) return;
+        if (_tagsBridge != null)
+        {
+            if (entry != null)
+                _tagsBridge.ApplyFull(player, entry);
+            else
+                _tagsBridge.ClearFull(player);
+        }
+        else
+        {
+            SetScoreTagDirect(player, entry?.ScoreTag);
+        }
+    }
+
+    /// <summary>
     /// Applies a score (clan) tag directly via the player controller schema, used
     /// when cs2-tags is not loaded.  Must be called from the game thread.
     /// </summary>
@@ -544,7 +566,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
             {
                 // Player explicitly saved "no tag".
                 _activeTag[sid] = null;
-                ApplyScoreTag(player, null);
+                // Use ApplyFullTag so chat/name attributes are also cleared.
+                ApplyFullTag(player, null);
                 return;
             }
 
@@ -554,7 +577,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 if (found != null)
                 {
                     _activeTag[sid] = found;
-                    ApplyScoreTag(player, found);
+                    // Apply all attributes (score + chat tag + colors) on restore.
+                    ApplyFullTag(player, found);
                     return;
                 }
                 // Saved entry is no longer eligible (group/permission removed) —
@@ -566,7 +590,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         if (!_activeTag.ContainsKey(sid))
         {
             _activeTag[sid] = eligible[0];
-            ApplyScoreTag(player, eligible[0]);
+            // Apply all attributes so chat tags are active immediately on connect.
+            ApplyFullTag(player, eligible[0]);
         }
     }
 
@@ -668,7 +693,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             Title                    = HtmlGradient.GenerateGradientText(_config.MenuTitle, Color.Gold, Color.Orange),
             FreezePlayer             = false,
-            MaxVisibleItems          = 6,
+            MaxVisibleItems          = 5,
             PlaySound                = true,
             AutoIncreaseVisibleItems = false,
             HideFooter               = false

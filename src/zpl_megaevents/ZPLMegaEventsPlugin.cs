@@ -10,6 +10,7 @@ using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
 using System.Data;
+using System.Globalization;
 using ZombiePlagueLegacyCS2;
 
 namespace ZPLMegaEvents;
@@ -509,9 +510,19 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
     /// <summary>
     /// Returns (activeEvent, innerEvent, isHappyHour).
     /// <paramref name="innerEvent"/> is only set when <paramref name="isHappyHour"/> is true.
+    /// Scheduled events (calendar-based) take precedence over the random pool.
     /// </summary>
     private (MegaEventType active, MegaEventType inner, bool isHappyHour) SelectEvent()
     {
+        // ── Calendar-based scheduled events (highest priority) ────────────────
+        var scheduledType = FindScheduledEventType();
+        if (scheduledType.HasValue && scheduledType.Value != MegaEventType.None)
+        {
+            _logger?.LogInformation("[MegaEvents] Scheduled event active: {Event}", scheduledType.Value);
+            return (scheduledType.Value, MegaEventType.None, false);
+        }
+
+        // ── Round-counter happy hour ──────────────────────────────────────────
         bool happyHour = _config.HappyHour.RoundInterval > 0 &&
                          (_roundsPlayed % _config.HappyHour.RoundInterval == 0);
 
@@ -535,6 +546,49 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
             return (MegaEventType.HappyHour, chosen, true);
 
         return (chosen, MegaEventType.None, false);
+    }
+
+    /// <summary>
+    /// Scans the <see cref="ZPLMegaEventsCFG.ScheduledEvents"/> list and returns the
+    /// first <see cref="MegaEventType"/> whose time window matches the current wall-clock
+    /// time, or <c>null</c> when no window is active.
+    /// </summary>
+    private MegaEventType? FindScheduledEventType()
+    {
+        var scheduleCfg = _config.ScheduledEvents;
+        if (!scheduleCfg.Enable || scheduleCfg.Events.Count == 0)
+            return null;
+
+        // Apply the configured UTC offset so operators can express local times.
+        var now        = DateTimeOffset.UtcNow.AddHours(scheduleCfg.TimezoneOffsetHours);
+        int currentDow  = (int)now.DayOfWeek; // 0 = Sunday
+        int currentHour = now.Hour;
+        int weekOfYear  = ISOWeek.GetWeekOfYear(now.DateTime);
+
+        foreach (var entry in scheduleCfg.Events)
+        {
+            // Day-of-week filter (empty list = every day)
+            if (entry.DaysOfWeek.Count > 0 && !entry.DaysOfWeek.Contains(currentDow))
+                continue;
+
+            // Hour-of-day window (handles wrap-around midnight when HourEnd < HourStart)
+            bool inHourWindow;
+            if (entry.HourStart <= entry.HourEnd)
+                inHourWindow = currentHour >= entry.HourStart && currentHour < entry.HourEnd;
+            else
+                inHourWindow = currentHour >= entry.HourStart || currentHour < entry.HourEnd;
+            if (!inHourWindow)
+                continue;
+
+            // Week-interval filter (0 or 1 = every week, N = every N-th ISO week)
+            int interval = entry.WeekInterval <= 1 ? 1 : entry.WeekInterval;
+            if (interval > 1 && (weekOfYear % interval) != 0)
+                continue;
+
+            return entry.EventType;
+        }
+
+        return null;
     }
 
     private List<(MegaEventType evt, int weight)> BuildEventPool()

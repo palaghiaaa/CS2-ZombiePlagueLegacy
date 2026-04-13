@@ -74,6 +74,13 @@ public class ZPLMegaEventsCFG
     /// Rounds are counted since plugin load; set RoundInterval to 0 to disable.
     /// </summary>
     public HappyHourConfig HappyHour { get; set; } = new();
+
+    /// <summary>
+    /// Calendar-based event scheduler.  When enabled, rounds that start within
+    /// a configured time window force a specific event type instead of using the
+    /// random weight pool.  Supports hourly, daily, and weekly schedules.
+    /// </summary>
+    public ScheduledEventsConfig ScheduledEvents { get; set; } = new();
 }
 
 // ── Per-event config classes ──────────────────────────────────────────────────
@@ -169,4 +176,61 @@ public class HappyHourConfig
 
     /// <summary>Multiplier applied to all AP rewards during a happy-hour round.</summary>
     public float Multiplier { get; set; } = 2.0f;
+}
+
+// ── Scheduled events ──────────────────────────────────────────────────────────
+
+/// <summary>
+/// A single time-window entry that forces a specific <see cref="MegaEventType"/>
+/// to activate during matching rounds instead of using the random pool.
+/// Times use the timezone configured in <see cref="ScheduledEventsConfig.TimezoneOffsetHours"/>.
+/// </summary>
+public class ScheduledEventEntry
+{
+    /// <summary>The event type to force during this window.</summary>
+    public MegaEventType EventType { get; set; } = MegaEventType.HappyHour;
+
+    /// <summary>
+    /// Days of the week when this window is active (0 = Sunday, 1 = Monday, …, 6 = Saturday).
+    /// Leave empty to apply every day.
+    /// </summary>
+    public List<int> DaysOfWeek { get; set; } = new();
+
+    /// <summary>Start hour of the active window in 24-hour format (0–23).</summary>
+    public int HourStart { get; set; } = 18;
+
+    /// <summary>
+    /// End hour of the active window in 24-hour format (0–23, exclusive).
+    /// Set higher than HourStart for a same-day window (e.g. 18→20).
+    /// Set lower to span midnight (e.g. 22→2 = 22:00 to 02:00).
+    /// </summary>
+    public int HourEnd { get; set; } = 20;
+
+    /// <summary>
+    /// Repeat every N calendar weeks.  1 = every week, 2 = every other week, etc.
+    /// 0 or 1 = every matching week (no skipping).
+    /// Uses ISO 8601 week numbering: week 1 is the week containing the year's first
+    /// Thursday, so week 1 may begin in late December of the previous year.
+    /// </summary>
+    public int WeekInterval { get; set; } = 1;
+}
+
+/// <summary>
+/// Configuration for calendar-based scheduled events.
+/// When enabled, rounds whose start time falls within a defined window will
+/// force the specified event type rather than drawing from the random pool.
+/// </summary>
+public class ScheduledEventsConfig
+{
+    /// <summary>Set to true to enable calendar-based event scheduling.</summary>
+    public bool Enable { get; set; } = false;
+
+    /// <summary>
+    /// Timezone offset in whole hours from UTC used when evaluating schedules
+    /// (e.g. 3 for UTC+3, -5 for UTC-5).  Fractional offsets are not supported.
+    /// </summary>
+    public int TimezoneOffsetHours { get; set; } = 0;
+
+    /// <summary>List of scheduled time windows.  First match wins.</summary>
+    public List<ScheduledEventEntry> Events { get; set; } = new();
 }
