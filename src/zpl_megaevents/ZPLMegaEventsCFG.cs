@@ -166,7 +166,7 @@ public class InfectionRushConfig
     public int WinnerRewardAP { get; set; } = 50;
 
     /// <summary>AP awarded to every zombie who infects at least 1 human (consolation).</summary>
-    public int ParticipantRewardAP { get; set; } = 5;
+    public int ParticipantRewardAP { get; set; } = 8;
 }
 
 public class KillFrenzyConfig
@@ -181,7 +181,7 @@ public class KillFrenzyConfig
     public int WinnerRewardAP { get; set; } = 50;
 
     /// <summary>AP awarded to every human who kills at least 1 zombie (consolation).</summary>
-    public int ParticipantRewardAP { get; set; } = 5;
+    public int ParticipantRewardAP { get; set; } = 8;
 }
 
 public class FortressDefenseConfig
@@ -189,8 +189,11 @@ public class FortressDefenseConfig
     public bool Enable { get; set; } = true;
     public int Weight { get; set; } = 15;
 
-    /// <summary>AP awarded to every human who survives until round-end timer.</summary>
-    public int RewardAP { get; set; } = 30;
+    /// <summary>
+    /// AP awarded to every human who survives until the round-end timer.
+    /// Survival is genuinely difficult in ZPL, so this reward is higher than zombie-side events.
+    /// </summary>
+    public int RewardAP { get; set; } = 35;
 }
 
 public class ZombieArmadaConfig
@@ -198,7 +201,7 @@ public class ZombieArmadaConfig
     public bool Enable { get; set; } = true;
     public int Weight { get; set; } = 15;
 
-    /// <summary>AP awarded to every alive zombie when all humans are wiped before timer.</summary>
+    /// <summary>AP awarded to every alive zombie when all humans are wiped before the timer.</summary>
     public int RewardAP { get; set; } = 30;
 }
 
@@ -219,16 +222,19 @@ public class SpecialClassBonusConfig
     public bool Enable { get; set; } = true;
     public int Weight { get; set; } = 15;
 
-    /// <summary>AP given to the Nemesis if they survive the round (humans don't wipe nemesis).</summary>
-    public int NemesisWinAP { get; set; } = 100;
+    /// <summary>
+    /// AP given to the Nemesis if zombies win the round.
+    /// Nemesis is one player holding off all humans — high reward reflects high difficulty.
+    /// </summary>
+    public int NemesisWinAP { get; set; } = 120;
 
-    /// <summary>AP given to the Assassin if they survive the round.</summary>
-    public int AssassinWinAP { get; set; } = 100;
+    /// <summary>AP given to the Assassin if zombies win the round.</summary>
+    public int AssassinWinAP { get; set; } = 120;
 
-    /// <summary>AP given to the Survivor if they survive the round.</summary>
+    /// <summary>AP given to the Survivor if humans win the round.</summary>
     public int SurvivorWinAP { get; set; } = 100;
 
-    /// <summary>AP given to the Sniper if they survive the round.</summary>
+    /// <summary>AP given to the Sniper if humans win the round.</summary>
     public int SniperWinAP { get; set; } = 100;
 }
 
@@ -255,9 +261,12 @@ public class GiveAwayConfig
     public int Weight { get; set; } = 10;
 
     /// <summary>AP awarded to the randomly selected winner.</summary>
-    public int WinnerRewardAP { get; set; } = 75;
+    public int WinnerRewardAP { get; set; } = 60;
 
-    /// <summary>AP awarded to every other online player (consolation).</summary>
+    /// <summary>
+    /// AP awarded to every other online player (consolation).
+    /// Kept low — the point is to reward the lucky winner, not the whole server.
+    /// </summary>
     public int ConsolationAP { get; set; } = 5;
 }
 
@@ -266,14 +275,17 @@ public class HeadshotKingConfig
     public bool Enable { get; set; } = true;
     public int Weight { get; set; } = 15;
 
-    /// <summary>Number of headshot kills a human must achieve to win immediately.</summary>
+    /// <summary>Number of headshot kills on zombies a human must achieve to win immediately.</summary>
     public int TargetHeadshots { get; set; } = 3;
 
-    /// <summary>AP awarded to the first human to reach TargetHeadshots.</summary>
-    public int WinnerRewardAP { get; set; } = 60;
+    /// <summary>
+    /// AP awarded to the first human to reach TargetHeadshots.
+    /// Headshots require skill and aim; reward is higher than plain kills.
+    /// </summary>
+    public int WinnerRewardAP { get; set; } = 70;
 
     /// <summary>AP awarded to every human with at least 1 headshot kill (consolation).</summary>
-    public int ParticipantRewardAP { get; set; } = 5;
+    public int ParticipantRewardAP { get; set; } = 8;
 }
 
 public class KnifeKillConfig
@@ -281,8 +293,11 @@ public class KnifeKillConfig
     public bool Enable { get; set; } = true;
     public int Weight { get; set; } = 10;
 
-    /// <summary>AP awarded to the first human who knife-kills a zombie.</summary>
-    public int WinnerRewardAP { get; set; } = 100;
+    /// <summary>
+    /// AP awarded to the first human who knife-kills a zombie.
+    /// Knife-kills require getting dangerously close to the zombie — the highest single-kill reward.
+    /// </summary>
+    public int WinnerRewardAP { get; set; } = 150;
 }
 
 public class GrenadeKingConfig
@@ -293,11 +308,14 @@ public class GrenadeKingConfig
     /// <summary>Number of grenade kills a human must achieve to win immediately.</summary>
     public int TargetGrenadeKills { get; set; } = 2;
 
-    /// <summary>AP awarded to the first human to reach TargetGrenadeKills.</summary>
-    public int WinnerRewardAP { get; set; } = 80;
+    /// <summary>
+    /// AP awarded to the first human to reach TargetGrenadeKills.
+    /// Grenades have limited ammo; reward reflects the resource cost.
+    /// </summary>
+    public int WinnerRewardAP { get; set; } = 75;
 
     /// <summary>AP awarded to every human with at least 1 grenade kill (consolation).</summary>
-    public int ParticipantRewardAP { get; set; } = 5;
+    public int ParticipantRewardAP { get; set; } = 8;
 }
 
 public class MVPRoundConfig
@@ -309,7 +327,7 @@ public class MVPRoundConfig
     public int WinnerRewardAP { get; set; } = 50;
 
     /// <summary>AP awarded to every other player who got at least 1 kill (consolation).</summary>
-    public int ParticipantRewardAP { get; set; } = 5;
+    public int ParticipantRewardAP { get; set; } = 8;
 }
 
 public class ZombieKingpinConfig
@@ -318,10 +336,10 @@ public class ZombieKingpinConfig
     public int Weight { get; set; } = 10;
 
     /// <summary>AP awarded to the zombie who dealt the most damage to humans at round end.</summary>
-    public int WinnerRewardAP { get; set; } = 60;
+    public int WinnerRewardAP { get; set; } = 55;
 
     /// <summary>AP awarded to every other zombie who dealt any damage to humans (consolation).</summary>
-    public int ParticipantRewardAP { get; set; } = 5;
+    public int ParticipantRewardAP { get; set; } = 8;
 }
 
 public class DoubleDownConfig
@@ -329,8 +347,11 @@ public class DoubleDownConfig
     public bool Enable { get; set; } = true;
     public int Weight { get; set; } = 5;
 
-    /// <summary>Flat AP given to every online player at round start.</summary>
-    public int RewardAP { get; set; } = 20;
+    /// <summary>
+    /// Flat AP given to every online player at round start.
+    /// No winner — kept deliberately low since it benefits everyone equally.
+    /// </summary>
+    public int RewardAP { get; set; } = 15;
 }
 
 // ── Map-level event config ────────────────────────────────────────────────────
@@ -345,11 +366,14 @@ public class MapGiveAwayConfig
     /// <summary>Set to true to enable map-level giveaways.</summary>
     public bool Enable { get; set; } = false;
 
-    /// <summary>AP awarded to the randomly selected winner.</summary>
-    public int WinnerRewardAP { get; set; } = 200;
+    /// <summary>
+    /// AP awarded to the randomly selected winner.
+    /// Map giveaways are rare (once per map), so the reward is significantly higher than per-round events.
+    /// </summary>
+    public int WinnerRewardAP { get; set; } = 250;
 
     /// <summary>AP awarded to every other online player (consolation).</summary>
-    public int ConsolationAP { get; set; } = 10;
+    public int ConsolationAP { get; set; } = 15;
 
     /// <summary>
     /// Seconds after map load before the giveaway fires.
