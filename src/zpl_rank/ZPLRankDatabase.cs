@@ -1,82 +1,67 @@
-using Microsoft.Data.Sqlite;
+using System.Data;
 using Microsoft.Extensions.Logging;
+using SwiftlyS2.Shared;
 
 namespace ZPLRank;
 
 /// <summary>
-/// Manages SQLite persistence for ZPL Rank stats.
+/// Manages MySQL persistence for ZPL Rank stats via SwiftlyS2's
+/// <c>Core.Database.GetConnection()</c> abstraction.
 ///
 /// Schema (single table):
 ///   CREATE TABLE IF NOT EXISTS zpl_rank_stats (
-///       steam_id   TEXT    PRIMARY KEY,
-///       name       TEXT    NOT NULL,
-///       kills      INTEGER NOT NULL DEFAULT 0,
-///       deaths     INTEGER NOT NULL DEFAULT 0,
-///       infections INTEGER NOT NULL DEFAULT 0,
-///       assists    INTEGER NOT NULL DEFAULT 0,
-///       damage     INTEGER NOT NULL DEFAULT 0
-///   );
+///       steam_id   VARCHAR(32)  NOT NULL,
+///       name       VARCHAR(128) NOT NULL DEFAULT '',
+///       kills      INT          NOT NULL DEFAULT 0,
+///       deaths     INT          NOT NULL DEFAULT 0,
+///       infections INT          NOT NULL DEFAULT 0,
+///       assists    INT          NOT NULL DEFAULT 0,
+///       damage     BIGINT       NOT NULL DEFAULT 0,
+///       PRIMARY KEY (steam_id)
+///   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ///
-/// All reads and writes happen synchronously on the game-server thread
-/// (SwiftlyS2 does not expose a background-thread scheduler in a safe way).
-/// SQLite WAL mode is enabled to reduce lock contention when many players
-/// connect / disconnect in quick succession.
+/// All reads and writes happen synchronously on the game-server thread.
+/// The connection name references an entry in SwiftlyS2's
+/// <c>configs/database.jsonc</c> (default: "host").
 /// </summary>
-public sealed class ZPLRankDatabase(ILogger<ZPLRankDatabase> logger)
+public sealed class ZPLRankDatabase(ISwiftlyCore core, ILogger<ZPLRankDatabase> logger)
 {
-    private string? _connectionString;
+    private string _connectionName = "host";
     private bool _ready;
 
     // ── Initialisation ────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Opens (or creates) the SQLite database at <paramref name="dbPath"/>,
-    /// enables WAL journal mode, and ensures the stats table exists.
+    /// Connects to the named database, creates the stats table if absent,
+    /// and marks the service as ready.
     /// Must be called once from <c>ZPLRankPlugin.Load</c>.
     /// </summary>
-    public void EnsureSchema(string dbPath)
+    public void EnsureSchema(string connectionName)
     {
+        _connectionName = connectionName;
         try
         {
-            // Create the directory if needed.
-            string? dir = Path.GetDirectoryName(dbPath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-
-            _connectionString = new SqliteConnectionStringBuilder
-            {
-                DataSource = dbPath,
-                Mode       = SqliteOpenMode.ReadWriteCreate
-            }.ToString();
-
             using var conn = Open();
             using var cmd  = conn.CreateCommand();
-
-            // WAL mode: writers don't block readers.
-            cmd.CommandText = "PRAGMA journal_mode=WAL;";
-            cmd.ExecuteNonQuery();
-
             cmd.CommandText = """
                 CREATE TABLE IF NOT EXISTS zpl_rank_stats (
-                    steam_id   TEXT    PRIMARY KEY,
-                    name       TEXT    NOT NULL DEFAULT '',
-                    kills      INTEGER NOT NULL DEFAULT 0,
-                    deaths     INTEGER NOT NULL DEFAULT 0,
-                    infections INTEGER NOT NULL DEFAULT 0,
-                    assists    INTEGER NOT NULL DEFAULT 0,
-                    damage     INTEGER NOT NULL DEFAULT 0
-                );
+                    steam_id   VARCHAR(32)  NOT NULL,
+                    name       VARCHAR(128) NOT NULL DEFAULT '',
+                    kills      INT          NOT NULL DEFAULT 0,
+                    deaths     INT          NOT NULL DEFAULT 0,
+                    infections INT          NOT NULL DEFAULT 0,
+                    assists    INT          NOT NULL DEFAULT 0,
+                    damage     BIGINT       NOT NULL DEFAULT 0,
+                    PRIMARY KEY (steam_id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
                 """;
-            // Note: name defaults to '' so rows inserted from batch-load don't fail
-            // if the player hasn't been seen online yet.  The name is always
-            // overwritten with the live value on the next connect/stat update.
             cmd.ExecuteNonQuery();
-
             _ready = true;
+            logger.LogInformation("[ZPLRank-DB] Schema ready (connection='{Name}').", connectionName);
         }
         catch (Exception ex)
         {
-            logger.LogError("[ZPLRank-DB] Failed to initialise database at '{Path}': {Ex}", dbPath, ex.Message);
+            logger.LogError("[ZPLRank-DB] Failed to initialise database (connection='{Name}'): {Ex}", connectionName, ex.Message);
         }
     }
 
@@ -93,13 +78,10 @@ public sealed class ZPLRankDatabase(ILogger<ZPLRankDatabase> logger)
         {
             using var conn = Open();
             using var cmd  = conn.CreateCommand();
-            cmd.CommandText = """
-                SELECT name, kills, deaths, infections, assists, damage
-                FROM zpl_rank_stats
-                WHERE steam_id = $sid
-                LIMIT 1;
-                """;
-            cmd.Parameters.AddWithValue("$sid", steamId.ToString());
+            cmd.CommandText =
+                "SELECT name, kills, deaths, infections, assists, damage " +
+                "FROM zpl_rank_stats WHERE steam_id = @sid LIMIT 1";
+            AddParam(cmd, "@sid", steamId.ToString());
 
             using var reader = cmd.ExecuteReader();
             if (!reader.Read()) return null;
@@ -133,16 +115,15 @@ public sealed class ZPLRankDatabase(ILogger<ZPLRankDatabase> logger)
         {
             using var conn = Open();
             using var cmd  = conn.CreateCommand();
-            cmd.CommandText = """
-                SELECT steam_id, name, kills, deaths, infections, assists, damage
-                FROM zpl_rank_stats;
-                """;
+            cmd.CommandText =
+                "SELECT steam_id, name, kills, deaths, infections, assists, damage " +
+                "FROM zpl_rank_stats";
 
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 if (!ulong.TryParse(reader.GetString(0), out ulong sid)) continue;
-                var s = new ZPLRankPlugin.PlayerStat
+                stats[sid] = new ZPLRankPlugin.PlayerStat
                 {
                     Name       = reader.GetString(1),
                     Kills      = reader.GetInt32(2),
@@ -151,7 +132,6 @@ public sealed class ZPLRankDatabase(ILogger<ZPLRankDatabase> logger)
                     Assists    = reader.GetInt32(5),
                     Damage     = reader.GetInt64(6)
                 };
-                stats[sid] = s;
             }
         }
         catch (Exception ex)
@@ -163,7 +143,7 @@ public sealed class ZPLRankDatabase(ILogger<ZPLRankDatabase> logger)
     // ── Write ─────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Upserts (INSERT OR REPLACE) one player's stats.
+    /// Upserts one player's stats.
     /// Called on player disconnect and on round end as a safety net.
     /// </summary>
     public void Save(ulong steamId, ZPLRankPlugin.PlayerStat stat)
@@ -191,9 +171,17 @@ public sealed class ZPLRankDatabase(ILogger<ZPLRankDatabase> logger)
         {
             using var conn = Open();
             using var tx   = conn.BeginTransaction();
-            foreach (var (sid, stat) in stats)
-                SaveOne(conn, sid, stat);
-            tx.Commit();
+            try
+            {
+                foreach (var (sid, stat) in stats)
+                    SaveOne(conn, sid, stat, tx);
+                tx.Commit();
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
         }
         catch (Exception ex)
         {
@@ -203,35 +191,44 @@ public sealed class ZPLRankDatabase(ILogger<ZPLRankDatabase> logger)
 
     // ── Internals ─────────────────────────────────────────────────────────────
 
-    private SqliteConnection Open()
+    private IDbConnection Open()
     {
-        var conn = new SqliteConnection(_connectionString);
+        var conn = core.Database.GetConnection(_connectionName);
         conn.Open();
         return conn;
     }
 
-    private static void SaveOne(SqliteConnection conn, ulong steamId, ZPLRankPlugin.PlayerStat stat)
+    private static void SaveOne(IDbConnection conn, ulong steamId, ZPLRankPlugin.PlayerStat stat, IDbTransaction? tx = null)
     {
         using var cmd = conn.CreateCommand();
+        if (tx != null) cmd.Transaction = tx;
         cmd.CommandText = """
             INSERT INTO zpl_rank_stats (steam_id, name, kills, deaths, infections, assists, damage)
-            VALUES ($sid, $name, $kills, $deaths, $infections, $assists, $damage)
-            ON CONFLICT(steam_id) DO UPDATE SET
-                name       = excluded.name,
-                kills      = excluded.kills,
-                deaths     = excluded.deaths,
-                infections = excluded.infections,
-                assists    = excluded.assists,
-                damage     = excluded.damage;
+            VALUES (@sid, @name, @kills, @deaths, @infections, @assists, @damage)
+            ON DUPLICATE KEY UPDATE
+                name       = VALUES(name),
+                kills      = VALUES(kills),
+                deaths     = VALUES(deaths),
+                infections = VALUES(infections),
+                assists    = VALUES(assists),
+                damage     = VALUES(damage)
             """;
-        cmd.Parameters.AddWithValue("$sid",        steamId.ToString());
-        cmd.Parameters.AddWithValue("$name",       stat.Name);
-        cmd.Parameters.AddWithValue("$kills",      stat.Kills);
-        cmd.Parameters.AddWithValue("$deaths",     stat.Deaths);
-        cmd.Parameters.AddWithValue("$infections", stat.Infections);
-        cmd.Parameters.AddWithValue("$assists",    stat.Assists);
-        cmd.Parameters.AddWithValue("$damage",     stat.Damage);
+        AddParam(cmd, "@sid",        steamId.ToString());
+        AddParam(cmd, "@name",       stat.Name);
+        AddParam(cmd, "@kills",      stat.Kills);
+        AddParam(cmd, "@deaths",     stat.Deaths);
+        AddParam(cmd, "@infections", stat.Infections);
+        AddParam(cmd, "@assists",    stat.Assists);
+        AddParam(cmd, "@damage",     stat.Damage);
         cmd.ExecuteNonQuery();
+    }
+
+    private static void AddParam(IDbCommand cmd, string name, object? value)
+    {
+        var p = cmd.CreateParameter();
+        p.ParameterName = name;
+        p.Value = value ?? DBNull.Value;
+        cmd.Parameters.Add(p);
     }
 
     /// <summary>Row returned by <see cref="Load"/>.</summary>

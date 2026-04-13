@@ -1,0 +1,101 @@
+{
+  // ZPL Mega Events – per-round auto-scheduled challenge events with ammo-pack rewards.
+  // Hot-reload supported: save the file and changes apply immediately.
+  //
+  // Each round, one event is randomly selected from the enabled events (weighted).
+  // Players earn ammo packs (AP) by completing the event objective.
+  //
+  // Database: set "DatabaseConnection" to your SwiftlyS2 database.jsonc key to persist
+  // per-player mega-event statistics (completed events + total AP earned).
+
+  "ZPLMegaEventsCFG": {
+
+    // Named connection key from configs/database.jsonc.
+    // Set to "" to disable MySQL stats persistence.
+    "DatabaseConnection": "host",
+
+    // Chat prefix shown on all mega-event messages.
+    "ChatPrefix": "[gold][MegaEvents][default]",
+
+    // Economy wallet kind for ammo-pack rewards (must match Economy plugin config).
+    "WalletKind": "ammo",
+
+    // Set false to suppress all mega-event chat messages.
+    "EnableAnnouncements": true,
+
+    // Broadcast a progress reminder mid-round (who is leading, current score).
+    "EnableProgressReminder": true,
+
+    // Seconds after round freeze-end before the progress reminder fires.
+    "ProgressReminderSeconds": 60,
+
+    // ── Happy Hour ────────────────────────────────────────────────────────────
+    // Every N rounds all AP rewards are multiplied by Multiplier.
+    // Set RoundInterval to 0 to disable happy hour entirely.
+    "HappyHour": {
+      "RoundInterval": 10,
+      "Multiplier": 2.0
+    },
+
+    // ── Infection Rush ────────────────────────────────────────────────────────
+    // First zombie to infect N humans wins AP.
+    // Every zombie who infects at least 1 human earns a consolation reward.
+    "InfectionRush": {
+      "Enable": true,
+      "Weight": 20,
+      "TargetInfections": 3,
+      "WinnerRewardAP": 50,
+      "ParticipantRewardAP": 5
+    },
+
+    // ── Kill Frenzy ───────────────────────────────────────────────────────────
+    // First human to kill N zombies wins AP.
+    // Every human who kills at least 1 zombie earns a consolation reward.
+    "KillFrenzy": {
+      "Enable": true,
+      "Weight": 20,
+      "TargetKills": 5,
+      "WinnerRewardAP": 50,
+      "ParticipantRewardAP": 5
+    },
+
+    // ── Fortress Defense ──────────────────────────────────────────────────────
+    // All humans who survive until the round-end timer win AP.
+    "FortressDefense": {
+      "Enable": true,
+      "Weight": 15,
+      "RewardAP": 30
+    },
+
+    // ── Zombie Armada ─────────────────────────────────────────────────────────
+    // If zombies wipe out every human before the timer, all alive zombies win AP.
+    "ZombieArmada": {
+      "Enable": true,
+      "Weight": 15,
+      "RewardAP": 30
+    },
+
+    // ── Damage Marathon ───────────────────────────────────────────────────────
+    // First player to deal N total damage in one round wins AP.
+    "DamageMarathon": {
+      "Enable": true,
+      "Weight": 15,
+      "TargetDamage": 5000,
+      "WinnerRewardAP": 60
+    },
+
+    // ── Special Class Bonus ───────────────────────────────────────────────────
+    // Nemesis / Assassin / Survivor / Sniper earn bonus AP when they win their mode.
+    // Nemesis / Assassin win AP when zombies win (they survived).
+    // Survivor / Sniper win AP when humans win (they survived).
+    "SpecialClassBonus": {
+      "Enable": true,
+      "Weight": 15,
+      "NemesisWinAP": 100,
+      "AssassinWinAP": 100,
+      "SurvivorWinAP": 100,
+      "SniperWinAP": 100
+    }
+
+  }
+}

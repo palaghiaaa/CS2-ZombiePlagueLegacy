@@ -400,6 +400,15 @@ public class ZPLMainCFG
     /// </summary>
     public string EconomyWalletKind { get; set; } = "ammo";
 
+    // ── Database ──────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Named connection key from SwiftlyS2's <c>configs/database.jsonc</c>.
+    /// Used for persisting per-player zombie class preferences across sessions.
+    /// Set to "" to disable MySQL persistence (preferences will be in-memory only).
+    /// Example: "host": "mysql://user:pass@localhost:3306/mydb"
+    /// </summary>
+    public string DatabaseConnection { get; set; } = "host";
+
     // ── Fog ──────────────────────────────────────────────────────────────────
     /// <summary>
     /// Server-wide fog applied automatically on every map load and to every

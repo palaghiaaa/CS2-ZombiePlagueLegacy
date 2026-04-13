@@ -12,7 +12,6 @@
 		<PublishDir>$(OutputPath)publish/ZPLRank</PublishDir>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.3" />
 		<PackageReference Include="SwiftlyS2.CS2" Version="1.1.5-beta.27" />
 	</ItemGroup>
 	<ItemGroup>

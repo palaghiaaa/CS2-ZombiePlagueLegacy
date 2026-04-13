@@ -26,6 +26,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
     private ZPLGlobals _Globals = null!;
     private ZPLEvents _Events = null!;
     private ZPLCommands _Commands = null!;
+    private ZPLPlayerPrefsService? _prefsService;
 
     public override void ConfigureSharedInterface(IInterfaceManager interfaceManager)
     {
@@ -213,6 +214,9 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         collection.AddSingleton<ZPLMineService>();
         collection.AddSingleton<ZPLMineMenu>();
 
+        // ── MySQL zombie class preference service ─────────────────────────────
+        collection.AddSingleton<ZPLPlayerPrefsService>();
+
         collection.AddSingleton<ZPLEvents>();
         collection.AddSingleton<ZPLHelpers>();
         collection.AddSingleton<ZPLServices>();
@@ -257,6 +261,16 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
             _ZPLMainCFG = newConfig;
         });
 
+        // ── MySQL preference persistence ──────────────────────────────────────
+        // Only initialise when a connection name is configured.
+        if (!string.IsNullOrWhiteSpace(_ZPLMainCFG.DatabaseConnection))
+        {
+            _prefsService = ServiceProvider.GetRequiredService<ZPLPlayerPrefsService>();
+            _prefsService.EnsureSchema(_ZPLMainCFG.DatabaseConnection);
+            _prefsService.LoadAll(ServiceProvider.GetRequiredService<PlayerZombieState>());
+            _apiInstance.ZPL_OnPreferenceChanged += _prefsService.OnPreferenceChanged;
+        }
+
         _Events.HookEvents();
         _Events.HookZombieSoundEvents();
         _Commands.Command();
@@ -291,7 +305,14 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
 
         // Dezabonare de la evenimentele Economy
         ServiceProvider?.GetRequiredService<AmmoPacksService>().Dispose();
-        
+
+        // Unsubscribe MySQL preference listener before disposing the API.
+        if (_prefsService != null)
+        {
+            _apiInstance.ZPL_OnPreferenceChanged -= _prefsService.OnPreferenceChanged;
+            _prefsService = null;
+        }
+
         _Events?.UnhookZombieSoundEvents();
         _Events?.UnhookEvents();
         _apiInstance!.Dispose();

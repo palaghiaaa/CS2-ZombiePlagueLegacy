@@ -2,7 +2,9 @@
 
   "ZPLRankCFG": {
 
-    "DatabasePath": "addons/swiftly/data/ZPLRank.db",
+    // Named connection key from SwiftlyS2's configs/database.jsonc.
+    // Example: "host": "mysql://user:pass@localhost:3306/mydb"
+    "DatabaseConnection": "host",
 
     "ChatTag": "[ZPL Rank]",
 
