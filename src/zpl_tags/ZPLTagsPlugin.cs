@@ -71,6 +71,11 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private const string CookieKey               = "zpltags.selected";
     private const string NullTagSentinel         = "__none__";
 
+    // Extended retry delays (seconds) used in OnClientConnected to catch permissions
+    // that are granted asynchronously after the initial 2 s window.
+    // Matches cs2-tags' 40 s PermissionWarmupWindow.
+    private static readonly float[] ConnectRetryDelays = [5.0f, 10.0f, 20.0f, 40.0f];
+
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     public override void Load(bool hotReload)
@@ -644,10 +649,9 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         // for this player (including "no tag" sentinel), we skip to avoid
         // overriding a deliberate tag selection or spamming the permission API.
         // The window intentionally matches cs2-tags' 40 s PermissionWarmupWindow.
-        foreach (float delay in (float[])[5.0f, 10.0f, 20.0f, 40.0f])
+        foreach (float delay in ConnectRetryDelays)
         {
-            float captured = delay;
-            Core.Scheduler.DelayBySeconds(captured, () =>
+            Core.Scheduler.DelayBySeconds(delay, () =>
             {
                 Core.Scheduler.NextWorldUpdate(() =>
                 {
