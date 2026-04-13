@@ -617,8 +617,9 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         int playerId = @event.PlayerId;
 
-        // Two retries: one early (permissions already available) and one later
-        // (waits for the Admins plugin to finish async data loading).
+        // Early retries run unconditionally; they cover the common case where
+        // permissions are available by 0.5 s (SwiftlyS2 native flags) or by
+        // 2.0 s (Admins-plugin async load).
         Core.Scheduler.DelayBySeconds(0.5f, () =>
         {
             Core.Scheduler.NextWorldUpdate(() =>
@@ -636,6 +637,27 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 if (IsValidRealPlayer(player)) InitPlayer(player!);
             });
         });
+
+        // Extended retries cover external plugins (e.g. ShopCore) that grant
+        // SwiftlyS2-native permissions asynchronously after the 2 s window.
+        // Each attempt is guarded: if InitPlayer already populated _activeTag
+        // for this player (including "no tag" sentinel), we skip to avoid
+        // overriding a deliberate tag selection or spamming the permission API.
+        // The window intentionally matches cs2-tags' 40 s PermissionWarmupWindow.
+        foreach (float delay in (float[])[5.0f, 10.0f, 20.0f, 40.0f])
+        {
+            float captured = delay;
+            Core.Scheduler.DelayBySeconds(captured, () =>
+            {
+                Core.Scheduler.NextWorldUpdate(() =>
+                {
+                    var player = Core.PlayerManager.GetPlayer(playerId);
+                    if (!IsValidRealPlayer(player)) return;
+                    if (!_activeTag.ContainsKey(player!.SteamID))
+                        InitPlayer(player!);
+                });
+            });
+        }
     }
 
     private void OnClientDisconnected(IOnClientDisconnectedEvent @event)
