@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "zpl_tags", "zpl_tags", "{D1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZPLTags", "src\zpl_tags\ZPLTags.csproj", "{E525DF14-3CA1-448A-86E3-87E384ED11D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZPLMegaEvents", "src\zpl_megaevents\ZPLMegaEvents.csproj", "{B3C4D5E6-F7A8-9012-BC34-D5E6F7A89013}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
