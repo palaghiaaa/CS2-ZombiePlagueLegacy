@@ -16,6 +16,11 @@
 
   "ZPLTags": {
 
+    // Named connection key from SwiftlyS2's configs/database.jsonc.
+    // Set to "" to disable MySQL persistence (uses Cookies API if available).
+    // Example: "host": "mysql://user:pass@localhost:3306/mydb"
+    "DatabaseConnection": "host",
+
     "MenuCommand": "sw_tags",
     "MenuTitle":   "Select a Tag",
     "NoTagLabel":  "✖ Remove Tag",

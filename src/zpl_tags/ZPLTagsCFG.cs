@@ -10,6 +10,14 @@ public class ZPLTagsCFG
     // ── Menu ──────────────────────────────────────────────────────────────────
 
     /// <summary>
+    /// Named connection key from SwiftlyS2's <c>configs/database.jsonc</c>.
+    /// Used to persist the player's selected tag across sessions.
+    /// Set to "" to disable MySQL persistence (falls back to Cookies API if available).
+    /// Example: "host": "mysql://user:pass@localhost:3306/mydb"
+    /// </summary>
+    public string DatabaseConnection { get; set; } = "host";
+
+    /// <summary>
     /// Chat/console command that opens the tag-selection menu.
     /// Registered once on Load; change requires plugin reload.
     /// </summary>

@@ -2,6 +2,11 @@
 
   "ZPLMainCFG": {
 
+    // Named connection key from SwiftlyS2's configs/database.jsonc.
+    // Set to "" to disable MySQL persistence for zombie class preferences.
+    // Example: "host": "mysql://user:pass@localhost:3306/mydb"
+    "DatabaseConnection": "host",
+
     "RoundReadyTime": "22.0",
 
     "RoundTime": "4.0",

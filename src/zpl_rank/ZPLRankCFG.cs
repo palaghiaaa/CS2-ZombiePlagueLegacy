@@ -10,11 +10,11 @@ public class ZPLRankCFG
     // ── Database ──────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Path (relative to the server's CS:GO root, or absolute) for the SQLite
-    /// database file that stores rank statistics across server restarts.
-    /// The directory is created automatically on first run.
+    /// Named connection key from SwiftlyS2's <c>configs/database.jsonc</c>.
+    /// Example entry: "host": "mysql://user:pass@localhost:3306/mydb"
+    /// Defaults to "host" (the SwiftlyS2 default connection name).
     /// </summary>
-    public string DatabasePath { get; set; } = "addons/swiftly/data/ZPLRank.db";
+    public string DatabaseConnection { get; set; } = "host";
 
     // ── Chat ─────────────────────────────────────────────────────────────────
 

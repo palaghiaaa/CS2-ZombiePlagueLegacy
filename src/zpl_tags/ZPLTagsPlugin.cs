@@ -13,6 +13,7 @@ using SwiftlyS2.Shared.Menus;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
+using System.Data;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using TagsApi;
@@ -51,6 +52,13 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private readonly Dictionary<ulong, GroupTagEntry?> _activeTag = new();
 
     private CancellationTokenSource? _refreshCts;
+
+    // ── MySQL tag persistence ─────────────────────────────────────────────────
+    // SteamID64 → saved composite cookie value loaded from MySQL at plugin start.
+    // Takes precedence over the Cookies API when a database connection is configured.
+    private readonly Dictionary<ulong, string> _savedTags = new();
+    private bool   _dbReady;
+    private string _dbConnectionName = string.Empty;
 
     // Prevents duplicate EventNextlevelChanged fires within a single world update.
     // Interlocked operations provide the required memory barriers; volatile is
@@ -101,6 +109,10 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.Event.OnClientDisconnected += OnClientDisconnected;
 
         Core.Command.RegisterCommand(_config.MenuCommand, CmdTags, true);
+
+        // ── MySQL tag persistence ─────────────────────────────────────────────
+        if (!string.IsNullOrWhiteSpace(_config.DatabaseConnection))
+            DbEnsureSchemaAndLoadAll(_config.DatabaseConnection);
 
         _refreshCts = new CancellationTokenSource();
         ScheduleScoreTagRefreshLoop(_refreshCts.Token);
@@ -228,6 +240,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         _eligibleTags.Clear();
         _activeTag.Clear();
+        _savedTags.Clear();
+        _dbReady = false;
         _sp?.Dispose();
         _sp = null;
     }
@@ -354,14 +368,103 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     }
 
     /// <summary>
-    /// Persists <paramref name="cookieVal"/> for <paramref name="player"/> and
-    /// triggers an async save.  Safe to fire-and-forget.
+    /// Persists <paramref name="cookieVal"/> for <paramref name="player"/>.
+    /// Saves to MySQL when configured; also writes to Cookies API as a fallback.
+    /// Safe to fire-and-forget.
     /// </summary>
     private void SaveTagCookie(IPlayer player, string cookieVal)
     {
+        // MySQL: update the in-memory cache and persist to DB.
+        if (_dbReady)
+        {
+            _savedTags[player.SteamID] = cookieVal;
+            DbSaveTag(player.SteamID, cookieVal);
+        }
+
+        // Cookies: keep as a secondary/fallback store.
         if (_cookiesApi == null) return;
         _cookiesApi.Set(player, CookieKey, cookieVal);
         _ = _cookiesApi.Save(player);
+    }
+
+    // ── MySQL tag persistence helpers ─────────────────────────────────────────
+
+    /// <summary>
+    /// Creates the <c>zpl_tag_selections</c> table if absent, then loads all
+    /// rows into <see cref="_savedTags"/> so <see cref="InitPlayer"/> can
+    /// restore preferences without a per-player query.
+    /// </summary>
+    private void DbEnsureSchemaAndLoadAll(string connectionName)
+    {
+        _dbConnectionName = connectionName;
+        try
+        {
+            using var conn = DbOpen();
+            using var createCmd = conn.CreateCommand();
+            createCmd.CommandText = """
+                CREATE TABLE IF NOT EXISTS zpl_tag_selections (
+                    steam_id  VARCHAR(32)  NOT NULL,
+                    tag_value VARCHAR(255) NOT NULL DEFAULT '',
+                    PRIMARY KEY (steam_id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                """;
+            createCmd.ExecuteNonQuery();
+
+            using var selectCmd = conn.CreateCommand();
+            selectCmd.CommandText = "SELECT steam_id, tag_value FROM zpl_tag_selections";
+            using var reader = selectCmd.ExecuteReader();
+            while (reader.Read())
+            {
+                if (!ulong.TryParse(reader.GetString(0), out ulong sid)) continue;
+                _savedTags[sid] = reader.GetString(1);
+            }
+
+            _dbReady = true;
+            _logger?.LogInformation("[ZPLTags] MySQL tag persistence ready (connection='{Name}', {Count} row(s) loaded).",
+                connectionName, _savedTags.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError("[ZPLTags] Failed to initialise MySQL tag persistence (connection='{Name}'): {Ex}",
+                connectionName, ex.Message);
+        }
+    }
+
+    /// <summary>Upserts one player's tag selection in the database.</summary>
+    private void DbSaveTag(ulong steamId, string tagValue)
+    {
+        try
+        {
+            using var conn = DbOpen();
+            using var cmd  = conn.CreateCommand();
+            cmd.CommandText = """
+                INSERT INTO zpl_tag_selections (steam_id, tag_value)
+                VALUES (@sid, @val)
+                ON DUPLICATE KEY UPDATE tag_value = VALUES(tag_value)
+                """;
+            DbAddParam(cmd, "@sid", steamId.ToString());
+            DbAddParam(cmd, "@val", tagValue);
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning("[ZPLTags] DbSaveTag({SteamId}) failed: {Ex}", steamId, ex.Message);
+        }
+    }
+
+    private IDbConnection DbOpen()
+    {
+        var conn = Core.Database.GetConnection(_dbConnectionName);
+        conn.Open();
+        return conn;
+    }
+
+    private static void DbAddParam(IDbCommand cmd, string name, object? value)
+    {
+        var p = cmd.CreateParameter();
+        p.ParameterName = name;
+        p.Value = value ?? DBNull.Value;
+        cmd.Parameters.Add(p);
     }
 
     // ── ScoreTag refresh loop ─────────────────────────────────────────────────
@@ -426,14 +529,18 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         _eligibleTags[sid] = eligible;
 
-        // Try to restore from the player's saved cookie preference.
-        // The Cookies plugin loads each player's data on steam-authorize (before
-        // OnClientConnected), so the data is available by the time InitPlayer runs.
-        if (_cookiesApi != null && _cookiesApi.Has(player, CookieKey))
-        {
-            var cookieVal = _cookiesApi.Get<string>(player, CookieKey);
+        // Try to restore from the player's saved preference.
+        // MySQL takes precedence when configured; Cookies API is the fallback.
+        string? savedValue = null;
 
-            if (cookieVal == NullTagSentinel)
+        if (_dbReady && _savedTags.TryGetValue(sid, out var dbVal))
+            savedValue = dbVal;
+        else if (_cookiesApi != null && _cookiesApi.Has(player, CookieKey))
+            savedValue = _cookiesApi.Get<string>(player, CookieKey);
+
+        if (savedValue != null)
+        {
+            if (savedValue == NullTagSentinel)
             {
                 // Player explicitly saved "no tag".
                 _activeTag[sid] = null;
@@ -441,9 +548,9 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 return;
             }
 
-            if (!string.IsNullOrEmpty(cookieVal))
+            if (!string.IsNullOrEmpty(savedValue))
             {
-                var found = FindEntryByCookieValue(cookieVal, eligible);
+                var found = FindEntryByCookieValue(savedValue, eligible);
                 if (found != null)
                 {
                     _activeTag[sid] = found;

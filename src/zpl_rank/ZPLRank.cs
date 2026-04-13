@@ -80,9 +80,9 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
         _sp  = collection.BuildServiceProvider();
         _cfg = _sp.GetRequiredService<IOptionsMonitor<ZPLRankCFG>>();
 
-        // ── SQLite database ───────────────────────────────────────────────────
+        // ── MySQL database ────────────────────────────────────────────────────
         _db = _sp.GetRequiredService<ZPLRankDatabase>();
-        _db.EnsureSchema(_cfg.CurrentValue.DatabasePath);
+        _db.EnsureSchema(_cfg.CurrentValue.DatabaseConnection);
         _db.LoadAll(_stats);   // Pre-populate with historical stats.
 
         // ── Event hooks ───────────────────────────────────────────────────────
