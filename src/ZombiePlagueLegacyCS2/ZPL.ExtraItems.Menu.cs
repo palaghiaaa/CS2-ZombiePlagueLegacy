@@ -897,6 +897,9 @@ public class ZPLExtraItemsMenu
         int id = player.PlayerID;
         if (!_globals.HasJetpack.TryGetValue(id, out bool hasJetpack) || !hasJetpack) return;
 
+        var controller = player.Controller;
+        if (controller == null || !controller.IsValid) return;
+
         var pawn = player.PlayerPawn;
         if (pawn == null || !pawn.IsValid) return;
 
