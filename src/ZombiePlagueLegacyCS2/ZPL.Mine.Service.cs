@@ -522,10 +522,10 @@ public class ZPLMineService
 
     /// <summary>
     /// Called by the entity-damage event when a mine entity takes damage.
-    /// Reduces the mine's HP, sends a centre-HUD update to the owner, and
-    /// triggers an explosion when HP reaches 0.
+    /// Reduces the mine's HP, sends a centre-HUD update to both the attacking zombie
+    /// and the mine owner, and triggers an explosion when HP reaches 0.
     /// </summary>
-    public void HandleMineDamage(uint mineRaw, float damage)
+    public void HandleMineDamage(uint mineRaw, float damage, IPlayer? attacker = null)
     {
         if (!_globals.MineCurrentHP.TryGetValue(mineRaw, out int currentHP)) return;
         if (!_globals.MineData.TryGetValue(mineRaw, out var mineData)) return;
@@ -534,12 +534,19 @@ public class ZPLMineService
         int newHP = Math.Max(0, currentHP - (int)damage);
         _globals.MineCurrentHP[mineRaw] = newHP;
 
+        string hpMessage = $"Laser Mine HP: {newHP} / {mineData.MineHealth}";
+
+        // ── HUD update to the attacking zombie ─────────────────────────────────
+        if (attacker != null && attacker.IsValid && !attacker.IsFakeClient)
+            attacker.SendMessage(MessageType.Center, hpMessage);
+
         // ── HUD update to mine owner ───────────────────────────────────────────
         if (_globals.MineOwnerPlayerID.TryGetValue(mineRaw, out int ownerID))
         {
             var owner = _core.PlayerManager.GetPlayer(ownerID);
-            if (owner != null && owner.IsValid && !owner.IsFakeClient)
-                owner.SendMessage(MessageType.Center, $"Mine HP: {newHP} / {mineData.MineHealth}");
+            if (owner != null && owner.IsValid && !owner.IsFakeClient
+                && (attacker == null || owner.PlayerID != attacker.PlayerID))
+                owner.SendMessage(MessageType.Center, hpMessage);
         }
 
         if (newHP > 0) return;

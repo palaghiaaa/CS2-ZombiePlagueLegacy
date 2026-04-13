@@ -1943,7 +1943,7 @@ public partial class ZPLEvents
             float dy = origin.Value.Y - sp.Y;
             float dz = origin.Value.Z - sp.Z;
             if (dx * dx + dy * dy + dz * dz <= rangeSq)
-                _mineService.HandleMineDamage(mineRaw, mineData.ZombieAttackDamage);
+                _mineService.HandleMineDamage(mineRaw, mineData.ZombieAttackDamage, player);
         }
     }
 
