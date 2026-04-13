@@ -75,6 +75,72 @@ public class ZPLMegaEventsCFG
     /// </summary>
     public HappyHourConfig HappyHour { get; set; } = new();
 
+    // ── New event definitions ──────────────────────────────────────────────────
+
+    /// <summary>
+    /// A random online player is selected at the start of the round and
+    /// immediately rewarded.  All other players receive a consolation reward.
+    /// Inspired by the Fairside GiveAway mechanic.
+    /// </summary>
+    public GiveAwayConfig GiveAway { get; set; } = new();
+
+    /// <summary>
+    /// First human to achieve N headshot kills on zombies wins AP.
+    /// Consolation AP is given to every human with at least 1 headshot kill.
+    /// </summary>
+    public HeadshotKingConfig HeadshotKing { get; set; } = new();
+
+    /// <summary>
+    /// First human to knife-kill a zombie wins AP.
+    /// Rare high-value event that rewards skill/risk.
+    /// </summary>
+    public KnifeKillConfig KnifeKill { get; set; } = new();
+
+    /// <summary>
+    /// First human to get N kills with any grenade wins AP.
+    /// Consolation AP for every human with at least 1 grenade kill.
+    /// </summary>
+    public GrenadeKingConfig GrenadeKing { get; set; } = new();
+
+    /// <summary>
+    /// Player with the most total kills at round end wins AP.
+    /// Consolation AP to every player who got at least 1 kill.
+    /// Resolved at round end (not first-to-complete).
+    /// </summary>
+    public MVPRoundConfig MVPRound { get; set; } = new();
+
+    /// <summary>
+    /// Zombie who deals the most damage to humans in a round wins AP.
+    /// Consolation AP for every zombie who dealt any damage.
+    /// Resolved at round end.
+    /// </summary>
+    public ZombieKingpinConfig ZombieKingpin { get; set; } = new();
+
+    /// <summary>
+    /// Flat AP bonus given to every online player at the start of the round.
+    /// Functions as a server-wide treat with no winner/loser.
+    /// </summary>
+    public DoubleDownConfig DoubleDown { get; set; } = new();
+
+    // ── Map-level event ───────────────────────────────────────────────────────
+
+    /// <summary>
+    /// When enabled, a map-wide giveaway fires shortly after each map loads.
+    /// A random player wins a large AP prize; all others receive consolation AP.
+    /// Inspired by the Fairside "Random Map-Credits" mechanic.
+    /// Can optionally be restricted to scheduled time windows.
+    /// </summary>
+    public MapGiveAwayConfig MapGiveAway { get; set; } = new();
+
+    // ── File logging ──────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Controls file-based winner logging (Name + SteamID, one line per event).
+    /// Log files are rotated monthly: ZPLMegaEvents_YYYY-MM.log.
+    /// Inspired by the Fairside per-map winner logs.
+    /// </summary>
+    public LoggingConfig Logging { get; set; } = new();
+
     /// <summary>
     /// Calendar-based event scheduler.  When enabled, rounds that start within
     /// a configured time window force a specific event type instead of using the
@@ -176,6 +242,146 @@ public class HappyHourConfig
 
     /// <summary>Multiplier applied to all AP rewards during a happy-hour round.</summary>
     public float Multiplier { get; set; } = 2.0f;
+}
+
+// ── New event config classes ──────────────────────────────────────────────────
+
+public class GiveAwayConfig
+{
+    /// <summary>Allow this event to be selected by the random pool.</summary>
+    public bool Enable { get; set; } = true;
+
+    /// <summary>Relative selection weight.</summary>
+    public int Weight { get; set; } = 10;
+
+    /// <summary>AP awarded to the randomly selected winner.</summary>
+    public int WinnerRewardAP { get; set; } = 75;
+
+    /// <summary>AP awarded to every other online player (consolation).</summary>
+    public int ConsolationAP { get; set; } = 5;
+}
+
+public class HeadshotKingConfig
+{
+    public bool Enable { get; set; } = true;
+    public int Weight { get; set; } = 15;
+
+    /// <summary>Number of headshot kills a human must achieve to win immediately.</summary>
+    public int TargetHeadshots { get; set; } = 3;
+
+    /// <summary>AP awarded to the first human to reach TargetHeadshots.</summary>
+    public int WinnerRewardAP { get; set; } = 60;
+
+    /// <summary>AP awarded to every human with at least 1 headshot kill (consolation).</summary>
+    public int ParticipantRewardAP { get; set; } = 5;
+}
+
+public class KnifeKillConfig
+{
+    public bool Enable { get; set; } = true;
+    public int Weight { get; set; } = 10;
+
+    /// <summary>AP awarded to the first human who knife-kills a zombie.</summary>
+    public int WinnerRewardAP { get; set; } = 100;
+}
+
+public class GrenadeKingConfig
+{
+    public bool Enable { get; set; } = true;
+    public int Weight { get; set; } = 10;
+
+    /// <summary>Number of grenade kills a human must achieve to win immediately.</summary>
+    public int TargetGrenadeKills { get; set; } = 2;
+
+    /// <summary>AP awarded to the first human to reach TargetGrenadeKills.</summary>
+    public int WinnerRewardAP { get; set; } = 80;
+
+    /// <summary>AP awarded to every human with at least 1 grenade kill (consolation).</summary>
+    public int ParticipantRewardAP { get; set; } = 5;
+}
+
+public class MVPRoundConfig
+{
+    public bool Enable { get; set; } = true;
+    public int Weight { get; set; } = 15;
+
+    /// <summary>AP awarded to the player with the most kills at round end.</summary>
+    public int WinnerRewardAP { get; set; } = 50;
+
+    /// <summary>AP awarded to every other player who got at least 1 kill (consolation).</summary>
+    public int ParticipantRewardAP { get; set; } = 5;
+}
+
+public class ZombieKingpinConfig
+{
+    public bool Enable { get; set; } = true;
+    public int Weight { get; set; } = 10;
+
+    /// <summary>AP awarded to the zombie who dealt the most damage to humans at round end.</summary>
+    public int WinnerRewardAP { get; set; } = 60;
+
+    /// <summary>AP awarded to every other zombie who dealt any damage to humans (consolation).</summary>
+    public int ParticipantRewardAP { get; set; } = 5;
+}
+
+public class DoubleDownConfig
+{
+    public bool Enable { get; set; } = true;
+    public int Weight { get; set; } = 5;
+
+    /// <summary>Flat AP given to every online player at round start.</summary>
+    public int RewardAP { get; set; } = 20;
+}
+
+// ── Map-level event config ────────────────────────────────────────────────────
+
+/// <summary>
+/// Configuration for the per-map giveaway event.
+/// Fires once shortly after each map loads (optionally restricted to scheduled windows).
+/// Inspired by the Fairside "Random Map-Credits / Map-Events for Shop" plugin.
+/// </summary>
+public class MapGiveAwayConfig
+{
+    /// <summary>Set to true to enable map-level giveaways.</summary>
+    public bool Enable { get; set; } = false;
+
+    /// <summary>AP awarded to the randomly selected winner.</summary>
+    public int WinnerRewardAP { get; set; } = 200;
+
+    /// <summary>AP awarded to every other online player (consolation).</summary>
+    public int ConsolationAP { get; set; } = 10;
+
+    /// <summary>
+    /// Seconds after map load before the giveaway fires.
+    /// A small delay lets all players connect before the winner is picked.
+    /// </summary>
+    public float DelaySeconds { get; set; } = 60f;
+
+    /// <summary>
+    /// When true, the map giveaway only fires if the current time falls
+    /// inside one of the <see cref="ScheduledEventsConfig.Events"/> windows.
+    /// Set to false to run on every map regardless of schedule.
+    /// </summary>
+    public bool OnlyDuringScheduledWindow { get; set; } = false;
+}
+
+// ── Logging config ────────────────────────────────────────────────────────────
+
+/// <summary>
+/// Configuration for file-based winner logging (Name + SteamID).
+/// Inspired by the Fairside monthly winner log for Mega Events.
+/// </summary>
+public class LoggingConfig
+{
+    /// <summary>Set to true to enable file logging of event winners.</summary>
+    public bool Enable { get; set; } = true;
+
+    /// <summary>
+    /// Directory in which log files are created.
+    /// Relative paths are resolved from the SwiftlyS2 base directory.
+    /// Log files are named <c>ZPLMegaEvents_YYYY-MM.log</c> (monthly rotation).
+    /// </summary>
+    public string LogDirectory { get; set; } = "logs/ZPLMegaEvents";
 }
 
 // ── Scheduled events ──────────────────────────────────────────────────────────

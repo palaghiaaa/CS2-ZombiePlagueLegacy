@@ -28,6 +28,14 @@ public enum MegaEventType
     DamageMarathon  = 5,   // First player to deal N damage wins AP
     SpecialClass    = 6,   // Special-class player (Nemesis / Assassin / Survivor / Sniper) wins AP
     HappyHour       = 7,   // Double-AP meta-modifier (wraps another event type)
+    // ── New event types ───────────────────────────────────────────────────────
+    GiveAway        = 8,   // Random player wins AP; consolation for all others
+    HeadshotKing    = 9,   // First human to get N headshot kills on zombies wins AP
+    KnifeKill       = 10,  // First human to knife-kill a zombie wins AP
+    GrenadeKing     = 11,  // First human to get N grenade kills wins AP
+    MVPRound        = 12,  // Player with most kills at round-end wins AP
+    ZombieKingpin   = 13,  // Zombie who dealt most damage to humans at round-end wins AP
+    DoubleDown      = 14,  // Flat AP bonus given to every online player at round start
 }
 
 [PluginMetadata(
@@ -58,14 +66,22 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private CancellationTokenSource? _roundCts;
 
     // Progress trackers (reset each round)
-    private readonly Dictionary<ulong, int>  _infectionsThisRound = new();
-    private readonly Dictionary<ulong, int>  _killsThisRound      = new();
-    private readonly Dictionary<ulong, long> _damageThisRound     = new();
+    private readonly Dictionary<ulong, int>  _infectionsThisRound  = new();
+    private readonly Dictionary<ulong, int>  _killsThisRound       = new();
+    private readonly Dictionary<ulong, long> _damageThisRound      = new();
+    // New per-round trackers
+    private readonly Dictionary<ulong, int>  _headshotsThisRound   = new();
+    private readonly Dictionary<ulong, int>  _grenadeKillsRound    = new();
+    private readonly Dictionary<ulong, int>  _totalKillsThisRound  = new();
+    private readonly Dictionary<ulong, long> _zombieDmgThisRound   = new();
 
     // Special-class player tracking (set on ZPL_On*Selected events)
     private ulong  _specialClassSteamId;
     private string _specialClassName = string.Empty;
     private int    _specialClassAP;
+
+    // Map-level state
+    private bool   _mapGiveAwayDone;
 
     // Random engine (deterministic per load)
     private static readonly Random _rng = new();
@@ -73,6 +89,10 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
     // ── MySQL stats ───────────────────────────────────────────────────────────
     private bool   _dbReady;
     private string _dbConnection = string.Empty;
+
+    // ── Named event delegates for proper Unload() cleanup ─────────────────────
+    private Action<IOnMapLoadEvent>?   _onMapLoadHandler;
+    private Action<IOnMapUnloadEvent>? _onMapUnloadHandler;
 
     // ─────────────────────────────────────────────────────────────────────────
     //  Lifecycle
@@ -113,6 +133,12 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.GameEvent.HookPre<EventRoundEnd>(OnRoundEnd);
         Core.GameEvent.HookPre<EventPlayerDeath>(OnPlayerDeath);
         Core.GameEvent.HookPre<EventPlayerHurt>(OnPlayerHurt);
+
+        // Hook map lifecycle for map-level giveaway
+        _onMapLoadHandler   = OnMapLoad;
+        _onMapUnloadHandler = OnMapUnload;
+        Core.Event.OnMapLoad   += _onMapLoadHandler;
+        Core.Event.OnMapUnload += _onMapUnloadHandler;
     }
 
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
@@ -176,6 +202,10 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.GameEvent.UnhookPre<EventPlayerDeath>();
         Core.GameEvent.UnhookPre<EventPlayerHurt>();
 
+        // Unhook map lifecycle delegates
+        if (_onMapLoadHandler != null)   Core.Event.OnMapLoad   -= _onMapLoadHandler;
+        if (_onMapUnloadHandler != null) Core.Event.OnMapUnload -= _onMapUnloadHandler;
+
         _sp?.Dispose();
     }
 
@@ -193,6 +223,10 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         _infectionsThisRound.Clear();
         _killsThisRound.Clear();
         _damageThisRound.Clear();
+        _headshotsThisRound.Clear();
+        _grenadeKillsRound.Clear();
+        _totalKillsThisRound.Clear();
+        _zombieDmgThisRound.Clear();
         _eventCompleted      = false;
         _specialClassSteamId = 0;
         _specialClassName    = string.Empty;
@@ -207,10 +241,25 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         AnnounceEventStart();
 
-        // Schedule progress reminder
+        var token = _roundCts.Token;
+
+        // Immediate-resolution events: resolve after a short delay so all players are spawned
+        var resolvedImmediate = _isHappyHour ? _innerEvent : _activeEvent;
+        if (resolvedImmediate == MegaEventType.GiveAway || resolvedImmediate == MegaEventType.DoubleDown)
+        {
+            Core.Scheduler.DelayBySeconds(1f, () =>
+            {
+                if (token.IsCancellationRequested) return;
+                if (resolvedImmediate == MegaEventType.GiveAway)
+                    ResolveGiveAway();
+                else
+                    ResolveDoubleDown();
+            });
+        }
+
+        // Schedule progress reminder for competitive events
         if (_config.EnableProgressReminder && _config.ProgressReminderSeconds > 0)
         {
-            var token = _roundCts.Token;
             Core.Scheduler.DelayBySeconds(_config.ProgressReminderSeconds, () =>
             {
                 if (token.IsCancellationRequested || _eventCompleted) return;
@@ -232,23 +281,53 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         switch (resolvedEvent)
         {
             case MegaEventType.FortressDefense:
-                // Reward every still-alive human
                 RewardSurvivingHumans();
                 break;
 
             case MegaEventType.SpecialClass:
-                // Special-class player wins AP if they survived (handled by OnHumanWin too)
-                // Nothing to do here since OnHumanWin covers it
+                // Handled by OnHumanWin; nothing extra needed here
                 break;
 
             case MegaEventType.InfectionRush:
             case MegaEventType.KillFrenzy:
             case MegaEventType.DamageMarathon:
             case MegaEventType.ZombieArmada:
-                // These are first-to-complete events; if nobody finished, give consolation
+                // First-to-complete; if nobody finished, give consolation
                 AnnounceNoWinner();
                 GiveConsolationAP();
                 break;
+
+            // ── New at-round-end events ────────────────────────────────────────
+
+            case MegaEventType.MVPRound:
+                ResolveMVPRound();
+                break;
+
+            case MegaEventType.ZombieKingpin:
+                ResolveZombieKingpin();
+                break;
+
+            case MegaEventType.HeadshotKing:
+                // Could have been completed mid-round (first-to-N); if not, award best performer
+                if (!_eventCompleted)
+                    ResolveHeadshotKing();
+                else
+                    GiveParticipantAP(_headshotsThisRound, _config.HeadshotKing.ParticipantRewardAP, excludeLeader: true);
+                break;
+
+            case MegaEventType.GrenadeKing:
+                if (!_eventCompleted)
+                    ResolveGrenadeKing();
+                else
+                    GiveParticipantAP(_grenadeKillsRound, _config.GrenadeKing.ParticipantRewardAP, excludeLeader: true);
+                break;
+
+            case MegaEventType.KnifeKill:
+                if (!_eventCompleted)
+                    AnnounceNoWinner();
+                break;
+
+            // GiveAway / DoubleDown are resolved immediately at round start — nothing to do here
         }
 
         _activeEvent = MegaEventType.None;
@@ -257,33 +336,116 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     private HookResult OnPlayerDeath(EventPlayerDeath @event)
     {
-        if (_activeEvent == MegaEventType.None || _eventCompleted) return HookResult.Continue;
+        if (_activeEvent == MegaEventType.None) return HookResult.Continue;
         var resolvedEvent = _isHappyHour ? _innerEvent : _activeEvent;
-        if (resolvedEvent != MegaEventType.KillFrenzy) return HookResult.Continue;
 
         var attacker = @event.AttackerPlayer;
         var victim   = @event.UserIdPlayer;
         if (attacker == null || victim == null || !attacker.IsValid || !victim.IsValid) return HookResult.Continue;
         if (attacker.SteamID == 0) return HookResult.Continue;
-        if (_zplApi == null) return HookResult.Continue;
 
-        // Only count zombie-kills by humans
-        bool attackerIsHuman = !_zplApi.ZPL_IsZombie(attacker.PlayerID);
-        bool victimIsZombie  =  _zplApi.ZPL_IsZombie(victim.PlayerID);
-        if (!attackerIsHuman || !victimIsZombie) return HookResult.Continue;
+        // Resolve team membership (best-effort; falls back gracefully without ZPL API)
+        bool attackerIsHuman = _zplApi != null && !_zplApi.ZPL_IsZombie(attacker.PlayerID);
+        bool victimIsZombie  = _zplApi != null &&  _zplApi.ZPL_IsZombie(victim.PlayerID);
 
-        _killsThisRound.TryGetValue(attacker.SteamID, out int prev);
-        int newCount = prev + 1;
-        _killsThisRound[attacker.SteamID] = newCount;
+        string weapon = @event.Weapon ?? string.Empty;
 
-        int target = _config.KillFrenzy.TargetKills;
-        if (newCount >= target)
+        switch (resolvedEvent)
         {
-            _eventCompleted = true;
-            int ap = ApplyHappyHour(_config.KillFrenzy.WinnerRewardAP);
-            GiveAP(attacker, ap);
-            DbRecordEvent(attacker.SteamID, ap);
-            Announce($" {_config.ChatPrefix} [gold]🏆 {attacker.Name}[default] won the [gold]Kill Frenzy[default]! ({newCount}/{target} kills) → [gold]+{ap} AP");
+            // ── KillFrenzy ────────────────────────────────────────────────────
+            case MegaEventType.KillFrenzy:
+            {
+                if (_eventCompleted) break;
+                if (!attackerIsHuman || !victimIsZombie) break;
+
+                _killsThisRound.TryGetValue(attacker.SteamID, out int prev);
+                int newCount = prev + 1;
+                _killsThisRound[attacker.SteamID] = newCount;
+
+                int target = _config.KillFrenzy.TargetKills;
+                if (newCount >= target)
+                {
+                    _eventCompleted = true;
+                    int ap = ApplyHappyHour(_config.KillFrenzy.WinnerRewardAP);
+                    GiveAP(attacker, ap);
+                    DbRecordEvent(attacker.SteamID, ap);
+                    WriteLog("KillFrenzy", attacker.SteamID, attacker.Name, ap);
+                    Announce($" {_config.ChatPrefix} [gold]🏆 {attacker.Name}[default] won the [gold]Kill Frenzy[default]! ({newCount}/{target} kills) → [gold]+{ap} AP");
+                }
+                break;
+            }
+
+            // ── HeadshotKing ──────────────────────────────────────────────────
+            case MegaEventType.HeadshotKing:
+            {
+                if (_eventCompleted) break;
+                if (!attackerIsHuman || !victimIsZombie) break;
+                if (!@event.Headshot) break;
+
+                _headshotsThisRound.TryGetValue(attacker.SteamID, out int prev);
+                int newCount = prev + 1;
+                _headshotsThisRound[attacker.SteamID] = newCount;
+
+                int target = _config.HeadshotKing.TargetHeadshots;
+                if (newCount >= target)
+                {
+                    _eventCompleted = true;
+                    int ap = ApplyHappyHour(_config.HeadshotKing.WinnerRewardAP);
+                    GiveAP(attacker, ap);
+                    DbRecordEvent(attacker.SteamID, ap);
+                    WriteLog("HeadshotKing", attacker.SteamID, attacker.Name, ap);
+                    Announce($" {_config.ChatPrefix} [gold]🎯 {attacker.Name}[default] is the [gold]Headshot King[default]! ({newCount}/{target} headshots) → [gold]+{ap} AP");
+                }
+                break;
+            }
+
+            // ── KnifeKill ─────────────────────────────────────────────────────
+            case MegaEventType.KnifeKill:
+            {
+                if (_eventCompleted) break;
+                if (!attackerIsHuman || !victimIsZombie) break;
+                if (weapon != "weapon_knife" && weapon != "knife") break;
+
+                _eventCompleted = true;
+                int ap = ApplyHappyHour(_config.KnifeKill.WinnerRewardAP);
+                GiveAP(attacker, ap);
+                DbRecordEvent(attacker.SteamID, ap);
+                WriteLog("KnifeKill", attacker.SteamID, attacker.Name, ap);
+                Announce($" {_config.ChatPrefix} [gold]🔪 {attacker.Name}[default] won [gold]Knife Kill[default]! → [gold]+{ap} AP");
+                break;
+            }
+
+            // ── GrenadeKing ───────────────────────────────────────────────────
+            case MegaEventType.GrenadeKing:
+            {
+                if (_eventCompleted) break;
+                if (!attackerIsHuman || !victimIsZombie) break;
+                if (!IsGrenadeWeapon(weapon)) break;
+
+                _grenadeKillsRound.TryGetValue(attacker.SteamID, out int prev);
+                int newCount = prev + 1;
+                _grenadeKillsRound[attacker.SteamID] = newCount;
+
+                int target = _config.GrenadeKing.TargetGrenadeKills;
+                if (newCount >= target)
+                {
+                    _eventCompleted = true;
+                    int ap = ApplyHappyHour(_config.GrenadeKing.WinnerRewardAP);
+                    GiveAP(attacker, ap);
+                    DbRecordEvent(attacker.SteamID, ap);
+                    WriteLog("GrenadeKing", attacker.SteamID, attacker.Name, ap);
+                    Announce($" {_config.ChatPrefix} [gold]💥 {attacker.Name}[default] is the [gold]Grenade King[default]! ({newCount}/{target} grenade kills) → [gold]+{ap} AP");
+                }
+                break;
+            }
+
+            // ── MVPRound (track all kills; resolved at round end) ─────────────
+            case MegaEventType.MVPRound:
+            {
+                _totalKillsThisRound.TryGetValue(attacker.SteamID, out int prev);
+                _totalKillsThisRound[attacker.SteamID] = prev + 1;
+                break;
+            }
         }
 
         return HookResult.Continue;
