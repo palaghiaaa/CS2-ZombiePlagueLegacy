@@ -1,41 +1,20 @@
 {
-  // ZPLDarkFog configuration
-  // Adapted for ZombiePlagueLegacy from HZP_DarkFogVibe by H-AN
-  //
-  // NOTE: This is a POST-PROCESSING EXPOSURE control, NOT the same as the
-  //       env_fog_controller fog that already exists in the main ZPL plugin.
-  //       It darkens or brightens each player's screen individually based on
-  //       their role (human / zombie). The two systems do not conflict.
-  //
-  // Enable          - Master switch. Set to false to disable exposure control.
-  // HumanExposure   - Exposure value for human players (0.0 = very dark, 1.0 = default, >1.0 = brighter).
-  // ZombieExposure  - Exposure value for zombie players.
-  //
-  // AdminCommandName       - Console command name for the admin exposure tool.
-  // AdminCommandPermission - Permission flag required to use the admin command.
-  //
-  // HiddenExposureCommandEnabled - Enable a hidden command for engine-side exposure injection.
-  // HiddenExposureCommandName    - The hidden command name (change this to something random).
-  //
-  // ZombieGroups - Per-zombie-class exposure overrides.
   "ZPLDarkFogCFG": {
     "Enable": true,
-    "HumanExposure": 0.45,
-    "ZombieExposure": 1.25,
+    "HumanExposure": 0.6,
+    "ZombieExposure": 0.3,
 
-    "AdminCommandName": "fog_exposure",
-    "AdminCommandPermission": "admin.dex",
+    "AdminCommandName": "fog",
+    "AdminCommandPermission": "admin.fogsettings",
 
     "HiddenExposureCommandEnabled": true,
-    "HiddenExposureCommandName": "zpl_priv_exposure",  // Change this to a private string before deploying
-
-    "ZombieGroups": [
-      // Example: give a specific zombie class full brightness
-      // {
-      //   "Enable": true,
-      //   "ZombieClassName": "轻型丧尸",
-      //   "Exposure": 1.0
-      // }
+    "HiddenExposureCommandName": "zpl_priv_exposure",
+     "ZombieGroups": [
+      { 
+        "Enable": true,
+        "ZombieClassName": "Light Zombie",
+        "Exposure": 0.1 
+      }
     ]
   }
 }

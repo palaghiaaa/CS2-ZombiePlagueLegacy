@@ -21,37 +21,22 @@
 
   "ZPLMegaEventsCFG": {
 
-    // Named connection key from configs/database.jsonc.
-    // Used to persist per-player stats (events won + total AP earned).
-    // Set to "" to disable MySQL persistence entirely.
-    "DatabaseConnection": "host",
-
-    // Prefix shown before every mega-event chat message.
-    "ChatPrefix": "[gold][MegaEvents][default]",
-
-    // Economy wallet kind for ammo-pack rewards (must match Economy plugin config).
+    "DatabaseConnection": "mysql",
+    "ChatPrefix": "[red][ZM][default]",
+    "MinimumPlayersToStart": 2,
     "WalletKind": "ammo",
-
-    // Set false to suppress all mega-event chat messages.
     "EnableAnnouncements": true,
-
-    // When true, a progress reminder is broadcast mid-round showing the current leader.
+    "EnableCenterAnnouncements": true,
     "EnableProgressReminder": true,
-
-    // Seconds after round freeze-end when the progress reminder fires.
     "ProgressReminderSeconds": 60,
 
     // ── Happy Hour ────────────────────────────────────────────────────────────
-    // Every RoundInterval rounds all AP rewards are multiplied by Multiplier.
-    // Set RoundInterval to 0 to disable.
     "HappyHour": {
       "RoundInterval": 10,
       "Multiplier": 2.0
     },
 
     // ── Infection Rush ────────────────────────────────────────────────────────
-    // First zombie to infect TargetInfections humans in a single round wins AP.
-    // Every zombie who infects at least 1 human earns ParticipantRewardAP (consolation).
     "InfectionRush": {
       "Enable": true,
       "Weight": 20,
@@ -61,8 +46,6 @@
     },
 
     // ── Kill Frenzy ───────────────────────────────────────────────────────────
-    // First human to kill TargetKills zombies in a single round wins AP.
-    // Every human who kills at least 1 zombie earns ParticipantRewardAP (consolation).
     "KillFrenzy": {
       "Enable": true,
       "Weight": 20,
@@ -72,8 +55,6 @@
     },
 
     // ── Fortress Defense ──────────────────────────────────────────────────────
-    // All humans who survive to the round-end timer win RewardAP each.
-    // Survival in ZPL is genuinely hard — reward is higher than zombie-side events.
     "FortressDefense": {
       "Enable": true,
       "Weight": 15,
@@ -81,7 +62,6 @@
     },
 
     // ── Zombie Armada ─────────────────────────────────────────────────────────
-    // If zombies wipe all humans before the timer, every alive zombie wins RewardAP.
     "ZombieArmada": {
       "Enable": true,
       "Weight": 15,
@@ -89,7 +69,6 @@
     },
 
     // ── Damage Marathon ───────────────────────────────────────────────────────
-    // First player to deal TargetDamage total damage in one round wins AP.
     "DamageMarathon": {
       "Enable": true,
       "Weight": 15,
@@ -98,12 +77,10 @@
     },
 
     // ── Special Class Bonus ───────────────────────────────────────────────────
-    // Nemesis/Assassin win AP when zombies win the round.
-    // Survivor/Sniper win AP when humans win the round.
-    // These classes are rare and must fulfill their mode's win condition — high reward.
     "SpecialClassBonus": {
       "Enable": true,
       "Weight": 15,
+      "EnableSelectionHooks": true,
       "NemesisWinAP": 120,
       "AssassinWinAP": 120,
       "SurvivorWinAP": 100,
@@ -111,8 +88,6 @@
     },
 
     // ── Giveaway ──────────────────────────────────────────────────────────────
-    // A random online player is selected at round start and immediately rewarded.
-    // All other players receive ConsolationAP (small, since luck is the only factor).
     "GiveAway": {
       "Enable": true,
       "Weight": 10,
@@ -121,9 +96,6 @@
     },
 
     // ── Headshot King ─────────────────────────────────────────────────────────
-    // First human to land TargetHeadshots headshot kills on zombies wins AP.
-    // Headshots require aim — reward is higher than plain kills.
-    // Every human with at least 1 headshot kill earns ParticipantRewardAP.
     "HeadshotKing": {
       "Enable": true,
       "Weight": 15,
@@ -133,8 +105,6 @@
     },
 
     // ── Knife Kill ────────────────────────────────────────────────────────────
-    // First human to knife-kill a zombie wins AP.
-    // Getting close enough to knife a zombie is extremely risky — highest single-kill reward.
     "KnifeKill": {
       "Enable": true,
       "Weight": 10,
@@ -142,9 +112,6 @@
     },
 
     // ── Grenade King ──────────────────────────────────────────────────────────
-    // First human to get TargetGrenadeKills kills with any grenade wins AP.
-    // Grenades are limited — reward reflects the resource cost.
-    // Every human with at least 1 grenade kill earns ParticipantRewardAP.
     "GrenadeKing": {
       "Enable": true,
       "Weight": 10,
@@ -154,9 +121,6 @@
     },
 
     // ── Round MVP ─────────────────────────────────────────────────────────────
-    // Player with the most kills at round end wins AP.
-    // Resolved at round end (not first-to-complete).
-    // Every other player with at least 1 kill earns ParticipantRewardAP.
     "MVPRound": {
       "Enable": true,
       "Weight": 15,
@@ -165,9 +129,6 @@
     },
 
     // ── Zombie Kingpin ────────────────────────────────────────────────────────
-    // Zombie who deals the most damage to humans in the round wins AP.
-    // Resolved at round end.
-    // Every other zombie who dealt any damage earns ParticipantRewardAP.
     "ZombieKingpin": {
       "Enable": true,
       "Weight": 10,
@@ -176,8 +137,6 @@
     },
 
     // ── Double Down ───────────────────────────────────────────────────────────
-    // Flat AP bonus given to every online player at round start — no winner, no loser.
-    // Kept low (15 AP) because it benefits everyone equally without any skill involved.
     "DoubleDown": {
       "Enable": true,
       "Weight": 5,
@@ -185,34 +144,30 @@
     },
 
     // ── Map Giveaway ──────────────────────────────────────────────────────────
-    // Fires once shortly after each map loads (not every round).
-    // A random player wins WinnerRewardAP; all other online players receive ConsolationAP.
-    // Higher reward than per-round events because it happens at most once per map.
-    // Set Enable to true to activate.
     "MapGiveAway": {
-      "Enable": false,
+      "Enable": true,
       "WinnerRewardAP": 250,
       "ConsolationAP": 15,
-      // Seconds after map load before the giveaway fires (lets all players connect first).
       "DelaySeconds": 60,
-      // When true, the map giveaway only fires during a ScheduledEvents time window.
       "OnlyDuringScheduledWindow": false
     },
 
     // ── File Logging ──────────────────────────────────────────────────────────
-    // Logs winner name + SteamID to a monthly file: ZPLMegaEvents_YYYY-MM.log
     "Logging": {
       "Enable": true,
       "LogDirectory": "logs/ZPLMegaEvents"
     },
 
     // ── Scheduled Events ──────────────────────────────────────────────────────
-    // Forces a specific event during a configured time window instead of random.
-    // TimezoneOffsetHours: your server's UTC offset (e.g. 3 for UTC+3).
-    // First matching window wins.
+    // Programul săptămânal gândit după ora de vârf România (UTC+3):
     //
-    // Example: force a Double Down bonus every Saturday 20:00–22:00 UTC+2:
-    //   { "EventType": 12, "DaysOfWeek": [6], "HourStart": 20, "HourEnd": 22, "WeekInterval": 1 }
+    //  Luni    → FortressDefense (3)  — teamplay, ușor de participat
+    //  Marți   → ZombieArmada (4)     — teamplay side zombie
+    //  Miercuri→ DoubleDown (14)      — casual, toți câștigă, mid-week boost
+    //  Joi     → MVPRound (12)        — competitiv, tranziție spre weekend
+    //  Vineri  → HeadshotKing (9)     — skill, seară de vârf
+    //  Sâmbătă → KnifeKill (10)       — rar, high-risk, reward maxim (20:00–22:00)
+    //  Duminică→ GiveAway (8)         — relaxat, șansă pură, final de weekend
     //
     // MegaEventType enum values:
     //   0 = None           1 = InfectionRush    2 = KillFrenzy     3 = FortressDefense
@@ -220,14 +175,31 @@
     //   8 = GiveAway       9 = HeadshotKing    10 = KnifeKill     11 = GrenadeKing
     //  12 = MVPRound      13 = ZombieKingpin   14 = DoubleDown
     "ScheduledEvents": {
-      "Enable": false,
-      "TimezoneOffsetHours": 0,
+      "Enable": true,
+      "TimezoneOffsetHours": 3,
       "Events": [
-        // Example entry — remove or edit as needed:
-        // { "EventType": 14, "DaysOfWeek": [6], "HourStart": 20, "HourEnd": 22, "WeekInterval": 1 }
+        // Luni 18:00–22:00 → Fortress Defense (toți supraviețuitorii câștigă 35 AP)
+        { "EventType": 3, "DaysOfWeek": [1], "HourStart": 18, "HourEnd": 22, "WeekInterval": 1 },
+
+        // Marți 18:00–22:00 → Zombie Armada (toți zombii vii câștigă 30 AP)
+        { "EventType": 4, "DaysOfWeek": [2], "HourStart": 18, "HourEnd": 22, "WeekInterval": 1 },
+
+        // Miercuri 18:00–22:00 → Double Down (15 AP toți, casual mid-week)
+        { "EventType": 14, "DaysOfWeek": [3], "HourStart": 18, "HourEnd": 22, "WeekInterval": 1 },
+
+        // Joi 18:00–22:00 → MVP Round (50 AP winner + 8 AP participanți)
+        { "EventType": 12, "DaysOfWeek": [4], "HourStart": 18, "HourEnd": 22, "WeekInterval": 1 },
+
+        // Vineri 18:00–22:00 → Headshot King (70 AP winner + 8 AP participanți)
+        { "EventType": 9, "DaysOfWeek": [5], "HourStart": 18, "HourEnd": 22, "WeekInterval": 1 },
+
+        // Sâmbătă 20:00–22:00 → Knife Kill (150 AP, evenimentul de vârf al săptămânii)
+        { "EventType": 10, "DaysOfWeek": [6], "HourStart": 20, "HourEnd": 22, "WeekInterval": 1 },
+
+        // Duminică 18:00–22:00 → Giveaway (60 AP winner + 5 AP consolation, relaxat)
+        { "EventType": 8, "DaysOfWeek": [0], "HourStart": 18, "HourEnd": 22, "WeekInterval": 1 }
       ]
     }
 
   }
 }
-

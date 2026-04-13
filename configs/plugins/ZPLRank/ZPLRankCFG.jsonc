@@ -4,9 +4,9 @@
 
     // Named connection key from SwiftlyS2's configs/database.jsonc.
     // Example: "host": "mysql://user:pass@localhost:3306/mydb"
-    "DatabaseConnection": "host",
+    "DatabaseConnection": "mysql",
 
-    "ChatTag": "[ZPL Rank]",
+    "ChatTag": "[red][ZM][default]",
 
     "RankCommand":  "rank",
     "TopCommand":   "top",

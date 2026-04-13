@@ -13,6 +13,12 @@ public class ZPLMegaEventsCFG
     public string ChatPrefix { get; set; } = "[gold][MegaEvents][default]";
 
     /// <summary>
+    /// Minimum number of connected real players required before mega events can start.
+    /// Set to 0 or 1 to effectively disable the gate.
+    /// </summary>
+    public int MinimumPlayersToStart { get; set; } = 2;
+
+    /// <summary>
     /// Named connection key from SwiftlyS2's configs/database.jsonc.
     /// Used for persisting per-player mega-event stats (completed events and total AP earned).
     /// Set to "" to disable MySQL persistence.
@@ -24,6 +30,12 @@ public class ZPLMegaEventsCFG
 
     /// <summary>When true, mega-event announcements are shown in chat.</summary>
     public bool EnableAnnouncements { get; set; } = true;
+
+    /// <summary>
+    /// When true, event start and minimum-player skip notices are also shown
+    /// in the center HUD.
+    /// </summary>
+    public bool EnableCenterAnnouncements { get; set; } = true;
 
     /// <summary>
     /// When true, a progress reminder is broadcast to all players mid-round
@@ -221,6 +233,13 @@ public class SpecialClassBonusConfig
 {
     public bool Enable { get; set; } = true;
     public int Weight { get; set; } = 15;
+
+    /// <summary>
+    /// Enables listening to ZPL special-class selection callbacks
+    /// (Nemesis/Assassin/Survivor/Sniper) for SpecialClass event tracking.
+    /// Disable this to isolate callback-related instability without recompiling.
+    /// </summary>
+    public bool EnableSelectionHooks { get; set; } = true;
 
     /// <summary>
     /// AP given to the Nemesis if zombies win the round.

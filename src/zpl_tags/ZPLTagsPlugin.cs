@@ -11,8 +11,10 @@ using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Menus;
 using SwiftlyS2.Shared.Misc;
+using SwiftlyS2.Shared.NetMessages;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
+using SwiftlyS2.Shared.ProtobufDefinitions;
 using System.Data;
 using System.Drawing;
 using System.Runtime.CompilerServices;
@@ -30,10 +32,16 @@ namespace ZPLTags;
                   "group or SwiftlyS2 permission). Bridges cs2-tags without native permissions.")]
 public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 {
+    private const string ConfigSection           = "ZPLTags";
+    private const float  TagsApiProbeIntervalSec = 2.0f;
+    private const int    TagsApiProbeMaxAttempts = 45;
+    private static bool  _configSourceInitialized;
+
     private ILogger<ZPLTagsPlugin>?       _logger;
     private IOptionsMonitor<ZPLTagsCFG>?  _cfgMonitor;
     private ZPLTagsCFG                    _config = new();
     private ServiceProvider?              _sp;
+    private IInterfaceManager?            _interfaceManager;
 
     // Shared interfaces — both are optional; the plugin degrades gracefully.
     // NOTE: _tagsBridge is a local (ZPLTags) type, so no TagsApi.dll resolution
@@ -52,6 +60,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private readonly Dictionary<ulong, GroupTagEntry?> _activeTag = new();
 
     private CancellationTokenSource? _refreshCts;
+    private CancellationTokenSource? _tagsApiProbeCts;
 
     // ── MySQL tag persistence ─────────────────────────────────────────────────
     // SteamID64 → saved composite cookie value loaded from MySQL at plugin start.
@@ -71,12 +80,21 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private const string CookieKey               = "zpltags.selected";
     private const string NullTagSentinel         = "__none__";
 
+     // Extended retry delays (seconds) used in OnClientConnected to catch permissions
+    // that are granted asynchronously after the initial 2 s window.
+    // Matches cs2-tags' 40 s PermissionWarmupWindow.
+    private static readonly float[] ConnectRetryDelays = [5.0f, 10.0f, 20.0f, 40.0f];
+
+
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     public override void Load(bool hotReload)
     {
-        if (!hotReload)
-            Core.Configuration.InitializeJsonWithModel<ZPLTagsCFG>(ConfigFile, "ZPLTags")
+        // Initialize config source once per process. This keeps watcher counts
+        // stable while still supporting first-time runtime plugin loads.
+        if (!_configSourceInitialized)
+        {
+            Core.Configuration.InitializeJsonWithModel<ZPLTagsCFG>(ConfigFile, ConfigSection)
                 .Configure(builder =>
                 {
                     builder.AddJsonFile(ConfigFile, false, true);
@@ -88,11 +106,13 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                         ctx.Ignore = true;
                     });
                 });
+            _configSourceInitialized = true;
+        }
 
         var services = new ServiceCollection();
         services.AddSwiftly(Core);
         services.AddSingleton<ISwiftlyCore>(Core);
-        services.AddOptions<ZPLTagsCFG>().BindConfiguration("ZPLTags");
+        services.AddOptions<ZPLTagsCFG>().BindConfiguration(ConfigSection);
 
         _sp         = services.BuildServiceProvider();
         _logger     = _sp.GetRequiredService<ILogger<ZPLTagsPlugin>>();
@@ -117,12 +137,16 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         _refreshCts = new CancellationTokenSource();
         ScheduleScoreTagRefreshLoop(_refreshCts.Token);
 
+        _tagsApiProbeCts = new CancellationTokenSource();
+
         if (hotReload)
             Core.Scheduler.NextWorldUpdate(RebuildAllPlayers);
     }
 
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
     {
+        _interfaceManager = interfaceManager;
+
         // ── cs2-tags ──────────────────────────────────────────────────────────
         // IMPORTANT: all ITagApi / TagType / MessageProcess type references live
         // inside TryConnectTagsBridge (a NoInlining helper).  This method itself
@@ -130,13 +154,11 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         // loading TagsApi.dll.  TryConnectTagsBridge is only ever called when
         // HasSharedInterface returns true, which means TagsApi.dll IS loaded, so
         // its own JIT compilation succeeds.
-        if (interfaceManager.HasSharedInterface("Tags.Api"))
-        {
-            TryConnectTagsBridge(interfaceManager);
-        }
-        else
+        if (!EnsureTagsBridgeConnected(interfaceManager))
         {
             _logger?.LogInformation("[ZPLTags] Tags API not found – score tags will be applied directly; chat tags require cs2-tags.");
+            if (_tagsApiProbeCts != null)
+                ScheduleTagsApiProbe(_tagsApiProbeCts.Token, 1);
         }
 
         // ── Admins plugin (optional) ──────────────────────────────────────────
@@ -195,6 +217,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         try
         {
+            if (_tagsBridge != null) return;
             var api = interfaceManager.GetSharedInterface<ITagApi>("Tags.Api");
             if (api != null)
             {
@@ -209,11 +232,48 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         }
     }
 
+    private bool EnsureTagsBridgeConnected(IInterfaceManager interfaceManager)
+    {
+        if (_tagsBridge != null) return true;
+        if (!interfaceManager.HasSharedInterface("Tags.Api")) return false;
+        TryConnectTagsBridge(interfaceManager);
+        return _tagsBridge != null;
+    }
+
+    private void ScheduleTagsApiProbe(CancellationToken token, int attempt)
+    {
+        if (attempt > TagsApiProbeMaxAttempts || token.IsCancellationRequested || _tagsBridge != null)
+            return;
+
+        Core.Scheduler.DelayBySeconds(TagsApiProbeIntervalSec, () =>
+        {
+            if (token.IsCancellationRequested || _tagsBridge != null) return;
+
+            Core.Scheduler.NextWorldUpdate(() =>
+            {
+                if (token.IsCancellationRequested || _tagsBridge != null) return;
+                if (_interfaceManager != null && EnsureTagsBridgeConnected(_interfaceManager))
+                {
+                    _logger?.LogInformation("[ZPLTags] Connected to Tags API after delayed probe (attempt {Attempt}).", attempt);
+                    return;
+                }
+
+                ScheduleTagsApiProbe(token, attempt + 1);
+            });
+        });
+    }
+
     public override void Unload()
     {
         _refreshCts?.Cancel();
         _refreshCts?.Dispose();
         _refreshCts = null;
+
+        _tagsApiProbeCts?.Cancel();
+        _tagsApiProbeCts?.Dispose();
+        _tagsApiProbeCts = null;
+
+        _interfaceManager = null;
 
         foreach (var player in Core.PlayerManager.GetAllPlayers())
         {
@@ -276,8 +336,25 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         // 2) SwiftlyS2 native permission match
         if (!string.IsNullOrEmpty(entry.Permission))
         {
-            if (Core.Permission.PlayerHasPermission(player.SteamID, entry.Permission))
+            var permission = entry.Permission.Trim();
+            if (permission.Length == 0) return false;
+
+            if (Core.Permission.PlayerHasPermission(player.SteamID, permission))
                 return true;
+
+            // Accept both formats transparently: "@module/role" and "module/role".
+            if (!permission.StartsWith('@'))
+            {
+                if (Core.Permission.PlayerHasPermission(player.SteamID, $"@{permission}"))
+                    return true;
+            }
+            else
+            {
+                var withoutAt = permission[1..];
+                if (!string.IsNullOrEmpty(withoutAt) &&
+                    Core.Permission.PlayerHasPermission(player.SteamID, withoutAt))
+                    return true;
+            }
         }
 
         return false;
@@ -617,8 +694,9 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         int playerId = @event.PlayerId;
 
-        // Two retries: one early (permissions already available) and one later
-        // (waits for the Admins plugin to finish async data loading).
+        // Early retries run unconditionally; they cover the common case where
+        // permissions are available by 0.5 s (SwiftlyS2 native flags) or by
+        // 2.0 s (Admins-plugin async load).
         Core.Scheduler.DelayBySeconds(0.5f, () =>
         {
             Core.Scheduler.NextWorldUpdate(() =>
@@ -636,6 +714,28 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 if (IsValidRealPlayer(player)) InitPlayer(player!);
             });
         });
+
+
+
+        // Extended retries cover external plugins (e.g. ShopCore) that grant
+        // SwiftlyS2-native permissions asynchronously after the 2 s window.
+        // Each attempt is guarded: if InitPlayer already populated _activeTag
+        // for this player (including "no tag" sentinel), we skip to avoid
+        // overriding a deliberate tag selection or spamming the permission API.
+        // The window intentionally matches cs2-tags' 40 s PermissionWarmupWindow.
+        foreach (float delay in ConnectRetryDelays)
+        {
+            Core.Scheduler.DelayBySeconds(delay, () =>
+            {
+                Core.Scheduler.NextWorldUpdate(() =>
+                {
+                    var player = Core.PlayerManager.GetPlayer(playerId);
+                    if (!IsValidRealPlayer(player)) return;
+                    if (!_activeTag.ContainsKey(player!.SteamID))
+                        InitPlayer(player!);
+                });
+            });
+        }
     }
 
     private void OnClientDisconnected(IOnClientDisconnectedEvent @event)
@@ -647,8 +747,169 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     }
 
     // ── Chat interception ─────────────────────────────────────────────────────
-    // Moved into TagsBridge to keep all MessageProcess / TagType references out
-    // of the main class (avoids JIT-time TagsApi.dll loading when cs2-tags is absent).
+    // Preferred path uses TagsBridge (Tags.Api event). This fallback path ensures
+    // chat tags still apply when cs2-tags is missing or not yet available.
+
+    [ServerNetMessageHandler]
+    public HookResult OnMessageSayText2(CUserMessageSayText2 msg)
+    {
+        if (_tagsBridge != null) return HookResult.Continue;
+        if (msg.Entityindex <= 0) return HookResult.Continue;
+
+        var player = Core.PlayerManager.GetPlayer(msg.Entityindex - 1);
+        if (!IsValidRealPlayer(player)) return HookResult.Continue;
+        if (!_activeTag.TryGetValue(player!.SteamID, out var entry) || entry == null) return HookResult.Continue;
+
+        var format = ResolveFallbackChatFormat(msg.Messagename);
+        if (format == null) return HookResult.Continue;
+
+        string nameColor = NormalizeFallbackColorTags(entry.NameColor, player);
+        string chatTag = NormalizeFallbackColorTags(entry.ChatTag, player);
+        string chatColor = NormalizeFallbackColorTags(entry.ChatColor, player);
+
+        string nameToken = $"{chatTag}{nameColor}%s1[/]";
+        string messageToken = string.IsNullOrEmpty(chatColor) ? "%s2" : $"{chatColor}%s2[/]";
+
+        msg.Messagename = Helper.Colored(
+            format
+                .Replace("{NAME}", nameToken, StringComparison.Ordinal)
+                .Replace("{MESSAGE}", messageToken, StringComparison.Ordinal)
+                .Replace("{LOCATION}", "%s3", StringComparison.Ordinal));
+
+        return HookResult.Continue;
+    }
+
+    private static string? ResolveFallbackChatFormat(string? messageName)
+    {
+        const string prefix = "Cstrike_Chat_";
+
+        if (string.IsNullOrWhiteSpace(messageName) ||
+            !messageName.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        string tail = messageName[prefix.Length..];
+
+        bool isAll = false;
+        bool isCt = false;
+        bool isT = false;
+        bool isSpec = false;
+        bool isDead = false;
+        bool isLoc = false;
+
+        if (tail.StartsWith("All", StringComparison.Ordinal))
+        {
+            isAll = true;
+            tail = tail[3..];
+        }
+        else if (tail.StartsWith("CT", StringComparison.Ordinal))
+        {
+            isCt = true;
+            tail = tail[2..];
+        }
+        else if (tail.StartsWith("Spec", StringComparison.Ordinal))
+        {
+            isSpec = true;
+            tail = tail[4..];
+        }
+        else if (tail.StartsWith("T", StringComparison.Ordinal))
+        {
+            isT = true;
+            tail = tail[1..];
+        }
+        else
+        {
+            return null;
+        }
+
+        while (tail.Length > 0)
+        {
+            if (tail.StartsWith("Dead", StringComparison.Ordinal))
+            {
+                isDead = true;
+                tail = tail[4..];
+                continue;
+            }
+
+            if (tail.StartsWith("Spec", StringComparison.Ordinal))
+            {
+                isSpec = true;
+                tail = tail[4..];
+                continue;
+            }
+
+            if (tail.StartsWith("Loc", StringComparison.Ordinal))
+            {
+                isLoc = true;
+                tail = tail[3..];
+                continue;
+            }
+
+            return null;
+        }
+
+        string chatPrefix = isAll
+                ? string.Empty
+            : isCt
+                ? "[blue][CT][/] "
+                : isT
+                    ? "[yellow][T][/] "
+                    : string.Empty;
+
+        string suffix = string.Empty;
+        if (isSpec)
+            suffix += " [white][SPEC][/]";
+
+        if (isDead)
+            suffix += " [grey][DEAD][/]";
+
+        if (isLoc)
+            suffix += " [green]@{LOCATION}[/]";
+
+        return $"{chatPrefix}{{NAME}}{suffix}: {{MESSAGE}}";
+    }
+
+    private static string NormalizeFallbackColorTags(string? value, IPlayer player)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+
+        return value
+            .Replace("[default]", "[/]", StringComparison.OrdinalIgnoreCase)
+            .Replace("[teamcolor]", ResolveTeamColorTag(player), StringComparison.OrdinalIgnoreCase)
+            .Replace("[compcolor]", ResolveCompColorTag(player), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ResolveTeamColorTag(IPlayer player)
+    {
+        if (player.Controller == null || !player.Controller.IsValid)
+            return "[white]";
+
+        return player.Controller.TeamNum switch
+        {
+            (byte)Team.T => "[yellow]",
+            (byte)Team.CT => "[blue]",
+            (byte)Team.Spectator => "[white]",
+            _ => "[white]"
+        };
+    }
+
+    private static string ResolveCompColorTag(IPlayer player)
+    {
+        if (player.Controller == null || !player.Controller.IsValid)
+            return "[white]";
+
+        return player.Controller.CompTeammateColor switch
+        {
+            -2 => "[grey]",
+            0 => "[blue]",
+            1 => "[green]",
+            2 => "[yellow]",
+            3 => "[orange]",
+            4 => "[purple]",
+            _ => "[white]"
+        };
+    }
 
     // ── !sw_tags command & menu ───────────────────────────────────────────────
 

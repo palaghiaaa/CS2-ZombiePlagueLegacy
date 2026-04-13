@@ -2,26 +2,26 @@
 
   "ZPLVIP": {
 
-    "VIPPermission": "zpo.vip",
+    "VIPPermission": "admin.vip",
 
-    "VipMenuCommand": "vip",
+    "VipMenuCommand": "vmenu",
     "VipsListCommand": "vips",
 
     "VipMenuTitle": "VIP Benefits",
 
     "BenefitLines": [
-      "★ Armor on spawn (+100)",
-      "★ Double Jump (1 extra mid-air jump)",
-      "★ No Fall Damage",
-      "★ ×1.5 Damage dealt to Zombies",
-      "★ +1 AP per 500 damage dealt to Zombies",
-      "★ +2 AP per Zombie Kill",
-      "★ Happy Hour: extra AP & frags (19:00–08:00)"
+      "Armor on spawn (+100)",
+      "Double Jump (1 extra mid-air jump)",
+      "No Fall Damage",
+      "×1.5 Damage dealt to Zombies",
+      "+1 AP per 500 damage dealt to Zombies",
+      "+2 AP per Zombie Kill",
+      "Happy Hour: extra AP & frags (19:00–08:00)"
     ],
 
     "JoinAnnounceEnabled": true,
 
-    "ChatPrefix": "[red][INFO][default]",
+    "ChatPrefix": "[red][ZM][default]",
 
     "WalletKind": "ammo",
 

@@ -1,22 +1,12 @@
 {
-  // ZPLFlashlight configuration
-  // Adapted for ZombiePlagueLegacy from HZP_FlashLightEffects by H-AN
-  //
-  // Enable       - Master switch. Set to false to disable the flashlight system entirely.
-  // AllowBots    - Whether bots can use the flashlight.
-  // ToggleDebounceMs - Minimum milliseconds between toggles (prevents accidental double-press).
-  // AdminCommandPermission - Permission flag required for the !flash admin command.
-  //
-  // Human / Zombie profiles control the default flashlight appearance for each faction.
-  // SpecialZombies lets you override any profile fields for specific zombie class names.
   "ZPLFlashlightCFG": {
     "Enable": true,
     "AllowBots": false,
     "ToggleDebounceMs": 150,
-    "AdminCommandPermission": "admin.dex",
+    "AdminCommandPermission": "admin.flashlight",
     "Human": {
       "Enable": true,
-      "Brightness": 9,
+      "Brightness": 6,
       "Distance": 900,
       "AttachmentDistance": 54,
       "FovOrConeAngle": 55,
@@ -30,36 +20,36 @@
     },
     "Zombie": {
       "Enable": true,
-      "Brightness": 10,
-      "Distance": 3000,
-      "AttachmentDistance": 54,
-      "FovOrConeAngle": 360,
-      "Shadows": true,
-      "Attachment": "axis_of_intent",
-      "ColorR": 255,
-      "ColorG": 32,
-      "ColorB": 32,
-      "ColorA": 255,
-      "VisibleToTeammates": false
+        "FlashlightEnable": true,
+        "Brightness": 10,
+        "Distance": 3000.0,
+        "AttachmentDistance": 64.0,
+        "FovOrConeAngle": 360.0,
+        "Shadows": true,
+        "Attachment": "axis_of_intent",
+        "ColorR": 0,
+        "ColorG": 255,
+        "ColorB": 0,
+        "ColorA": 255,
+        "VisibleToTeammates": false
     },
     "SpecialZombies": [
-      // Example: give a specific zombie class a different flashlight colour
-      // {
-      //   "Enable": true,
-      //   "Name": "轻型丧尸",
-      //   "FlashlightEnable": true,
-      //   "Brightness": 10,
-      //   "Distance": 3000.0,
-      //   "AttachmentDistance": 64.0,
-      //   "FovOrConeAngle": 360.0,
-      //   "Shadows": true,
-      //   "Attachment": "axis_of_intent",
-      //   "ColorR": 0,
-      //   "ColorG": 255,
-      //   "ColorB": 0,
-      //   "ColorA": 255,
-      //   "VisibleToTeammates": false
-      // }
+      {
+        "Enable": true,
+        "Name": "Light Zombie",
+        "FlashlightEnable": true,
+        "Brightness": 10,
+        "Distance": 3000.0,
+        "AttachmentDistance": 64.0,
+        "FovOrConeAngle": 360.0,
+        "Shadows": true,
+        "Attachment": "axis_of_intent",
+        "ColorR": 0,
+        "ColorG": 255,
+        "ColorB": 0,
+        "ColorA": 255,
+        "VisibleToTeammates": false
+      }
     ]
   }
 }

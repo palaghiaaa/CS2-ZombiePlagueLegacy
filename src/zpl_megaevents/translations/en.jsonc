@@ -8,7 +8,13 @@
 
   // Shown as a separate line before the event-start message on Happy Hour rounds.
   // {0} = multiplier, e.g. "2.0"
-  "HappyHourActive": "⭐ [gold]HAPPY HOUR ×{0}![default] All AP rewards are multiplied this round!",
+  "HappyHourActive": "⭐ [gold]HAPPY ROUND ×{0}![default] All AP rewards are multiplied this round!",
+
+  // {0} = minimum players, {1} = online players
+  "SkipRoundMinimumPlayers": "[grey]Mega Event skipped: need at least [gold]{0}[grey] players, only [gold]{1}[grey] online.",
+
+  // {0} = minimum players, {1} = online players
+  "SkipMapGiveAwayMinimumPlayers": "[grey]Map Giveaway skipped: need at least [gold]{0}[grey] players, only [gold]{1}[grey] online.",
 
   // ── Event start announcements ─────────────────────────────────────────────
   // Broadcast at freeze-end when an event is selected.

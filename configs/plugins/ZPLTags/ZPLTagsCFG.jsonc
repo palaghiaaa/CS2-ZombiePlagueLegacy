@@ -19,47 +19,67 @@
     // Named connection key from SwiftlyS2's configs/database.jsonc.
     // Set to "" to disable MySQL persistence (uses Cookies API if available).
     // Example: "host": "mysql://user:pass@localhost:3306/mydb"
-    "DatabaseConnection": "host",
+    "DatabaseConnection": "mysql",
 
     "MenuCommand": "sw_tags",
-    "MenuTitle":   "Select a Tag",
-    "NoTagLabel":  "✖ Remove Tag",
-    "ChatPrefix":  "[green][ZPLTags][default]",
+    "MenuTitle":   "TAGS Menu",
+    "NoTagLabel":  "Remove TAG",
+    "ChatPrefix":  "[red][ZM][default]",
 
+    
     "GroupTags": [
       {
-        // ── Owner ─────────────────────────────────────────────────────────────
-        "GroupName":   "Owner",
-        "Permission":  "@admins/owner",
-        "DisplayName": "Tag De Owner",
+        "GroupName":   "ROOT",
+        "Permission":  "tags.root",
+        "DisplayName": "ROOT Tag",
         "Priority":    100,
-        "ScoreTag":    "[OWNER]",
-        "ChatTag":     "[red][OWNER][default] ",
+        "ScoreTag":    "[ROOT]",
+        "ChatTag":     "[red][ROOT][default] ",
         "ChatColor":   "[green]",
         "NameColor":   "[teamcolor]",
         "ChatSound":   true
       },
       {
-        // ── Admin ─────────────────────────────────────────────────────────────
-        "GroupName":   "Admin",
-        "Permission":  "@admins/admin",
-        "DisplayName": "Tag De Admin",
-        "Priority":    50,
-        "ScoreTag":    "[ADMIN]",
-        "ChatTag":     "[blue][ADMIN][default] ",
-        "ChatColor":   "[white]",
+        "GroupName":   "TRUST",
+        "Permission":  "tags.trust",
+        "DisplayName": "TRUST Tag",
+        "Priority":    90,
+        "ScoreTag":    "[TRUST]",
+        "ChatTag":     "[red][TRUST][default] ",
+        "ChatColor":   "[green]",
         "NameColor":   "[teamcolor]",
         "ChatSound":   true
       },
       {
-        // ── VIP (permission-only, no Admins-plugin group needed) ──────────────
-        "GroupName":   "",
-        "Permission":  "@zplvip/vip",
-        "DisplayName": "Tag De VIP",
+        "GroupName":   "MOD",
+        "Permission":  "tags.mod",
+        "DisplayName": "MOD Tag",
+        "Priority":    70,
+        "ScoreTag":    "[MOD]",
+        "ChatTag":     "[red][MOD][default] ",
+        "ChatColor":   "[green]",
+        "NameColor":   "[teamcolor]",
+        "ChatSound":   true
+      },
+      {
+        "GroupName":   "ADMIN",
+        "Permission":  "tags.admin",
+        "DisplayName": "ADMIN Tag",
+        "Priority":    60,
+        "ScoreTag":    "[MOD]",
+        "ChatTag":     "[red][MOD][default] ",
+        "ChatColor":   "[green]",
+        "NameColor":   "[teamcolor]",
+        "ChatSound":   true
+      },
+      {
+        "GroupName":   "VIP",
+        "Permission":  "tags.vip",
+        "DisplayName": "VIP Tag",
         "Priority":    30,
         "ScoreTag":    "[VIP]",
         "ChatTag":     "[gold][VIP][default] ",
-        "ChatColor":   "[white]",
+        "ChatColor":   "[yellow]",
         "NameColor":   "[teamcolor]",
         "ChatSound":   true
       }

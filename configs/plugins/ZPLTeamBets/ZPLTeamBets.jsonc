@@ -2,10 +2,10 @@
   "ZPLTeamBets": {
 
     // Commands players type in chat to open the bet menu (without ! or /)
-    "BetCommands": [ "bet", "teambets" ],
+    "BetCommands": [ "bet", "pariu" ],
 
     // Prefix shown before every ZPLTeamBets chat message
-    "ChatPrefix": "[red][TeamBets][default]",
+    "ChatPrefix": "[red][ZM][default]",
 
     // Wallet kind in the Economy plugin — must match ZombiePlagueLegacyCS2's wallet
     "WalletKind": "ammo",

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SwiftlyS2.Shared;
+using SwiftlyS2.Shared.Commands;
 using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
@@ -44,9 +45,12 @@ public enum MegaEventType
     Name        = "ZPL Mega Events",
     Author      = "DeadPoolCS2",
     Description = "Auto-scheduler for per-round Mega Events with ammo-pack rewards for ZombiePlague Legacy CS2.")]
-public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
+public class ZPLMegaEventsPlugin : BasePlugin
 {
     private const string ConfigFile = "ZPLMegaEventsCFG.jsonc";
+    private const string ConfigSection = "ZPLMegaEventsCFG";
+    private const string StatusCommand = "sw_megaevents_status";
+    private static bool _configSourceInitialized;
 
     private ServiceProvider?                 _sp;
     private ILogger<ZPLMegaEventsPlugin>?    _logger;
@@ -80,6 +84,13 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private string _specialClassName = string.Empty;
     private int    _specialClassAP;
 
+    // Keep explicit delegate targets so subscriptions can be cleanly removed.
+    private readonly Action<IPlayer> _onNemesisSelected;
+    private readonly Action<IPlayer> _onAssassinSelected;
+    private readonly Action<IPlayer> _onSurvivorSelected;
+    private readonly Action<IPlayer> _onSniperSelected;
+    private bool _specialClassHooksSubscribed;
+
     // Map-level state
     private bool   _mapGiveAwayDone;
 
@@ -94,10 +105,19 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
     //  Lifecycle
     // ─────────────────────────────────────────────────────────────────────────
 
+    public ZPLMegaEventsPlugin(ISwiftlyCore core) : base(core)
+    {
+        _onNemesisSelected  = OnNemesisSelected;
+        _onAssassinSelected = OnAssassinSelected;
+        _onSurvivorSelected = OnSurvivorSelected;
+        _onSniperSelected   = OnSniperSelected;
+    }
+
     public override void Load(bool hotReload)
     {
-        if (!hotReload)
-            Core.Configuration.InitializeJsonWithModel<ZPLMegaEventsCFG>(ConfigFile, "ZPLMegaEventsCFG")
+        if (!_configSourceInitialized)
+        {
+            Core.Configuration.InitializeJsonWithModel<ZPLMegaEventsCFG>(ConfigFile, ConfigSection)
                 .Configure(builder =>
                 {
                     builder.AddJsonFile(ConfigFile, false, true);
@@ -109,16 +129,22 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
                         ctx.Ignore = true;
                     });
                 });
+            _configSourceInitialized = true;
+        }
 
         var collection = new ServiceCollection();
         collection.AddSwiftly(Core);
-        collection.AddOptions<ZPLMegaEventsCFG>().BindConfiguration("ZPLMegaEventsCFG");
+        collection.AddOptions<ZPLMegaEventsCFG>().BindConfiguration(ConfigSection);
 
         _sp         = collection.BuildServiceProvider();
         _logger     = _sp.GetRequiredService<ILogger<ZPLMegaEventsPlugin>>();
         _cfgMonitor = _sp.GetRequiredService<IOptionsMonitor<ZPLMegaEventsCFG>>();
         _config     = _cfgMonitor.CurrentValue;
-        _cfgMonitor.OnChange(cfg => _config = cfg);
+        _cfgMonitor.OnChange(cfg =>
+        {
+            _config = cfg;
+            Core.Scheduler.NextWorldUpdate(SyncSpecialClassHookSubscription);
+        });
 
         // MySQL stats
         if (!string.IsNullOrWhiteSpace(_config.DatabaseConnection))
@@ -129,6 +155,7 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.GameEvent.HookPre<EventRoundEnd>(OnRoundEnd);
         Core.GameEvent.HookPre<EventPlayerDeath>(OnPlayerDeath);
         Core.GameEvent.HookPre<EventPlayerHurt>(OnPlayerHurt);
+        Core.Command.RegisterCommand(StatusCommand, CmdMegaEventsStatus, true);
 
         // Hook map lifecycle for map-level giveaway
         Core.Event.OnMapLoad   += OnMapLoad;
@@ -147,11 +174,8 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 {
                     _zplApi.ZPL_OnPlayerInfect       += OnZPLPlayerInfect;
                     _zplApi.ZPL_OnMotherZombieSelected += OnMotherZombieSelected;
-                    _zplApi.ZPL_OnNemesisSelected      += p => TrackSpecialClass(p, "Nemesis",  _config.SpecialClassBonus.NemesisWinAP);
-                    _zplApi.ZPL_OnAssassinSelected     += p => TrackSpecialClass(p, "Assassin", _config.SpecialClassBonus.AssassinWinAP);
-                    _zplApi.ZPL_OnSurvivorSelected     += p => TrackSpecialClass(p, "Survivor", _config.SpecialClassBonus.SurvivorWinAP);
-                    _zplApi.ZPL_OnSniperSelected       += p => TrackSpecialClass(p, "Sniper",   _config.SpecialClassBonus.SniperWinAP);
                     _zplApi.ZPL_OnHumanWin             += OnHumanWin;
+                    SyncSpecialClassHookSubscription();
                 }
             }
             catch (Exception ex)
@@ -188,6 +212,14 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             _zplApi.ZPL_OnPlayerInfect        -= OnZPLPlayerInfect;
             _zplApi.ZPL_OnMotherZombieSelected -= OnMotherZombieSelected;
+            if (_specialClassHooksSubscribed)
+            {
+                _zplApi.ZPL_OnNemesisSelected  -= _onNemesisSelected;
+                _zplApi.ZPL_OnAssassinSelected -= _onAssassinSelected;
+                _zplApi.ZPL_OnSurvivorSelected -= _onSurvivorSelected;
+                _zplApi.ZPL_OnSniperSelected   -= _onSniperSelected;
+                _specialClassHooksSubscribed = false;
+            }
             _zplApi.ZPL_OnHumanWin             -= OnHumanWin;
         }
 
@@ -195,6 +227,7 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.GameEvent.UnhookPre<EventRoundEnd>();
         Core.GameEvent.UnhookPre<EventPlayerDeath>();
         Core.GameEvent.UnhookPre<EventPlayerHurt>();
+        Core.Command.UnregisterCommand(StatusCommand);
 
         // Unhook map lifecycle
         Core.Event.OnMapLoad   -= OnMapLoad;
@@ -227,6 +260,20 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         _specialClassAP      = 0;
 
         _roundsPlayed++;
+
+        int onlinePlayers = CountEligiblePlayers();
+        if (!HasMinimumPlayersForEventStart(onlinePlayers))
+        {
+            _activeEvent = MegaEventType.None;
+            _innerEvent = MegaEventType.None;
+            _isHappyHour = false;
+            AnnounceMinimumPlayersNotMet(false, onlinePlayers);
+            _logger?.LogDebug(
+                "[MegaEvents] Skipping round event start: online players {OnlinePlayers} below minimum {MinimumPlayers}.",
+                onlinePlayers,
+                _config.MinimumPlayersToStart);
+            return HookResult.Continue;
+        }
 
         // Determine active event for this round
         (_activeEvent, _innerEvent, _isHappyHour) = SelectEvent();
@@ -498,100 +545,234 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     private void OnZPLPlayerInfect(IPlayer? attacker, IPlayer victim, bool byGrenade, string zombieClass)
     {
-        if (_activeEvent == MegaEventType.None) return;
-        var resolvedEvent = _isHappyHour ? _innerEvent : _activeEvent;
-
-        if (attacker == null || attacker.SteamID == 0) return;
-
-        switch (resolvedEvent)
+        try
         {
-            case MegaEventType.InfectionRush:
-                if (_eventCompleted) break;
-                _infectionsThisRound.TryGetValue(attacker.SteamID, out int prevInf);
-                int newInf = prevInf + 1;
-                _infectionsThisRound[attacker.SteamID] = newInf;
+            if (_activeEvent == MegaEventType.None) return;
+            var resolvedEvent = _isHappyHour ? _innerEvent : _activeEvent;
 
-                int infTarget = _config.InfectionRush.TargetInfections;
-                if (newInf >= infTarget)
-                {
-                    _eventCompleted = true;
-                    int ap = ApplyHappyHour(_config.InfectionRush.WinnerRewardAP);
-                    GiveAP(attacker, ap);
-                    DbRecordEvent(attacker.SteamID, ap);
-                    WriteLog("InfectionRush", attacker.SteamID, attacker.Name, ap);
-                    Announce("WinInfectionRush", attacker.Name, newInf, infTarget, ap);
-                }
-                break;
+            if (attacker == null || attacker.SteamID == 0) return;
 
-            case MegaEventType.ZombieArmada:
-                // Track infections to detect "all humans wiped" — handled via OnHumanWin(false)
-                break;
+            switch (resolvedEvent)
+            {
+                case MegaEventType.InfectionRush:
+                    if (_eventCompleted) break;
+                    _infectionsThisRound.TryGetValue(attacker.SteamID, out int prevInf);
+                    int newInf = prevInf + 1;
+                    _infectionsThisRound[attacker.SteamID] = newInf;
+
+                    int infTarget = _config.InfectionRush.TargetInfections;
+                    if (newInf >= infTarget)
+                    {
+                        _eventCompleted = true;
+                        int ap = ApplyHappyHour(_config.InfectionRush.WinnerRewardAP);
+                        GiveAP(attacker, ap);
+                        DbRecordEvent(attacker.SteamID, ap);
+                        WriteLog("InfectionRush", attacker.SteamID, attacker.Name, ap);
+                        Announce("WinInfectionRush", attacker.Name, newInf, infTarget, ap);
+                    }
+                    break;
+
+                case MegaEventType.ZombieArmada:
+                    // Track infections to detect "all humans wiped" — handled via OnHumanWin(false)
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            LogExternalCallbackFailure(nameof(OnZPLPlayerInfect), ex);
         }
     }
 
     private void OnMotherZombieSelected(IPlayer player)
     {
-        // Mother zombie is always the first zombie — track for infection rush purposes
-        if (_activeEvent == MegaEventType.None) return;
-        // No special handling needed; infection tracking fires on ZPL_OnPlayerInfect
+        try
+        {
+            // Mother zombie is always the first zombie — track for infection rush purposes
+            if (_activeEvent == MegaEventType.None) return;
+            // No special handling needed; infection tracking fires on ZPL_OnPlayerInfect
+        }
+        catch (Exception ex)
+        {
+            LogExternalCallbackFailure(nameof(OnMotherZombieSelected), ex);
+        }
     }
 
     private void TrackSpecialClass(IPlayer player, string className, int apReward)
     {
         if (_specialClassSteamId != 0) return; // only track first special class
+        if (!player.IsValid || player.SteamID == 0) return;
         _specialClassSteamId = player.SteamID;
         _specialClassName    = className;
         _specialClassAP      = apReward;
     }
 
+    private void OnNemesisSelected(IPlayer player)
+    {
+        try
+        {
+            TrackSpecialClass(player, "Nemesis", _config.SpecialClassBonus.NemesisWinAP);
+        }
+        catch (Exception ex)
+        {
+            LogExternalCallbackFailure(nameof(OnNemesisSelected), ex);
+        }
+    }
+
+    private void OnAssassinSelected(IPlayer player)
+    {
+        try
+        {
+            TrackSpecialClass(player, "Assassin", _config.SpecialClassBonus.AssassinWinAP);
+        }
+        catch (Exception ex)
+        {
+            LogExternalCallbackFailure(nameof(OnAssassinSelected), ex);
+        }
+    }
+
+    private void OnSurvivorSelected(IPlayer player)
+    {
+        try
+        {
+            TrackSpecialClass(player, "Survivor", _config.SpecialClassBonus.SurvivorWinAP);
+        }
+        catch (Exception ex)
+        {
+            LogExternalCallbackFailure(nameof(OnSurvivorSelected), ex);
+        }
+    }
+
+    private void OnSniperSelected(IPlayer player)
+    {
+        try
+        {
+            TrackSpecialClass(player, "Sniper", _config.SpecialClassBonus.SniperWinAP);
+        }
+        catch (Exception ex)
+        {
+            LogExternalCallbackFailure(nameof(OnSniperSelected), ex);
+        }
+    }
+
     private void OnHumanWin(bool humansWon)
     {
-        if (_activeEvent == MegaEventType.None || _eventCompleted) return;
-        var resolvedEvent = _isHappyHour ? _innerEvent : _activeEvent;
-
-        switch (resolvedEvent)
+        try
         {
-            case MegaEventType.ZombieArmada:
-                // Zombies win = humans wiped → reward all alive zombies
-                if (!humansWon)
-                {
-                    _eventCompleted = true;
-                    RewardAliveZombies();
-                }
-                break;
+            if (_activeEvent == MegaEventType.None || _eventCompleted) return;
+            var resolvedEvent = _isHappyHour ? _innerEvent : _activeEvent;
 
-            case MegaEventType.FortressDefense:
-                // Humans won (survived) → reward all alive humans (timer-end)
-                if (humansWon)
-                {
-                    _eventCompleted = true;
-                    RewardSurvivingHumans();
-                }
-                break;
-
-            case MegaEventType.SpecialClass:
-                // Special class wins their condition
-                if (_specialClassSteamId != 0 && !_eventCompleted)
-                {
-                    bool specialWon = (_specialClassName is "Survivor" or "Sniper") ? humansWon : !humansWon;
-                    if (specialWon)
+            switch (resolvedEvent)
+            {
+                case MegaEventType.ZombieArmada:
+                    // Zombies win = humans wiped → reward all alive zombies
+                    if (!humansWon)
                     {
                         _eventCompleted = true;
-                        int ap = ApplyHappyHour(_specialClassAP);
-                        var player = FindPlayerBySteamId(_specialClassSteamId);
-                        if (player != null)
+                        RewardAliveZombies();
+                    }
+                    break;
+
+                case MegaEventType.FortressDefense:
+                    // Humans won (survived) → reward all alive humans (timer-end)
+                    if (humansWon)
+                    {
+                        _eventCompleted = true;
+                        RewardSurvivingHumans();
+                    }
+                    break;
+
+                case MegaEventType.SpecialClass:
+                    // Special class wins their condition
+                    if (_specialClassSteamId != 0 && !_eventCompleted)
+                    {
+                        bool specialWon = (_specialClassName is "Survivor" or "Sniper") ? humansWon : !humansWon;
+                        if (specialWon)
                         {
-                            GiveAP(player, ap);
-                            DbRecordEvent(_specialClassSteamId, ap);
-                            WriteLog("SpecialClass", _specialClassSteamId, player.Name, ap);
-                            Announce("WinSpecialClass", player.Name, _specialClassName, ap);
+                            _eventCompleted = true;
+                            int ap = ApplyHappyHour(_specialClassAP);
+                            var player = FindPlayerBySteamId(_specialClassSteamId);
+                            if (player != null)
+                            {
+                                GiveAP(player, ap);
+                                DbRecordEvent(_specialClassSteamId, ap);
+                                WriteLog("SpecialClass", _specialClassSteamId, player.Name, ap);
+                                Announce("WinSpecialClass", player.Name, _specialClassName, ap);
+                            }
                         }
                     }
-                }
-                break;
+                    break;
+            }
+
+            _activeEvent = MegaEventType.None;
+        }
+        catch (Exception ex)
+        {
+            LogExternalCallbackFailure(nameof(OnHumanWin), ex);
+        }
+    }
+
+    private void SyncSpecialClassHookSubscription()
+    {
+        if (_zplApi == null)
+        {
+            _specialClassHooksSubscribed = false;
+            return;
         }
 
-        _activeEvent = MegaEventType.None;
+        bool shouldSubscribe = _config.SpecialClassBonus.Enable && _config.SpecialClassBonus.EnableSelectionHooks;
+        if (shouldSubscribe == _specialClassHooksSubscribed) return;
+
+        try
+        {
+            if (shouldSubscribe)
+            {
+                _zplApi.ZPL_OnNemesisSelected  += _onNemesisSelected;
+                _zplApi.ZPL_OnAssassinSelected += _onAssassinSelected;
+                _zplApi.ZPL_OnSurvivorSelected += _onSurvivorSelected;
+                _zplApi.ZPL_OnSniperSelected   += _onSniperSelected;
+            }
+            else
+            {
+                _zplApi.ZPL_OnNemesisSelected  -= _onNemesisSelected;
+                _zplApi.ZPL_OnAssassinSelected -= _onAssassinSelected;
+                _zplApi.ZPL_OnSurvivorSelected -= _onSurvivorSelected;
+                _zplApi.ZPL_OnSniperSelected   -= _onSniperSelected;
+            }
+
+            _specialClassHooksSubscribed = shouldSubscribe;
+            _logger?.LogInformation(
+                "[MegaEvents] Special-class selection hooks {State} (Enable={Enable}, EnableSelectionHooks={Toggle}).",
+                shouldSubscribe ? "enabled" : "disabled",
+                _config.SpecialClassBonus.Enable,
+                _config.SpecialClassBonus.EnableSelectionHooks);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning("[MegaEvents] Failed to sync special-class hook subscriptions: {Ex}", ex.Message);
+        }
+    }
+
+    private void LogExternalCallbackFailure(string callbackName, Exception ex)
+        => _logger?.LogWarning("[MegaEvents] External callback {Callback} failed: {Ex}", callbackName, ex.Message);
+
+    private bool IsSpecialClassSelectable()
+        => _config.SpecialClassBonus.Enable
+           && _config.SpecialClassBonus.EnableSelectionHooks
+           && _zplApi != null
+           && _specialClassHooksSubscribed;
+
+    private void CmdMegaEventsStatus(ICommandContext context)
+    {
+        try
+        {
+            string activeName = (_isHappyHour ? _innerEvent : _activeEvent).ToString();
+            int onlinePlayers = CountEligiblePlayers();
+            context.Reply($"[MegaEvents] status: ActiveEvent={activeName}, HappyRound={_isHappyHour}, OnlinePlayers={onlinePlayers}, MinPlayers={_config.MinimumPlayersToStart}, ZPLAPI={(_zplApi != null)}, EconomyAPI={(_economyApi != null)}, SpecialHooksCfg={_config.SpecialClassBonus.EnableSelectionHooks}, SpecialHooksSubscribed={_specialClassHooksSubscribed}, SpecialClassSelectable={IsSpecialClassSelectable()}, DBReady={_dbReady}");
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning("[MegaEvents] Status command failed: {Ex}", ex.Message);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -761,6 +942,17 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
             if (interval > 1 && (weekOfYear % interval) != 0)
                 continue;
 
+            if (entry.EventType == MegaEventType.SpecialClass && !IsSpecialClassSelectable())
+            {
+                _logger?.LogInformation(
+                    "[MegaEvents] Scheduled SpecialClass skipped because selection hooks are not operational (Enable={Enable}, EnableSelectionHooks={Toggle}, ZPLAPI={HasApi}, Subscribed={Subscribed}).",
+                    _config.SpecialClassBonus.Enable,
+                    _config.SpecialClassBonus.EnableSelectionHooks,
+                    _zplApi != null,
+                    _specialClassHooksSubscribed);
+                continue;
+            }
+
             return entry.EventType;
         }
 
@@ -775,7 +967,7 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         if (_config.FortressDefense.Enable  && _config.FortressDefense.Weight  > 0) pool.Add((MegaEventType.FortressDefense, _config.FortressDefense.Weight));
         if (_config.ZombieArmada.Enable     && _config.ZombieArmada.Weight     > 0) pool.Add((MegaEventType.ZombieArmada,    _config.ZombieArmada.Weight));
         if (_config.DamageMarathon.Enable   && _config.DamageMarathon.Weight   > 0) pool.Add((MegaEventType.DamageMarathon,  _config.DamageMarathon.Weight));
-        if (_config.SpecialClassBonus.Enable && _config.SpecialClassBonus.Weight > 0) pool.Add((MegaEventType.SpecialClass,  _config.SpecialClassBonus.Weight));
+        if (IsSpecialClassSelectable() && _config.SpecialClassBonus.Weight > 0) pool.Add((MegaEventType.SpecialClass,  _config.SpecialClassBonus.Weight));
         if (_config.GiveAway.Enable         && _config.GiveAway.Weight         > 0) pool.Add((MegaEventType.GiveAway,        _config.GiveAway.Weight));
         if (_config.HeadshotKing.Enable     && _config.HeadshotKing.Weight     > 0) pool.Add((MegaEventType.HeadshotKing,    _config.HeadshotKing.Weight));
         if (_config.KnifeKill.Enable        && _config.KnifeKill.Weight        > 0) pool.Add((MegaEventType.KnifeKill,       _config.KnifeKill.Weight));
@@ -792,43 +984,53 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     private void AnnounceEventStart()
     {
-        if (!_config.EnableAnnouncements) return;
+        if (!_config.EnableAnnouncements && !_config.EnableCenterAnnouncements) return;
         var resolvedEvent = _isHappyHour ? _innerEvent : _activeEvent;
 
         // Happy hour bonus announcement
         if (_isHappyHour)
-            BroadcastChatT("HappyHourActive", _config.HappyHour.Multiplier.ToString("F1"));
+            BroadcastAnnouncementT("HappyHourActive", _config.HappyHour.Multiplier.ToString("F1"));
 
         // Per-event start message
         switch (resolvedEvent)
         {
             case MegaEventType.InfectionRush:
-                BroadcastChatT("StartInfectionRush",   _config.InfectionRush.TargetInfections, _config.InfectionRush.WinnerRewardAP);   break;
+                BroadcastAnnouncementT("StartInfectionRush",   _config.InfectionRush.TargetInfections, _config.InfectionRush.WinnerRewardAP);   break;
             case MegaEventType.KillFrenzy:
-                BroadcastChatT("StartKillFrenzy",      _config.KillFrenzy.TargetKills,         _config.KillFrenzy.WinnerRewardAP);      break;
+                BroadcastAnnouncementT("StartKillFrenzy",      _config.KillFrenzy.TargetKills,         _config.KillFrenzy.WinnerRewardAP);      break;
             case MegaEventType.FortressDefense:
-                BroadcastChatT("StartFortressDefense", _config.FortressDefense.RewardAP);                                               break;
+                BroadcastAnnouncementT("StartFortressDefense", _config.FortressDefense.RewardAP);                                               break;
             case MegaEventType.ZombieArmada:
-                BroadcastChatT("StartZombieArmada",    _config.ZombieArmada.RewardAP);                                                  break;
+                BroadcastAnnouncementT("StartZombieArmada",    _config.ZombieArmada.RewardAP);                                                  break;
             case MegaEventType.DamageMarathon:
-                BroadcastChatT("StartDamageMarathon",  ((long)_config.DamageMarathon.TargetDamage).ToString("N0"), _config.DamageMarathon.WinnerRewardAP); break;
+                BroadcastAnnouncementT("StartDamageMarathon",  ((long)_config.DamageMarathon.TargetDamage).ToString("N0"), _config.DamageMarathon.WinnerRewardAP); break;
             case MegaEventType.SpecialClass:
-                BroadcastChatT("StartSpecialClass");                                                                                     break;
+                BroadcastAnnouncementT("StartSpecialClass");                                                                                     break;
             case MegaEventType.GiveAway:
-                BroadcastChatT("StartGiveAway",        _config.GiveAway.WinnerRewardAP,    _config.GiveAway.ConsolationAP);             break;
+                BroadcastAnnouncementT("StartGiveAway",        _config.GiveAway.WinnerRewardAP,    _config.GiveAway.ConsolationAP);             break;
             case MegaEventType.HeadshotKing:
-                BroadcastChatT("StartHeadshotKing",    _config.HeadshotKing.TargetHeadshots, _config.HeadshotKing.WinnerRewardAP);      break;
+                BroadcastAnnouncementT("StartHeadshotKing",    _config.HeadshotKing.TargetHeadshots, _config.HeadshotKing.WinnerRewardAP);      break;
             case MegaEventType.KnifeKill:
-                BroadcastChatT("StartKnifeKill",       _config.KnifeKill.WinnerRewardAP);                                              break;
+                BroadcastAnnouncementT("StartKnifeKill",       _config.KnifeKill.WinnerRewardAP);                                              break;
             case MegaEventType.GrenadeKing:
-                BroadcastChatT("StartGrenadeKing",     _config.GrenadeKing.TargetGrenadeKills, _config.GrenadeKing.WinnerRewardAP);    break;
+                BroadcastAnnouncementT("StartGrenadeKing",     _config.GrenadeKing.TargetGrenadeKills, _config.GrenadeKing.WinnerRewardAP);    break;
             case MegaEventType.MVPRound:
-                BroadcastChatT("StartMVPRound",        _config.MVPRound.WinnerRewardAP);                                               break;
+                BroadcastAnnouncementT("StartMVPRound",        _config.MVPRound.WinnerRewardAP);                                               break;
             case MegaEventType.ZombieKingpin:
-                BroadcastChatT("StartZombieKingpin",   _config.ZombieKingpin.WinnerRewardAP);                                          break;
+                BroadcastAnnouncementT("StartZombieKingpin",   _config.ZombieKingpin.WinnerRewardAP);                                          break;
             case MegaEventType.DoubleDown:
-                BroadcastChatT("StartDoubleDown",      _config.DoubleDown.RewardAP);                                                   break;
+                BroadcastAnnouncementT("StartDoubleDown",      _config.DoubleDown.RewardAP);                                                   break;
         }
+    }
+
+    private void AnnounceMinimumPlayersNotMet(bool isMapGiveAway, int onlinePlayers)
+    {
+        if (!_config.EnableAnnouncements && !_config.EnableCenterAnnouncements) return;
+
+        BroadcastAnnouncementT(
+            isMapGiveAway ? "SkipMapGiveAwayMinimumPlayers" : "SkipRoundMinimumPlayers",
+            _config.MinimumPlayersToStart,
+            onlinePlayers);
     }
 
     private void AnnounceProgress()
@@ -922,11 +1124,32 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
         }
     }
 
+    private void BroadcastAnnouncementT(string key, params object[] args)
+    {
+        if (_config.EnableAnnouncements)
+            BroadcastChatT(key, args);
+
+        if (_config.EnableCenterAnnouncements)
+            BroadcastCenterT(key, args);
+    }
+
+    private void BroadcastCenterT(string key, params object[] args)
+    {
+        foreach (var p in Core.PlayerManager.GetAllPlayers())
+        {
+            if (p == null || !p.IsValid || p.IsFakeClient) continue;
+            p.SendMessage(MessageType.Center, StripColorTags(T(p, key, args)));
+        }
+    }
+
     private string T(IPlayer player, string key, params object[] args)
     {
         var loc = Core.Translation.GetPlayerLocalizer(player);
         return args.Length == 0 ? loc[key] : loc[key, args];
     }
+
+    private static string StripColorTags(string text)
+        => System.Text.RegularExpressions.Regex.Replace(text, @"\[[^\]]+\]", string.Empty);
 
     // ─────────────────────────────────────────────────────────────────────────
     //  Utility helpers
@@ -941,6 +1164,23 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
             if (p != null && p.IsValid && p.SteamID == steamId) return p;
         return null;
     }
+
+    private int CountEligiblePlayers()
+    {
+        int count = 0;
+        foreach (var player in Core.PlayerManager.GetAllPlayers())
+        {
+            if (player == null || !player.IsValid || player.IsFakeClient || player.SteamID == 0)
+                continue;
+
+            count++;
+        }
+
+        return count;
+    }
+
+    private bool HasMinimumPlayersForEventStart(int onlinePlayers)
+        => _config.MinimumPlayersToStart <= 1 || onlinePlayers >= _config.MinimumPlayersToStart;
 
     private (string name, int count) GetLeader(Dictionary<ulong, int> dict)
     {
@@ -1063,6 +1303,17 @@ public class ZPLMegaEventsPlugin(ISwiftlyCore core) : BasePlugin(core)
     {
         if (_mapGiveAwayDone) return;
         _mapGiveAwayDone = true;
+
+        int onlinePlayers = CountEligiblePlayers();
+        if (!HasMinimumPlayersForEventStart(onlinePlayers))
+        {
+            AnnounceMinimumPlayersNotMet(true, onlinePlayers);
+            _logger?.LogDebug(
+                "[MegaEvents] Skipping map giveaway: online players {OnlinePlayers} below minimum {MinimumPlayers}.",
+                onlinePlayers,
+                _config.MinimumPlayersToStart);
+            return;
+        }
 
         var players = Core.PlayerManager.GetAllPlayers()
             .Where(p => p != null && p.IsValid && !p.IsFakeClient && p.SteamID != 0)
