@@ -50,7 +50,6 @@ public class ZPLMegaEventsPlugin : BasePlugin
     private const string ConfigFile = "ZPLMegaEventsCFG.jsonc";
     private const string ConfigSection = "ZPLMegaEventsCFG";
     private const string StatusCommand = "sw_megaevents_status";
-    private static bool _configSourceInitialized;
 
     private ServiceProvider?                 _sp;
     private ILogger<ZPLMegaEventsPlugin>?    _logger;
@@ -115,7 +114,14 @@ public class ZPLMegaEventsPlugin : BasePlugin
 
     public override void Load(bool hotReload)
     {
-        if (!_configSourceInitialized)
+        // Guard with !hotReload: SwiftlyS2's PluginConfigurationService.Manager is a
+        // lazy singleton that is never reset between hot-reloads (map changes).
+        // Calling AddJsonFile on it again on every Load() appends a brand-new
+        // FileSystemWatcher thread to the same ConfigurationManager, causing one
+        // watcher thread to leak per map change.  Using !hotReload (not a static
+        // flag) is correct because SwiftlyS2 loads each plugin into a fresh
+        // AssemblyLoadContext on hot-reload, resetting all static variables.
+        if (!hotReload)
         {
             Core.Configuration.InitializeJsonWithModel<ZPLMegaEventsCFG>(ConfigFile, ConfigSection)
                 .Configure(builder =>
@@ -129,7 +135,6 @@ public class ZPLMegaEventsPlugin : BasePlugin
                         ctx.Ignore = true;
                     });
                 });
-            _configSourceInitialized = true;
         }
 
         var collection = new ServiceCollection();

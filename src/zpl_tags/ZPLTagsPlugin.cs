@@ -35,7 +35,13 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private const string ConfigSection           = "ZPLTags";
     private const float  TagsApiProbeIntervalSec = 2.0f;
     private const int    TagsApiProbeMaxAttempts = 45;
-    private static bool  _configSourceInitialized;
+
+    // Guards OnMessageSayText2 against being called in a partially-torn-down
+    // state (e.g. during a SwiftlyS2 hot-reload race between Unload() and the
+    // network-receive thread dispatching a FilterMessage callback).  Must be
+    // volatile so the write in Unload() is immediately visible to the network
+    // thread that runs OnMessageSayText2.
+    private volatile bool _isLoaded;
 
     private ILogger<ZPLTagsPlugin>?       _logger;
     private IOptionsMonitor<ZPLTagsCFG>?  _cfgMonitor;
@@ -90,9 +96,15 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     public override void Load(bool hotReload)
     {
-        // Initialize config source once per process. This keeps watcher counts
-        // stable while still supporting first-time runtime plugin loads.
-        if (!_configSourceInitialized)
+        // Guard with !hotReload: SwiftlyS2's PluginConfigurationService.Manager is a
+        // lazy singleton that is never reset between hot-reloads (map changes).
+        // Calling AddJsonFile on it again on every Load() appends a brand-new
+        // FileSystemWatcher thread to the same ConfigurationManager, causing one
+        // watcher thread to leak per map change.  Using !hotReload (not a static
+        // flag) is correct because SwiftlyS2 loads each plugin into a fresh
+        // AssemblyLoadContext on hot-reload, resetting all static variables, so a
+        // static bool sentinel would be incorrect and would not prevent the leak.
+        if (!hotReload)
         {
             Core.Configuration.InitializeJsonWithModel<ZPLTagsCFG>(ConfigFile, ConfigSection)
                 .Configure(builder =>
@@ -106,7 +118,6 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                         ctx.Ignore = true;
                     });
                 });
-            _configSourceInitialized = true;
         }
 
         var services = new ServiceCollection();
@@ -141,6 +152,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         if (hotReload)
             Core.Scheduler.NextWorldUpdate(RebuildAllPlayers);
+
+        _isLoaded = true;
     }
 
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
@@ -265,6 +278,15 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     public override void Unload()
     {
+        // Signal the [ServerNetMessageHandler] to stop immediately.  This is the
+        // first thing in Unload() so that if the network-receive thread (which calls
+        // FilterMessage / OnMessageSayText2 concurrently on a non-managed thread)
+        // races with this cleanup, the handler bails out before touching any ZPL
+        // state that is about to be torn down.  This mirrors the root cause of the
+        // 2026-04-15 SIGSEGV: libnetworksystem.so → swiftlys2 FilterMessage →
+        // null managed-delegate pointer after hot-reload GC.
+        _isLoaded = false;
+
         _refreshCts?.Cancel();
         _refreshCts?.Dispose();
         _refreshCts = null;
@@ -753,6 +775,10 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     [ServerNetMessageHandler]
     public HookResult OnMessageSayText2(CUserMessageSayText2 msg)
     {
+        // _isLoaded is set to false at the top of Unload() so that a concurrent
+        // FilterMessage call (network-receive thread) that races with plugin teardown
+        // exits cleanly instead of touching freed state.
+        if (!_isLoaded) return HookResult.Continue;
         if (_tagsBridge != null) return HookResult.Continue;
         if (msg.Entityindex <= 0) return HookResult.Continue;
 
