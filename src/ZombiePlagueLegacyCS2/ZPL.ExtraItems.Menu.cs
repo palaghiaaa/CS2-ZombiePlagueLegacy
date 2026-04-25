@@ -10,6 +10,7 @@ using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.SchemaDefinitions;
+using SwiftlyS2.Shared.Trace;
 using DrawingColor = System.Drawing.Color;
 
 namespace ZombiePlagueLegacyCS2;
@@ -838,15 +839,13 @@ public class ZPLExtraItemsMenu
         var traceStart = new Vector(eyePos.Value.X, eyePos.Value.Y, eyePos.Value.Z);
         var traceEnd   = traceStart + new Vector(fwdX, fwdY, fwdZ) * cfg.KnifeBlinkDistance;
 
-        var blinkTrace = new CGameTrace();
-        _core.Trace.SimpleTrace(
-            traceStart, traceEnd,
-            RayType_t.RAY_TYPE_LINE,
-            RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic,
-            MaskTrace.Solid,
-            MaskTrace.Empty, MaskTrace.Empty,
-            CollisionGroup.Player,
-            ref blinkTrace, pawn);
+        TraceParams? blinkTraceParams = TraceParams.Builder()
+            .WithObjectQuery(RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic)
+            .WithInteraction(MaskTrace.Solid, MaskTrace.Empty, MaskTrace.Empty)
+            .WithCollisionGroup(CollisionGroup.Player)
+            .IgnoreEntity(pawn)
+            .Build();
+        var blinkTrace = _core.Trace.TraceShapeLine(in traceStart, in traceEnd, in blinkTraceParams);
 
         // If trace hit geometry, step back 20 units from the wall; otherwise use full distance
         float safeDist = (blinkTrace.DidHit && blinkTrace.Fraction < 1.0f)

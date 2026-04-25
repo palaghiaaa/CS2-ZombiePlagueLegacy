@@ -4,6 +4,7 @@ using SwiftlyS2.Shared;
 using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.SchemaDefinitions;
+using SwiftlyS2.Shared.Trace;
 using static ZombiePlagueLegacyCS2.ZPLMineCFG;
 
 namespace ZombiePlagueLegacyCS2;
@@ -98,7 +99,7 @@ public class ZPLMineService
         }
 
         // ── Trace from eye to find placement surface ──────────────────────────
-        if (!CreateTraceByEyePosition(player, out CGameTrace trace, out Vector playerForward))
+        if (!CreateTraceByEyePosition(player, out TraceResult trace, out Vector playerForward))
             return null;
 
         // ── Spawn mine entity ─────────────────────────────────────────────────
@@ -225,7 +226,7 @@ public class ZPLMineService
         var ent = mineHandle.Value;
         if (ent == null || !ent.IsValid) return;
 
-        if (!CreateTraceByEntity(mineHandle, out CGameTrace trace, out Vector forward, mineData, isVerticalSurface))
+        if (!CreateTraceByEntity(mineHandle, out TraceResult trace, out Vector forward, mineData, isVerticalSurface))
             return;
 
         CBeam? beam = _core.EntitySystem.CreateEntity<CBeam>();
@@ -309,17 +310,14 @@ public class ZPLMineService
 
         while (remainingDist > 0.1f && penetrationCount < maxTargets)
         {
-            Vector end     = currentStart + direction * remainingDist;
-            CGameTrace trace = new CGameTrace();
-
-            _core.Trace.SimpleTrace(
-                currentStart, end,
-                RayType_t.RAY_TYPE_LINE,
-                RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic,
-                MaskTrace.Hitbox | MaskTrace.Player,
-                MaskTrace.Empty, MaskTrace.Empty,
-                CollisionGroup.Always,
-                ref trace, ent);
+            Vector end = currentStart + direction * remainingDist;
+            TraceParams? traceParams = TraceParams.Builder()
+                .WithObjectQuery(RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic)
+                .WithInteraction(MaskTrace.Hitbox | MaskTrace.Player, MaskTrace.Empty, MaskTrace.Empty)
+                .WithCollisionGroup(CollisionGroup.Always)
+                .IgnoreEntity(ent)
+                .Build();
+            var trace = _core.Trace.TraceShapeLine(in currentStart, in end, in traceParams);
 
             if (!trace.DidHit || trace.Fraction >= 0.99f) break;
 
@@ -657,9 +655,9 @@ public class ZPLMineService
         });
     }
 
-    private bool CreateTraceByEyePosition(IPlayer player, out CGameTrace trace, out Vector forward)
+    private bool CreateTraceByEyePosition(IPlayer player, out TraceResult trace, out Vector forward)
     {
-        trace   = new CGameTrace();
+        trace   = default;
         forward = new Vector(0, 0, 0);
 
         var pawn = player.PlayerPawn;
@@ -673,26 +671,24 @@ public class ZPLMineService
         var start = new Vector(eyePos.Value.X, eyePos.Value.Y, eyePos.Value.Z);
         var end   = start + forward * 8192f;
 
-        _core.Trace.SimpleTrace(
-            start, end,
-            RayType_t.RAY_TYPE_LINE,
-            RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic,
-            MaskTrace.Solid | MaskTrace.Player,
-            MaskTrace.Empty, MaskTrace.Empty,
-            CollisionGroup.Player,
-            ref trace, null);
+        TraceParams? traceParams = TraceParams.Builder()
+            .WithObjectQuery(RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic)
+            .WithInteraction(MaskTrace.Solid | MaskTrace.Player, MaskTrace.Empty, MaskTrace.Empty)
+            .WithCollisionGroup(CollisionGroup.Player)
+            .Build();
+        trace = _core.Trace.TraceShapeLine(in start, in end, in traceParams);
 
         return trace.Fraction < 1.0f;
     }
 
     private bool CreateTraceByEntity(
         CHandle<CBaseModelEntity> mineHandle,
-        out CGameTrace trace,
+        out TraceResult trace,
         out Vector forward,
         MineData mineData,
         bool isVerticalSurface)
     {
-        trace   = new CGameTrace();
+        trace   = default;
         forward = new Vector(0, 0, 0);
 
         if (!mineHandle.IsValid) return false;
@@ -723,14 +719,12 @@ public class ZPLMineService
         var start  = new Vector(minePos.Value.X, minePos.Value.Y, minePos.Value.Z);
         var endPos = start + forward * 8192f;
 
-        _core.Trace.SimpleTrace(
-            start, endPos,
-            RayType_t.RAY_TYPE_LINE,
-            RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic,
-            MaskTrace.Solid | MaskTrace.Player,
-            MaskTrace.Empty, MaskTrace.Empty,
-            CollisionGroup.NPC,
-            ref trace, null);
+        TraceParams? traceParams = TraceParams.Builder()
+            .WithObjectQuery(RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic)
+            .WithInteraction(MaskTrace.Solid | MaskTrace.Player, MaskTrace.Empty, MaskTrace.Empty)
+            .WithCollisionGroup(CollisionGroup.NPC)
+            .Build();
+        trace = _core.Trace.TraceShapeLine(in start, in endPos, in traceParams);
 
         return true;
     }
