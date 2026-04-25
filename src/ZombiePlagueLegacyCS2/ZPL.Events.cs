@@ -1531,13 +1531,20 @@ public partial class ZPLEvents
             if (weapon == null || !weapon.IsValid)
                 continue;
 
-            pawn.AimPunchAngle.Pitch = 0;
-            pawn.AimPunchAngle.Yaw = 0;
-            pawn.AimPunchAngle.Roll = 0;
-            pawn.AimPunchAngleVel.Pitch = 0;
-            pawn.AimPunchAngleVel.Yaw = 0;
-            pawn.AimPunchAngleVel.Roll = 0;
-            pawn.AimPunchTickFraction = 0;
+            var aimPunchServices = pawn.AimPunchServices;
+            if (aimPunchServices == null || !aimPunchServices.IsValid)
+                continue;
+
+            aimPunchServices.PredictableBaseAngle.Pitch = 0;
+            aimPunchServices.PredictableBaseAngle.Yaw = 0;
+            aimPunchServices.PredictableBaseAngle.Roll = 0;
+            aimPunchServices.PredictableBaseAngleVel.Pitch = 0;
+            aimPunchServices.PredictableBaseAngleVel.Yaw = 0;
+            aimPunchServices.PredictableBaseAngleVel.Roll = 0;
+            aimPunchServices.UnpredictableBaseAngle.Pitch = 0;
+            aimPunchServices.UnpredictableBaseAngle.Yaw = 0;
+            aimPunchServices.UnpredictableBaseAngle.Roll = 0;
+            aimPunchServices.PredictableBaseTickInterpAmount = 0;
         }
     }
 
