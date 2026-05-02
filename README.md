@@ -22,7 +22,6 @@
 ## 📋 Table of Contents
 
 1. [Features](#-features)
-2. [Changelog](#-changelog)
 3. [Dependencies & Setup](#-dependencies--setup)
 4. [Workshop Assets](#-workshop-assets)
 5. [Installation](#-installation)
@@ -95,44 +94,6 @@
   <td><code>IZombiePlagueLegacyAPI</code> — hook events, query player state, and set roles from external plugins</td>
 </tr>
 </table>
-
----
-
-## 📝 Changelog
-
-### Latest changes
-
-**Tryder glow fix**
-- Fixed: glow entities were created but never rendered because `CBodyComponent.SceneNode.Owner.Entity.Flags` threw before the entity was spawned — wrapped in `try/catch` matching the mine-service pattern; added pawn validity check inside the `NextWorldUpdate` closure.
-
-**Zombie Madness — red glow**
-- Zombie Madness now applies a coloured glow for the duration of the effect and removes it on expiry.
-- Default colour is red (255, 0, 0). Configurable via `MadnessGlowR`, `MadnessGlowG`, `MadnessGlowB` in `ExtraItemsCFG.jsonc`.
-
-**Lasermine HP system + centre HUD (zombie melee)**
-- Each mine type in `ZombiePlagueLegacyCFG.jsonc` now accepts a `MineHealth` field (default `0` = invincible).
-- When `MineHealth > 0`, **zombies can destroy mines by knife-swinging** within `ZombieAttackRange` units (default 80u). Each swing deals `ZombieAttackDamage` (default 150).
-- Each hit shows the mine owner a live centre-screen HUD: `Mine HP: <current> / <max>`.
-- When HP reaches 0 the mine explodes (uses the standard `CreateGrenadeAndExplode` path for `CanExplorer` mines).
-
-**Knife Blink — geometry trace (no more out-of-map)**
-- The destination is now computed with a `SimpleTrace` (`MaskTrace.Solid`) from the player's eye position.
-- If the trace hits a wall, the blink stops 20 units before the surface.
-- The result is converted from eye-space to feet-space so the player lands at ground level regardless of look angle.
-- Blink passes through other players (solid-only mask) — zombies do not block the blink.
-
-**Mother Zombie HP — player-count scaling**
-- Mother Zombie HP now scales linearly with the number of connected players.
-- At 1–2 players the multiplier equals `MotherZombieHPMinMultiplier` (default 1.0 → no HP bonus).
-- At ≥ `MotherZombieHPMaxPlayers` players (default 20) the full `MotherZombieHPMultiplier` (default 2.5) applies.
-- Prevents 50 000 HP mother zombies on 2–4 player servers. Disable with `MotherZombieHPPlayerScaleEnabled: false`.
-
-**ZPLTeamBets — new standalone plugin**
-- New plugin `zpl_teambets` lets players bet **Ammo Packs** on Humans or Zombies winning the round.
-- Bets open at `EventRoundStart` and lock at `EventRoundFreezeEnd`.
-- Commands: `!bet` (opens menu) or `!bet <amount> <humans|zombies>` (direct).
-- Configurable: `QuickBetAmounts`, `MinBet`, `MaxBet`, `WinMultiplier`, `BetCommands`.
-- Uses Economy API (same wallet as main plugin). Full lifecycle cleanup.
 
 ---
 
