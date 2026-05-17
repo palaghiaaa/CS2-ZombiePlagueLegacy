@@ -119,7 +119,7 @@ Ammo Packs are stored exclusively through the Economy plugin — no MySQL or dat
 
 | Asset | Workshop ID |
 |-------|-------------|
-| 🔊 Sounds + Models + Lasermine | [3644652779 | 3718944950 | 3618032051 | 3626771819] |
+| 🔊 Sounds + Models + Lasermine | [ 3644652779 + 3718944950 + 3618032051 + 3626771819 ] |
 
 ---
 
