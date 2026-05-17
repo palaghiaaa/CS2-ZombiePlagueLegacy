@@ -105,7 +105,7 @@ public partial class ZPLEvents
         if (zombie == null)
             return HookResult.Continue;
 
-        bool isHeadshot = @event.HitGroup == 1;
+        bool isHeadshot = @event.ActualHitGroup == HitGroup_t.HITGROUP_HEAD;
         string soundPath = isHeadshot ? zombie.Sounds.SoundPain : zombie.Sounds.SoundHurt;
         _service.PlayerSelectSoundtoEntity(player, soundPath, zombie.Stats.ZombieSoundVolume);
         
@@ -210,19 +210,27 @@ public partial class ZPLEvents
 
 
         _globals.InSwing[player.PlayerID] = false;
+        var playerId = player.PlayerID;
+        var sessionId = player.SessionId;
         _core.Scheduler.DelayBySeconds(0.05f, () =>
         {
-            if (player == null || !player.IsValid)
+            if (player == null || !player.IsValid || player.SessionId != sessionId)
                 return;
 
-            if (!_globals.InSwing[player.PlayerID])
-                _service.PlayerSelectSoundtoEntity(player, zombie.Sounds.SwingSound, zombie.Stats.ZombieSoundVolume);
+            var zombieConfigLate = _zombieClassCFG.CurrentValue;
+            var specialConfigLate = _SpecialClassCFG.CurrentValue;
+            var zombieLate = _zombieState.GetZombieClass(playerId, zombieConfigLate.ZombieClassList, specialConfigLate.SpecialClassList);
+            if (zombieLate == null)
+                return;
+
+            if (!_globals.InSwing[playerId])
+                _service.PlayerSelectSoundtoEntity(player, zombieLate.Sounds.SwingSound, zombieLate.Stats.ZombieSoundVolume);
         });
 
         return HookResult.Continue;
     }
 
-    private void HandleEntityTakeSoundDamage(IOnEntityTakeDamageEvent @event, DamageEventContext context)
+    private void HandleEntityTakeSoundDamage(IOnEntityTakeDamageEvent @event, in DamageEventContext context)
     {
         var attackerPlayer = context.AttackerPlayer;
         if (attackerPlayer == null || !attackerPlayer.IsValid)
@@ -253,7 +261,7 @@ public partial class ZPLEvents
         _service.PlayerSelectSoundtoEntity(attackerPlayer, zombie.Sounds.HitWallSound, zombie.Stats.ZombieSoundVolume);
     }
 
-    private void HandleInGrenadeDamage(IOnEntityTakeDamageEvent @event, DamageEventContext context)
+    private void HandleInGrenadeDamage(IOnEntityTakeDamageEvent @event, in DamageEventContext context)
     {
         var victimPlayer = context.VictimPlayer;
         if (victimPlayer == null || !victimPlayer.IsValid)

@@ -35,4 +35,11 @@
 			<Link>configs/%(RecursiveDir)%(Filename)%(Extension)</Link>
 		</Content>
 	</ItemGroup>
+	<!-- Bundle gamedata signatures -->
+	<ItemGroup>
+		<Content Include="resources/gamedata/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>resources/gamedata/%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</Content>
+	</ItemGroup>
 </Project>

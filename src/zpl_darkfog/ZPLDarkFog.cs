@@ -443,29 +443,27 @@ public sealed class ZPLDarkFogPlugin : BasePlugin
 
         _registeredAdminCommandName = adminCommandName;
 
-        if (!config.HiddenExposureCommandEnabled)
+        var hiddenCommandName = string.Empty;
+        if (config.HiddenExposureCommandEnabled)
         {
-            return;
+            hiddenCommandName = NormalizeCommandName(config.HiddenExposureCommandName, string.Empty);
+            if (string.IsNullOrWhiteSpace(hiddenCommandName))
+            {
+                _logger.LogWarning("Hidden exposure command is enabled, but HiddenExposureCommandName is empty.");
+            }
+            else if (string.Equals(hiddenCommandName, adminCommandName, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning(
+                    "Hidden command '{HiddenCommandName}' conflicts with admin command '{AdminCommandName}'. Hidden command registration skipped.",
+                    hiddenCommandName,
+                    adminCommandName);
+            }
+            else
+            {
+                Core.Command.RegisterCommand(hiddenCommandName, HandleHiddenExposureCommand, true);
+                _registeredHiddenCommandName = hiddenCommandName;
+            }
         }
-
-        var hiddenCommandName = NormalizeCommandName(config.HiddenExposureCommandName, string.Empty);
-        if (string.IsNullOrWhiteSpace(hiddenCommandName))
-        {
-            _logger.LogWarning("Hidden exposure command is enabled, but HiddenExposureCommandName is empty.");
-            return;
-        }
-
-        if (string.Equals(hiddenCommandName, adminCommandName, StringComparison.OrdinalIgnoreCase))
-        {
-            _logger.LogWarning(
-                "Hidden command '{HiddenCommandName}' conflicts with admin command '{AdminCommandName}'. Hidden command registration skipped.",
-                hiddenCommandName,
-                adminCommandName);
-            return;
-        }
-
-        Core.Command.RegisterCommand(hiddenCommandName, HandleHiddenExposureCommand, true);
-        _registeredHiddenCommandName = hiddenCommandName;
     }
 
     private void UnregisterConfiguredCommands()

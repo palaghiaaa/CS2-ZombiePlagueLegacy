@@ -1,6 +1,8 @@
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using SwiftlyS2.Shared;
+using SwiftlyS2.Shared.Memory;
 using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.SchemaDefinitions;
@@ -11,14 +13,29 @@ public sealed class ZPLDarkFog_Service
 {
     private const string PostProcessDesignerName = "post_processing_volume";
 
+    private delegate void SnapViewAnglesDelegate(nint pawn, nint angle);
+
     private readonly ISwiftlyCore _core;
     private readonly ILogger<ZPLDarkFog_Service> _logger;
     private readonly Dictionary<int, uint> _volumeEntityIndexByPlayerId = [];
+    private readonly IUnmanagedFunction<SnapViewAnglesDelegate>? _snapViewAngles;
 
     public ZPLDarkFog_Service(ISwiftlyCore core, ILogger<ZPLDarkFog_Service> logger)
     {
         _core = core;
         _logger = logger;
+
+        var snapViewAnglesAddress = _core.GameData.GetSignature("SnapViewAngles");
+        if (snapViewAnglesAddress == nint.Zero)
+        {
+            _logger.LogWarning("SnapViewAngles signature was not found. Refresh will skip angle snapping.");
+            return;
+        }
+
+        _snapViewAngles =
+            _core.Memory.GetUnmanagedFunctionByAddress<SnapViewAnglesDelegate>(snapViewAnglesAddress);
+
+        _logger.LogInformation("SnapViewAngles signature loaded at 0x{Address:X}.", snapViewAnglesAddress);
     }
 
     public bool ApplyExposure(IPlayer? player, float exposure)
@@ -213,29 +230,72 @@ public sealed class ZPLDarkFog_Service
             return;
         }
 
+        var playerId = validPlayer.PlayerID;
         _logger.LogInformation(
-            "Refreshing visuals for player {PlayerId}.",
-            validPlayer.PlayerID);
+            "Scheduling visual refresh for player {PlayerId} on next world update.",
+            playerId);
 
-        if (TryForceFullUpdate(validPlayer))
+        _core.Scheduler.NextWorldUpdate(() =>
+        {
+            var scheduledPlayer = _core.PlayerManager.GetPlayer(playerId);
+            if (!TryGetExposureTarget(scheduledPlayer, out var refreshedPlayer))
+            {
+                return;
+            }
+
+            _logger.LogInformation(
+                "Refreshing visuals for player {PlayerId} on next world update.",
+                refreshedPlayer.PlayerID);
+
+            TrySnapViewRefresh(refreshedPlayer);
+
+            if (TryForceFullUpdate(refreshedPlayer))
+            {
+                return;
+            }
+
+            _logger.LogWarning(
+                "ForceFullUpdate was unavailable for player {PlayerId}; skipped unsafe Teleport fallback to avoid model tilt.",
+                refreshedPlayer.PlayerID);
+        });
+    }
+
+    private void TrySnapViewRefresh(IPlayer player)
+    {
+        if (_snapViewAngles is null)
         {
             return;
         }
 
         try
         {
-            var eyeAngles = validPlayer.PlayerPawn?.EyeAngles;
-            validPlayer.Teleport(null, eyeAngles, null);
-            _logger.LogInformation(
-                "ForceFullUpdate was unavailable for player {PlayerId}; used Teleport refresh fallback.",
-                validPlayer.PlayerID);
+            var pawn = player.PlayerPawn;
+            if (pawn is null || !pawn.IsValid)
+            {
+                return;
+            }
+
+            var eyeAngles = pawn.EyeAngles;
+            var angleMemory = Marshal.AllocHGlobal(Marshal.SizeOf<QAngle>());
+
+            try
+            {
+                Marshal.StructureToPtr(eyeAngles, angleMemory, false);
+                _snapViewAngles.Call(pawn.Address, angleMemory);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(angleMemory);
+            }
+
+            _logger.LogInformation("Applied SnapViewAngles refresh for player {PlayerId}.", player.PlayerID);
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(
+            _logger.LogWarning(
                 ex,
-                "Fallback visual refresh failed for player {PlayerId}.",
-                validPlayer.PlayerID);
+                "SnapViewAngles refresh failed for player {PlayerId}.",
+                player.PlayerID);
         }
     }
 
@@ -243,6 +303,16 @@ public sealed class ZPLDarkFog_Service
     {
         try
         {
+            var serverSideClient = player.ServerSideClient;
+            if (serverSideClient is not null)
+            {
+                serverSideClient.ForceFullUpdate();
+                _logger.LogInformation(
+                    "ForceFullUpdate succeeded on ServerSideClient for player {PlayerId}.",
+                    player.PlayerID);
+                return true;
+            }
+
             if (TryInvokeForceFullUpdate(player))
             {
                 _logger.LogInformation(
@@ -258,25 +328,12 @@ public sealed class ZPLDarkFog_Service
                     player.PlayerID);
                 return true;
             }
-
-            var engine = _core.Engine;
-            foreach (var candidate in EnumeratePotentialClientObjects(engine, player))
-            {
-                if (TryInvokeForceFullUpdate(candidate))
-                {
-                    _logger.LogInformation(
-                        "ForceFullUpdate succeeded through engine candidate {CandidateType} for player {PlayerId}.",
-                        candidate?.GetType().FullName,
-                        player.PlayerID);
-                    return true;
-                }
-            }
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(
+            _logger.LogWarning(
                 ex,
-                "ForceFullUpdate reflection path failed for player {PlayerId}.",
+                "ForceFullUpdate fallback path failed for player {PlayerId}.",
                 player.PlayerID);
         }
 
@@ -289,9 +346,7 @@ public sealed class ZPLDarkFog_Service
     private static bool TryInvokeForceFullUpdate(object? candidate)
     {
         if (candidate is null)
-        {
             return false;
-        }
 
         var method = candidate.GetType().GetMethod(
             "ForceFullUpdate",
@@ -301,122 +356,10 @@ public sealed class ZPLDarkFog_Service
             modifiers: null);
 
         if (method is null)
-        {
             return false;
-        }
 
         method.Invoke(candidate, null);
         return true;
-    }
-
-    private static IEnumerable<object?> EnumeratePotentialClientObjects(object engine, IPlayer player)
-    {
-        var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        foreach (var property in engine.GetType().GetProperties(bindingFlags))
-        {
-            if (!property.CanRead)
-            {
-                continue;
-            }
-
-            if (!LooksLikeClientCarrier(property.Name, property.PropertyType))
-            {
-                continue;
-            }
-
-            object? value = null;
-            try
-            {
-                value = property.GetValue(engine);
-            }
-            catch
-            {
-            }
-
-            if (value is not null)
-            {
-                yield return value;
-            }
-        }
-
-        foreach (var method in engine.GetType().GetMethods(bindingFlags))
-        {
-            if (!LooksLikeClientLookup(method.Name, method.ReturnType))
-            {
-                continue;
-            }
-
-            var args = BuildLookupArguments(method.GetParameters(), player);
-            if (args is null)
-            {
-                continue;
-            }
-
-            object? value = null;
-            try
-            {
-                value = method.Invoke(engine, args);
-            }
-            catch
-            {
-            }
-
-            if (value is not null)
-            {
-                yield return value;
-            }
-        }
-    }
-
-    private static bool LooksLikeClientCarrier(string name, Type propertyType)
-    {
-        return name.Contains("Client", StringComparison.OrdinalIgnoreCase)
-            || propertyType.Name.Contains("Client", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool LooksLikeClientLookup(string name, Type returnType)
-    {
-        return (name.Contains("Client", StringComparison.OrdinalIgnoreCase)
-                || name.Contains("Player", StringComparison.OrdinalIgnoreCase))
-            && returnType != typeof(void);
-    }
-
-    private static object[]? BuildLookupArguments(ParameterInfo[] parameters, IPlayer player)
-    {
-        if (parameters.Length == 0)
-        {
-            return [];
-        }
-
-        if (parameters.Length > 1)
-        {
-            return null;
-        }
-
-        var parameterType = parameters[0].ParameterType;
-
-        if (parameterType == typeof(int))
-        {
-            return [player.PlayerID];
-        }
-
-        if (parameterType == typeof(uint))
-        {
-            return [(uint)Math.Max(player.PlayerID, 0)];
-        }
-
-        if (player.Controller is not null && parameterType.IsInstanceOfType(player.Controller))
-        {
-            return [player.Controller];
-        }
-
-        if (player.PlayerPawn is not null && parameterType.IsInstanceOfType(player.PlayerPawn))
-        {
-            return [player.PlayerPawn];
-        }
-
-        return null;
     }
 
     private static bool TryGetExposureTarget(IPlayer? player, out IPlayer validPlayer)
