@@ -81,7 +81,7 @@
       "SurvivorDamage":         5.0,
       "SurvivorWeapon":         "weapon_xm1014",
       "CustomWeaponName":       "Survivor XM1014",
-      "ModelsPath":             "characters/models/tm_phoenix_heavy/tm_phoenix_heavy.vmdl",
+      "ModelsPath":             "characters/models/kolka/2025/luffy/luffy.vmdl",
       "EnableInfiniteClipMode": false,
       "ZombieCanReborn":        false
     },
@@ -99,7 +99,7 @@
       "OneShotKill":            true,
       "SniperWeapon":           "weapon_awp",
       "CustomWeaponName":       "Sniper AWP",
-      "ModelsPath":             "characters/models/tm_professional/tm_professional_varf4.vmdl",
+      "ModelsPath":             "characters/models/kolka/sun_jin_woo/sun_jin_woo.vmdl",
       "EnableInfiniteClipMode": false,
       "ZombieCanReborn":        false
     },
@@ -141,12 +141,12 @@
       "HeroSpeed":              3.0,
       "HeroGravity":            0.4,
       "HeroDamage":             50.0,
-      "ModelsPath":             "characters/models/ctm_heavy/ctm_heavy.vmdl",
+      "ModelsPath":             "characters/models/kolka/zoro/zoro.vmdl",
       "EnableInfiniteClipMode": false,
       "ZombieCanReborn":        true
     },
 
-    "HumandefaultModel":         "characters/models/ctm_st6/ctm_st6_variante.vmdl",
+    "HumandefaultModel":         "agents/models/han/csol2player/arctic/arctic.vmdl",
 
     "HumanMaxHealth":            150,
 
@@ -405,7 +405,7 @@
           "IdleInterval":         70.0
         },
         "Models": {
-          "ModelPath":            "characters/models/basebuilder/zombie_gravity/zombie_gravity.vmdl",
+          "ModelPath":            "agents/models/han/hanzombie/hostzombie/hostzombie.vmdl",
           "CustomKinfeModelPath": ""
         },
         "Sounds": {
@@ -440,7 +440,7 @@
           "IdleInterval":         70.0
         },
         "Models": {
-          "ModelPath":            "characters/models/hmn_sk2/zombie/hl2_zombie/hl2_zombie_sk2model.vmdl",
+          "ModelPath":            "agents/models/han/zombiertx/zombiertx.vmdl",
           "CustomKinfeModelPath": ""
         },
         "Sounds": {
@@ -475,7 +475,7 @@
           "IdleInterval":         70.0
         },
         "Models": {
-          "ModelPath":            "characters/models/daemonium_luka/daemonium_luka.vmdl",
+          "ModelPath":            "agents/models/han/hanzombie/lightzombie/lightzombie.vmdl",
           "CustomKinfeModelPath": ""
         },
         "Sounds": {
