@@ -505,7 +505,7 @@ public class ZPLMegaEventsPlugin : BasePlugin
         var attacker = @event.AttackerPlayer;
         if (attacker == null || !attacker.IsValid || attacker.SteamID == 0) return HookResult.Continue;
 
-        int dmg = @event.DmgHealth;
+        int dmg = @event.ActualDmgHealth;
         if (dmg <= 0) return HookResult.Continue;
 
         // ── Damage Marathon ────────────────────────────────────────────────────

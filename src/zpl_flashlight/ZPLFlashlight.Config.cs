@@ -45,7 +45,7 @@ public sealed class ZPLFlashlight_ProfileConfig
 
     public bool Shadows { get; set; } = true;
 
-    public string Attachment { get; set; } = "axis_of_intent";
+    public string Attachment { get; set; } = "clip_limit";
 
     public int ColorR { get; set; } = 255;
 

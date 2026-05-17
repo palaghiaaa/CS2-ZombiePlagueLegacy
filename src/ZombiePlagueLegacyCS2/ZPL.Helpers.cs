@@ -132,6 +132,27 @@ public partial class ZPLHelpers
         return items.Length == 1 ? items[0] : items[Random.Shared.Next(items.Length)];
     }
 
+    public string? SelectConfiguredName(string? configuredNames)
+    {
+        if (string.IsNullOrWhiteSpace(configuredNames))
+            return null;
+
+        var normalizedNames = configuredNames.Trim();
+        if (!normalizedNames.Contains(','))
+            return normalizedNames;
+
+        var names = normalizedNames
+            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(name => name.Trim())
+            .Where(name => !string.IsNullOrEmpty(name))
+            .ToArray();
+
+        if (names.Length == 0)
+            return null;
+
+        return names.Length == 1 ? names[0] : names[Random.Shared.Next(names.Length)];
+    }
+
     public void SetAmbSounds(ZPLMainCFG CFG, ZPLGlobals _globals)
     {
         if (!string.IsNullOrWhiteSpace(CFG.AmbSound))
@@ -1043,8 +1064,8 @@ public partial class ZPLHelpers
 
     public void SetAllDefaultModel(ZPLMainCFG CFG)
     {
-        string Default = "characters/models/ctm_st6/ctm_st6_variante.vmdl";
-        string Custom = string.IsNullOrEmpty(CFG.HumandefaultModel) ? Default : CFG.HumandefaultModel;
+        //string Default = "characters/models/ctm_st6/ctm_st6_variante.vmdl";
+        //string Custom = string.IsNullOrEmpty(CFG.HumandefaultModel) ? Default : CFG.HumandefaultModel;
         var allplayer = _core.PlayerManager.GetAllPlayers();
         foreach (var player in allplayer)
         {
@@ -1058,7 +1079,8 @@ public partial class ZPLHelpers
                     var pawn = player.PlayerPawn;
                     if (pawn != null && pawn.IsValid)
                     {
-                        pawn.SetModel(Custom);
+                        if (!string.IsNullOrEmpty(CFG.HumandefaultModel))
+                            pawn.SetModel(CFG.HumandefaultModel);
                     }
                 }
             });

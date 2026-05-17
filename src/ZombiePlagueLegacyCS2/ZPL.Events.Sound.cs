@@ -16,8 +16,6 @@ public partial class ZPLEvents
         _core.GameEvent.HookPre<EventPlayerDeath>(OnPlayerSoundDeath);
         _core.GameEvent.HookPre<EventPlayerHurt>(OnPlayerSoundAttack);
         _core.GameEvent.HookPre<EventWeaponFire>(OnWeaponSoundFire);
-        _core.Event.OnEntityTakeDamage += Event_OnEntityTakeSoundDamage;
-        _core.Event.OnEntityTakeDamage += Event_OnInGrenadeDamage;
     }
 
     /// <summary>
@@ -28,8 +26,6 @@ public partial class ZPLEvents
     /// </summary>
     public void UnhookZombieSoundEvents()
     {
-        _core.Event.OnEntityTakeDamage -= Event_OnEntityTakeSoundDamage;
-        _core.Event.OnEntityTakeDamage -= Event_OnInGrenadeDamage;
     }
 
 
@@ -109,7 +105,7 @@ public partial class ZPLEvents
         if (zombie == null)
             return HookResult.Continue;
 
-        bool isHeadshot = @event.HitGroup == 1;
+        bool isHeadshot = @event.ActualHitGroup == HitGroup_t.HITGROUP_HEAD;
         string soundPath = isHeadshot ? zombie.Sounds.SoundPain : zombie.Sounds.SoundHurt;
         _service.PlayerSelectSoundtoEntity(player, soundPath, zombie.Stats.ZombieSoundVolume);
         
@@ -214,44 +210,42 @@ public partial class ZPLEvents
 
 
         _globals.InSwing[player.PlayerID] = false;
+        var playerId = player.PlayerID;
+        var sessionId = player.SessionId;
         _core.Scheduler.DelayBySeconds(0.05f, () =>
         {
-            if (player == null || !player.IsValid)
+            if (player == null || !player.IsValid || player.SessionId != sessionId)
                 return;
 
-            if (!_globals.InSwing[player.PlayerID])
-                _service.PlayerSelectSoundtoEntity(player, zombie.Sounds.SwingSound, zombie.Stats.ZombieSoundVolume);
+            var zombieConfigLate = _zombieClassCFG.CurrentValue;
+            var specialConfigLate = _SpecialClassCFG.CurrentValue;
+            var zombieLate = _zombieState.GetZombieClass(playerId, zombieConfigLate.ZombieClassList, specialConfigLate.SpecialClassList);
+            if (zombieLate == null)
+                return;
+
+            if (!_globals.InSwing[playerId])
+                _service.PlayerSelectSoundtoEntity(player, zombieLate.Sounds.SwingSound, zombieLate.Stats.ZombieSoundVolume);
         });
 
         return HookResult.Continue;
     }
 
-    private void Event_OnEntityTakeSoundDamage(IOnEntityTakeDamageEvent @event)
+    private void HandleEntityTakeSoundDamage(IOnEntityTakeDamageEvent @event, in DamageEventContext context)
     {
-        var attacker = @event.Info.Attacker.Value;
-        if (attacker == null || !attacker.IsValid)
+        var attackerPlayer = context.AttackerPlayer;
+        if (attackerPlayer == null || !attackerPlayer.IsValid)
             return;
 
-        var AttackerPawn = attacker.As<CCSPlayerPawn>();
-        if (AttackerPawn == null || !AttackerPawn.IsValid)
+        if (!TryGetActiveWeapon(context.AttackerPawn, out var activeWeapon))
             return;
 
-        var AttackerController = AttackerPawn.Controller.Value?.As<CCSPlayerController>();
-        if (AttackerController == null || !AttackerController.IsValid)
+        if (activeWeapon.DesignerName != "weapon_knife")
             return;
 
-        var AttackerPlayer = _core.PlayerManager.GetPlayerFromController(AttackerController);
-        if (AttackerPlayer == null || !AttackerPlayer.IsValid)
-            return;
-
-        var Id = AttackerPlayer.PlayerID;
+        var Id = attackerPlayer.PlayerID;
         _globals.IsZombie.TryGetValue(Id, out bool IsZombie);
 
-
         if (!IsZombie)
-            return;
-
-        if (!_helpers.IsPlayerUsingKnife(AttackerController))
             return;
 
         var zombieConfig = _zombieClassCFG.CurrentValue;
@@ -260,36 +254,20 @@ public partial class ZPLEvents
         if (zombie == null)
             return;
 
-        var entity = @event.Entity;
-        if (entity == null || !entity.IsValid)
+        if (context.VictimEntity.DesignerName != "worldent")
             return;
 
-        if (entity.DesignerName != "worldent")
-            return;
-
-        _globals.InSwing[AttackerPlayer.PlayerID] = true;
-        _service.PlayerSelectSoundtoEntity(AttackerPlayer, zombie.Sounds.HitWallSound, zombie.Stats.ZombieSoundVolume);
+        _globals.InSwing[attackerPlayer.PlayerID] = true;
+        _service.PlayerSelectSoundtoEntity(attackerPlayer, zombie.Sounds.HitWallSound, zombie.Stats.ZombieSoundVolume);
     }
 
-    private void Event_OnInGrenadeDamage(IOnEntityTakeDamageEvent @event)
+    private void HandleInGrenadeDamage(IOnEntityTakeDamageEvent @event, in DamageEventContext context)
     {
-        var victim = @event.Entity;
-        if (victim == null || !victim.IsValid)
+        var victimPlayer = context.VictimPlayer;
+        if (victimPlayer == null || !victimPlayer.IsValid)
             return;
 
-        var VictimPawn = victim.As<CCSPlayerPawn>();
-        if (VictimPawn == null || !VictimPawn.IsValid)
-            return;
-
-        var VictimController = VictimPawn.Controller.Value?.As<CCSPlayerController>();
-        if (VictimController == null || !VictimController.IsValid)
-            return;
-
-        var VictimPlayer = _core.PlayerManager.GetPlayerFromController(VictimController);
-        if (VictimPlayer == null || !VictimPlayer.IsValid)
-            return;
-
-        var Id = VictimPlayer.PlayerID;
+        var Id = victimPlayer.PlayerID;
         _globals.IsZombie.TryGetValue(Id, out bool IsZombie);
 
         if (!IsZombie)
@@ -303,14 +281,14 @@ public partial class ZPLEvents
 
         if (@event.Info.DamageType == DamageTypes_t.DMG_BURN)
         {
-            if (Random.Shared.Next(0, 10) <= 2) 
+            if (Random.Shared.Next(0, 10) <= 2)
             {
-                _service.PlayerSelectSoundtoEntity(VictimPlayer, zombie.Sounds.BurnSound, zombie.Stats.ZombieSoundVolume);
+                _service.PlayerSelectSoundtoEntity(victimPlayer, zombie.Sounds.BurnSound, zombie.Stats.ZombieSoundVolume);
             }
         }
         else if (@event.Info.DamageType == DamageTypes_t.DMG_BLAST)
         {
-            _service.PlayerSelectSoundtoEntity(VictimPlayer, zombie.Sounds.ExplodeSound, zombie.Stats.ZombieSoundVolume);
+            _service.PlayerSelectSoundtoEntity(victimPlayer, zombie.Sounds.ExplodeSound, zombie.Stats.ZombieSoundVolume);
         }
     }
 

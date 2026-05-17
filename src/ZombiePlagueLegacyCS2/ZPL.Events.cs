@@ -106,7 +106,6 @@ public partial class ZPLEvents
         _core.Event.OnTick += Event_OnTickLeap;
 
         _core.GameEvent.HookPre<EventWeaponFire>(OnHumanWeaponFire);
-        _core.Event.OnEntityTakeDamage += Event_OnHumanTakeDamage;
 
         _core.GameEvent.HookPre<EventPlayerDeath>(CheckRoundWinDeath);
 
@@ -167,7 +166,6 @@ public partial class ZPLEvents
         _core.Event.OnTick                       -= Event_OnTickMultijump;
         _core.Event.OnTick                       -= Event_OnTickJetpack;
         _core.Event.OnTick                       -= Event_OnTickLeap;
-        _core.Event.OnEntityTakeDamage           -= Event_OnHumanTakeDamage;
         _core.Event.OnEntityCreated              -= Event_OnEntityCreated;
     }
 
@@ -909,7 +907,7 @@ public partial class ZPLEvents
 
         var CFG = _mainCFG.CurrentValue;
 
-        int Dmg = @event.DmgHealth;
+        int Dmg = @event.ActualDmgHealth;
         string waepon = @event.Weapon;
         _globals.IsZombie.TryGetValue(aId, out bool attackerIsZombie);
         _globals.IsZombie.TryGetValue(vId, out bool victimIsZombie);
@@ -962,7 +960,7 @@ public partial class ZPLEvents
 
             if (threshold > 0 && rewardPerThreshold > 0)
             {
-                int dmg = @event.DmgHealth;
+                int dmg = @event.ActualDmgHealth;
                 _globals.DamageAccumulator.TryGetValue(aId, out int accumulated);
                 accumulated += dmg;
 
@@ -997,7 +995,7 @@ public partial class ZPLEvents
 
         var CFG = _mainCFG.CurrentValue;
 
-        int Dmg = @event.DmgHealth;
+        int Dmg = @event.ActualDmgHealth;
         _globals.IsZombie.TryGetValue(aId, out bool attackerIsZombie);
         _globals.IsZombie.TryGetValue(vId, out bool victimIsZombie);
 
@@ -1204,39 +1202,126 @@ public partial class ZPLEvents
         _globals.SpecialRoleThisRound.Clear();
     }
 
-    private void Event_OnEntityTakeDamage(SwiftlyS2.Shared.Events.IOnEntityTakeDamageEvent @event)
+    private readonly struct DamageEventContext
     {
-        var victim = @event.Entity;
-        if (victim == null || !victim.IsValid)
+        public DamageEventContext(CEntityInstance victimEntity)
+        {
+            VictimEntity = victimEntity;
+        }
+
+        public CEntityInstance VictimEntity { get; init; }
+        public CCSPlayerPawn? VictimPawn { get; init; }
+        public IPlayer? VictimPlayer { get; init; }
+        public CEntityInstance? AttackerEntity { get; init; }
+        public CCSPlayerPawn? AttackerPawn { get; init; }
+        public IPlayer? AttackerPlayer { get; init; }
+    }
+
+    private bool TryBuildDamageContext(IOnEntityTakeDamageEvent @event, out DamageEventContext context)
+    {
+        context = default;
+
+        var victimEntity = @event.Entity;
+        if (victimEntity == null || !victimEntity.IsValid)
+            return false;
+
+        var victimPawn = TryAsPlayerPawn(victimEntity);
+
+        CEntityInstance? attackerEntity = null;
+        var attackerHandle = @event.Info.Attacker;
+        if (attackerHandle.IsValid)
+        {
+            var resolved = attackerHandle.Value;
+            if (resolved != null && resolved.IsValid)
+                attackerEntity = resolved;
+        }
+        var attackerPawn = TryAsPlayerPawn(attackerEntity);
+
+        context = new DamageEventContext(victimEntity)
+        {
+            VictimPawn = victimPawn,
+            VictimPlayer = TryResolvePlayerFromPawn(victimPawn, out var vp) ? vp : null,
+            AttackerEntity = attackerEntity,
+            AttackerPawn = attackerPawn,
+            AttackerPlayer = TryResolvePlayerFromPawn(attackerPawn, out var ap) ? ap : null,
+        };
+
+        return true;
+    }
+
+    private static CCSPlayerPawn? TryAsPlayerPawn(CEntityInstance? entity)
+    {
+        if (entity == null || !entity.IsValid)
+            return null;
+
+        var pawn = entity.As<CCSPlayerPawn>();
+        return (pawn != null && pawn.IsValid) ? pawn : null;
+    }
+
+    private bool TryResolvePlayerFromPawn(CCSPlayerPawn? pawn, out IPlayer player)
+    {
+        player = null!;
+        if (pawn == null || !pawn.IsValid)
+            return false;
+
+        var controllerHandle = pawn.Controller;
+        if (!controllerHandle.IsValid)
+            return false;
+
+        var controller = controllerHandle.Value?.As<CCSPlayerController>();
+        if (controller == null || !controller.IsValid)
+            return false;
+
+        var resolved = _core.PlayerManager.GetPlayerFromController(controller);
+        if (resolved == null || !resolved.IsValid)
+            return false;
+
+        player = resolved;
+        return true;
+    }
+
+    private static bool TryGetActiveWeapon(CCSPlayerPawn? pawn, out CBasePlayerWeapon activeWeapon)
+    {
+        activeWeapon = null!;
+        if (pawn == null || !pawn.IsValid)
+            return false;
+
+        var weaponServices = pawn.WeaponServices;
+        if (weaponServices == null || !weaponServices.IsValid)
+            return false;
+
+        var activeWeaponHandle = weaponServices.ActiveWeapon;
+        if (!activeWeaponHandle.IsValid)
+            return false;
+
+        var resolved = activeWeaponHandle.Value;
+        if (resolved == null || !resolved.IsValid)
+            return false;
+
+        activeWeapon = resolved;
+        return true;
+    }
+
+    private void Event_OnEntityTakeDamage(IOnEntityTakeDamageEvent @event)
+    {
+        if (!TryBuildDamageContext(@event, out var context))
             return;
 
-        var VictimPawn = victim.As<CCSPlayerPawn>();
-        if (VictimPawn == null || !VictimPawn.IsValid)
+        HandleBaseEntityTakeDamage(@event, in context);
+        HandleHumanTakeDamage(@event, in context);
+        HandleEntityTakeSoundDamage(@event, in context);
+        HandleInGrenadeDamage(@event, in context);
+    }
+
+    private void HandleBaseEntityTakeDamage(IOnEntityTakeDamageEvent @event, in DamageEventContext context)
+    {
+        var VictimPlayer = context.VictimPlayer;
+        var AttackerPlayer = context.AttackerPlayer;
+        if (VictimPlayer == null || !VictimPlayer.IsValid || AttackerPlayer == null || !AttackerPlayer.IsValid)
             return;
 
-        var VictimController = VictimPawn.Controller.Value?.As<CCSPlayerController>();
-        if (VictimController == null || !VictimController.IsValid)
-            return;
-
-        var VictimPlayer = _core.PlayerManager.GetPlayerFromController(VictimController);
-        if (VictimPlayer == null || !VictimPlayer.IsValid)
-            return;
-
-        var attacker = @event.Info.Attacker.Value;
-        if (attacker == null || !attacker.IsValid)
-            return;
-
-        var AttackerPawn = attacker.As<CCSPlayerPawn>();
-        if (AttackerPawn == null || !AttackerPawn.IsValid)
-            return;
-
-        var AttackerController = AttackerPawn.Controller.Value?.As<CCSPlayerController>();
-        if (AttackerController == null || !AttackerController.IsValid)
-            return;
-
-        var AttackerPlayer = _core.PlayerManager.GetPlayerFromController(AttackerController);
-        if (AttackerPlayer == null || !AttackerPlayer.IsValid)
-            return;
+        var VictimPawn = context.VictimPawn;
+        var AttackerPawn = context.AttackerPawn;
 
         var victimId = VictimPlayer.PlayerID;
         var attackerId = AttackerPlayer.PlayerID;
@@ -1256,10 +1341,28 @@ public partial class ZPLEvents
 
         // Cross-check with actual team to resolve any IsZombie state mismatches.
         // Zombies are always on Team.T and humans on Team.CT.
-        if (AttackerController.Team == Team.T) attackerIsZombie = true;
-        else if (AttackerController.Team == Team.CT) attackerIsZombie = false;
-        if (VictimController.Team == Team.T) victimIsZombie = true;
-        else if (VictimController.Team == Team.CT) victimIsZombie = false;
+        CCSPlayerController? VictimController = null;
+        CCSPlayerController? AttackerController = null;
+        if (VictimPawn != null)
+        {
+            var h = VictimPawn.Controller;
+            if (h.IsValid) VictimController = h.Value?.As<CCSPlayerController>();
+        }
+        if (AttackerPawn != null)
+        {
+            var h = AttackerPawn.Controller;
+            if (h.IsValid) AttackerController = h.Value?.As<CCSPlayerController>();
+        }
+        if (AttackerController != null)
+        {
+            if (AttackerController.Team == Team.T) attackerIsZombie = true;
+            else if (AttackerController.Team == Team.CT) attackerIsZombie = false;
+        }
+        if (VictimController != null)
+        {
+            if (VictimController.Team == Team.T) victimIsZombie = true;
+            else if (VictimController.Team == Team.CT) victimIsZombie = false;
+        }
 
         var CFG = _mainCFG.CurrentValue;
 
@@ -1693,42 +1796,17 @@ public partial class ZPLEvents
         }
     }
 
-    private void Event_OnHumanTakeDamage(SwiftlyS2.Shared.Events.IOnEntityTakeDamageEvent @event)
+    private void HandleHumanTakeDamage(IOnEntityTakeDamageEvent @event, in DamageEventContext context)
     {
-        var victim = @event.Entity;
-        if (victim == null || !victim.IsValid)
+        var victimPlayer = context.VictimPlayer;
+        var AttackerPlayer = context.AttackerPlayer;
+        if (victimPlayer == null || !victimPlayer.IsValid || AttackerPlayer == null || !AttackerPlayer.IsValid)
             return;
 
-        var victimPawn = victim.As<CCSPlayerPawn>();
-        if (victimPawn == null || !victimPawn.IsValid)
-            return;
+        var victimPawn = context.VictimPawn;
+        var AttackerPawn = context.AttackerPawn;
 
-        var victimController = victimPawn.Controller.Value?.As<CCSPlayerController>();
-        if (victimController == null || !victimController.IsValid)
-            return;
-
-        var victimPlayer = _core.PlayerManager.GetPlayerFromController(victimController);
-        if (victimPlayer == null || !victimPlayer.IsValid)
-            return;
-
-        var attacker = @event.Info.Attacker.Value;
-        if (attacker == null || !attacker.IsValid)
-            return;
-
-        var AttackerPawn = attacker.As<CCSPlayerPawn>();
-        if (AttackerPawn == null || !AttackerPawn.IsValid)
-            return;
-
-        var AttackerController = AttackerPawn.Controller.Value?.As<CCSPlayerController>();
-        if (AttackerController == null || !AttackerController.IsValid)
-            return;
-
-        var AttackerPlayer = _core.PlayerManager.GetPlayerFromController(AttackerController);
-        if (AttackerPlayer == null || !AttackerPlayer.IsValid)
-            return;
-
-        var activeWeapon = AttackerPawn.WeaponServices?.ActiveWeapon.Value;
-        if (activeWeapon == null || !activeWeapon.IsValid)
+        if (!TryGetActiveWeapon(AttackerPawn, out var activeWeapon))
             return;
 
         var attackerId = AttackerPlayer.PlayerID;
@@ -1741,10 +1819,28 @@ public partial class ZPLEvents
 
         // Cross-check with actual team to resolve any IsZombie state mismatches.
         // Zombies are always on Team.T and humans on Team.CT.
-        if (AttackerController.Team == Team.T) attackerIsZombie = true;
-        else if (AttackerController.Team == Team.CT) attackerIsZombie = false;
-        if (victimController.Team == Team.T) victimIsZombie = true;
-        else if (victimController.Team == Team.CT) victimIsZombie = false;
+        CCSPlayerController? AttackerController = null;
+        CCSPlayerController? victimController = null;
+        if (AttackerPawn != null)
+        {
+            var h = AttackerPawn.Controller;
+            if (h.IsValid) AttackerController = h.Value?.As<CCSPlayerController>();
+        }
+        if (victimPawn != null)
+        {
+            var h = victimPawn.Controller;
+            if (h.IsValid) victimController = h.Value?.As<CCSPlayerController>();
+        }
+        if (AttackerController != null)
+        {
+            if (AttackerController.Team == Team.T) attackerIsZombie = true;
+            else if (AttackerController.Team == Team.CT) attackerIsZombie = false;
+        }
+        if (victimController != null)
+        {
+            if (victimController.Team == Team.T) victimIsZombie = true;
+            else if (victimController.Team == Team.CT) victimIsZombie = false;
+        }
 
         if (attackerIsZombie || !victimIsZombie)
             return;
@@ -1762,7 +1858,7 @@ public partial class ZPLEvents
             }
             else if (attackerIsSniper && activeWeapon.DesignerName == config.Sniper.SniperWeapon)
             {
-                if (config.Sniper.OneShotKill)
+                if (config.Sniper.OneShotKill && victimPawn != null)
                     @event.Info.Damage = victimPawn.Health;
                 else
                     @event.Info.Damage *= config.Sniper.SniperDamage;
@@ -1771,11 +1867,10 @@ public partial class ZPLEvents
             {
                 @event.Info.Damage *= config.Hero.HeroDamage;
             }
-
         }
 
         var AmmoType = @event.Info.AmmoType;
-        if(AmmoType == -1)
+        if (AmmoType == -1)
             return;
 
         float stunTime = CFG.StunZombieTime;
@@ -1785,8 +1880,11 @@ public partial class ZPLEvents
 
         //_logger.LogInformation($"Damage Info - Attacker: {AttackerPlayer.Name}, Victim: {victimPlayer.Name}, AmmoType: {@event.Info.AmmoType}, IsHeadshot: {isheadshot}");
 
-        var inflictor = @event.Info.Inflictor.Value;
-        if(inflictor == null || !inflictor.IsValid || !inflictor.IsValidEntity)
+        var inflictorHandle = @event.Info.Inflictor;
+        if (!inflictorHandle.IsValid)
+            return;
+        var inflictor = inflictorHandle.Value;
+        if (inflictor == null || !inflictor.IsValid || !inflictor.IsValidEntity)
             return;
 
         string inflictorname = inflictor.DesignerName;
@@ -1797,7 +1895,6 @@ public partial class ZPLEvents
         {
             _helpers.KnockBackZombie(AttackerPlayer, victimPlayer, inflictorname, CFG.KnockZombieForce, isheadshot, CFG);
         }
-        
     }
 
     private HookResult OnHumanWeaponFire(EventWeaponFire @event)
@@ -1853,25 +1950,13 @@ public partial class ZPLEvents
             activeWeapon.ReserveAmmo[0] = 1000;
         }
 
-        // Infinite clip: API state, per-player extra item, or Tryder
-        bool hasAnyInfiniteClipSource = IsInfiniteAmmoState || IsInfiniteClipState || IsTryder;
+        // Infinite clip: global game-mode flag, API state, per-player extra item, or Tryder
+        bool hasAnyInfiniteClipSource = _globals.GameInfiniteClipMode || IsInfiniteAmmoState || IsInfiniteClipState || IsTryder ||
+            (IsSurvivor && activeWeapon.DesignerName == CFG.Survivor.SurvivorWeapon) ||
+            (IsSniper && activeWeapon.DesignerName == CFG.Sniper.SniperWeapon) ||
+            IsHero;
 
         if (hasAnyInfiniteClipSource)
-        {
-            activeWeapon.Clip1 = 100;
-            activeWeapon.Clip1Updated();
-        }
-        else if(IsSurvivor && activeWeapon.DesignerName == CFG.Survivor.SurvivorWeapon)
-        {
-            activeWeapon.Clip1 = 100;
-            activeWeapon.Clip1Updated();
-        }
-        else if (IsSniper && activeWeapon.DesignerName == CFG.Sniper.SniperWeapon)
-        {
-            activeWeapon.Clip1 = 100;
-            activeWeapon.Clip1Updated();
-        }
-        else if (IsHero)
         {
             activeWeapon.Clip1 = 100;
             activeWeapon.Clip1Updated();
