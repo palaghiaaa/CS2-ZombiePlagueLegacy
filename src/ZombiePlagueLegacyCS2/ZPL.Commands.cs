@@ -25,15 +25,13 @@ public class ZPLCommands
     private readonly ZPLWeaponsMenu _weaponsMenu;
     private readonly ZPLGameMenu _gameMenu;
     private readonly ZPLExtraItemsMenu _extraItemsMenu;
-    private readonly ZPLMineMenu _mineMenu;
 
     public ZPLCommands(ISwiftlyCore core, ILogger<ZPLCommands> logger,
         ZPLServices services, IOptionsMonitor<ZPLMainCFG> mainCFG,
         ZPLGlobals globals, ZPLAdminItemMenu hZPAdminItemMenu,
         ZPLZombieClassMenu hZPZombieClassMenu, ZPLHelpers helpers,
         ZPLWeaponsMenu weaponsMenu, ZPLGameMenu gameMenu,
-        ZPLExtraItemsMenu extraItemsMenu,
-        ZPLMineMenu mineMenu)
+        ZPLExtraItemsMenu extraItemsMenu)
     {
         _core = core;
         _logger = logger;
@@ -46,7 +44,6 @@ public class ZPLCommands
         _weaponsMenu = weaponsMenu;
         _gameMenu = gameMenu;
         _extraItemsMenu = extraItemsMenu;
-        _mineMenu = mineMenu;
     }
 
     public void MenuCommands()
@@ -62,7 +59,6 @@ public class ZPLCommands
 
         _core.Command.RegisterCommand(CFG.ExtraItemsCommand, OpenExtraItemsMenu, true);
 
-        _core.Command.RegisterCommand(CFG.MineMenuCommand, OpenMineMenu, true);
     }
     public void SelectZombieClass(ICommandContext context)
     {
@@ -112,13 +108,6 @@ public class ZPLCommands
         var player = context.Sender;
         if (player == null || !player.IsValid) return;
         _extraItemsMenu.OpenExtraItemsMenu(player);
-    }
-
-    public void OpenMineMenu(ICommandContext context)
-    {
-        var player = context.Sender;
-        if (player == null || !player.IsValid) return;
-        _mineMenu.OpenMineMenu(player);
     }
 
     private bool HasAdminMenuPermission(IPlayer player)

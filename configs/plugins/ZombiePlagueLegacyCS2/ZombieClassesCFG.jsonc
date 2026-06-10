@@ -1,236 +1,258 @@
 {
-
   "ZPLZombieClassCFG": {
-    "ZombieClassList": 
-	[
-		{
-			"Name": "Classic Zombie",
-			"Enable": true,
-			"PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts",
-			"Stats": 
-			{
-			  "Health": 6000,
-			  "MotherZombieHealth": 15000,
-			  "Speed": 1.16,
-			  "Damage": 60.0,
-			  "Gravity": 0.6,
-			  "Fov": 110,
-			  "EnableRegen": true,
-			  "HpRegenSec": 5.0,
-			  "HpRegenHp": 100,
-			  "ZombieSoundVolume": 1.0,
-			  "IdleInterval": 70.0
-			},
-			"Models": 
-			{
-			  "ModelPath": "agents/models/han/hanzombie/normalzombiea/normalzombiea.vmdl",
-			  "CustomKinfeModelPath": ""
-			},
-			"Sounds": 
-			{
-			  "SoundInfect": "han.human.mandeath",
-			  "SoundPain": "han.hl.zombie.pain",
-			  "SoundHurt": "han.zombie.manclassic_hurt",
-			  "SoundDeath": "han.zombie.manclassic_death",
-			  "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
-			  "RegenSound": "han.zombie.state.manheal",
-			  "BurnSound": "han.zombieplague.zburn",
-			  "ExplodeSound": "han.hl.zombie.idle",
-			  "HitSound": "han.zombie.classic_hit",
-			  "HitWallSound": "han.zombie.classic_hitwall",
-			  "SwingSound": "han.zombie.classic_swing"
-			}
-		},
-		{
-			"Name": "Raptor",
-			"Enable": true,
-			"PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts",
-			"Stats": 
-			{
-			  "Health": 4800,
-			  "MotherZombieHealth": 12000,
-			  "Speed": 1.22,
-			  "Damage": 55.0,
-			  "Gravity": 1.0,
-			  "Fov": 110,
-			  "EnableRegen": true,
-			  "HpRegenSec": 5.0,
-			  "HpRegenHp": 60,
-			  "ZombieSoundVolume": 1.0,
-			  "IdleInterval": 70.0
-			},
-			"Models": 
-			{
-			  "ModelPath": "agents/models/han/hl2/boomer_v2/boomer_v2.vmdl",
-			  "CustomKinfeModelPath": ""
-			},
-			"Sounds": 
-			{
-			  "SoundInfect": "han.human.mandeath",
-			  "SoundPain": "han.hl.zombie.pain",
-			  "SoundHurt": "han.zombie.manclassic_hurt",
-			  "SoundDeath": "han.zombie.manclassic_death",
-			  "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
-			  "RegenSound": "han.zombie.state.manheal",
-			  "BurnSound": "han.zombieplague.zburn",
-			  "ExplodeSound": "han.hl.zombie.idle",
-			  "HitSound": "han.zombie.classic_hit",
-			  "HitWallSound": "han.zombie.classic_hitwall",
-			  "SwingSound": "han.zombie.classic_swing"
-			}
-		},
-		{
-			"Name": "Tight Zombie",
-			"Enable": true,
-			"PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts",
-			"Stats": 
-			{
-			  "Health": 7500,
-			  "MotherZombieHealth": 18750,
-			  "Speed": 0.88,
-			  "Damage": 70.0,
-			  "Gravity": 0.8,
-			  "Fov": 110,
-			  "EnableRegen": true,
-			  "HpRegenSec": 3.0,
-			  "HpRegenHp": 100,
-			  "ZombieSoundVolume": 1.0,
-			  "IdleInterval": 70.0
-			},
-			"Models": 
-			{
-			  "ModelPath": "agents/models/han/hanzombie/normalzombieab/normalzombieab.vmdl",
-			  "CustomKinfeModelPath": ""
-			},
-			"Sounds": 
-			{
-			  "SoundInfect": "han.human.mandeath",
-			  "SoundPain": "han.hl.zombie.pain",
-			  "SoundHurt": "han.zombie.manclassic_hurt",
-			  "SoundDeath": "han.zombie.manclassic_death",
-			  "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
-			  "RegenSound": "han.zombie.state.manheal",
-			  "BurnSound": "han.zombieplague.zburn",
-			  "ExplodeSound": "han.hl.zombie.idle",
-			  "HitSound": "han.zombie.classic_hit",
-			  "HitWallSound": "han.zombie.classic_hitwall",
-			  "SwingSound": "han.zombie.classic_swing"
-			}
-		},
-		{
-			"Name": "Mutant",
-			"Enable": true,
-			"PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts",
-			"Stats": 
-			{
-			  "Health": 6250,
-			  "MotherZombieHealth": 15625,
-			  "Speed": 0.98,
-			  "Damage": 80.0,
-			  "Gravity": 1.0,
-			  "Fov": 110,
-			  "EnableRegen": true,
-			  "HpRegenSec": 2.0,
-			  "HpRegenHp": 150,
-			  "ZombieSoundVolume": 1.0,
-			  "IdleInterval": 70.0
-			},
-			"Models": 
-			{
-			  "ModelPath": "agents/models/han/csol1/tank_zombi_host/tank_zombi_host.vmdl",
-			  "CustomKinfeModelPath": ""
-			},
-			"Sounds": 
-			{
-			  "SoundInfect": "han.human.mandeath",
-			  "SoundPain": "han.hl.zombie.pain",
-			  "SoundHurt": "han.zombie.manclassic_hurt",
-			  "SoundDeath": "han.zombie.manclassic_death",
-			  "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
-			  "RegenSound": "han.zombie.state.manheal",
-			  "BurnSound": "han.zombieplague.zburn",
-			  "ExplodeSound": "han.hl.zombie.idle",
-			  "HitSound": "han.zombie.classic_hit",
-			  "HitWallSound": "han.zombie.classic_hitwall",
-			  "SwingSound": "han.zombie.classic_swing"
-			}
-		},
-		{
-			"Name": "Predator Blue",
-			"Enable": true,
-			"PrecacheSoundEvent": "soundevents/hanzbplayerstate.vsndevts",
-			"Stats": 
-			{
-			  "Health": 5600,
-			  "MotherZombieHealth": 14000,
-			  "Speed": 1.12,
-			  "Damage": 70.0,
-			  "Gravity": 0.8,
-			  "Fov": 110,
-			  "EnableRegen": true,
-			  "HpRegenSec": 5.0,
-			  "HpRegenHp": 80,
-			  "ZombieSoundVolume": 1.0,
-			  "IdleInterval": 70.0
-			},
-			"Models": 
-			{
-			  "ModelPath": "agents/models/han/hl2/hunter/hunter.vmdl",
-			  "CustomKinfeModelPath": ""
-			},
-			"Sounds": 
-			{
-			  "SoundInfect": "han.human.femdeath,han.zombie.cso2.feminfect",
-			  "SoundPain": "han.hl.zombie.pain",
-			  "SoundHurt": "han.zombie.femclassic_hurt",
-			  "SoundDeath": "han.zombie.femclassic_death",
-			  "IdleSound": "han.zombie.cso2.femidle,han.zombie.state.femidle",
-			  "RegenSound": "han.zombie.state.femheal",
-			  "BurnSound": "han.zombie.state.femburn",
-			  "ExplodeSound": "han.hl.zombie.idle",
-			  "HitSound": "han.zombie.cso2.femclaw",
-			  "HitWallSound": "han.zombie.classic_hitwall",
-			  "SwingSound": "han.zombie.classic_swing"
-			}
-		},
-		{
-			"Name": "Regenerator",
-			"Enable": true,
-			"PrecacheSoundEvent": "soundevents/hanzbplayerstate.vsndevts",
-			"Stats": 
-			{
-			  "Health": 4750,
-			  "MotherZombieHealth": 11875,
-			  "Speed": 1.0,
-			  "Damage": 50.0,
-			  "Gravity": 1.0,
-			  "Fov": 110,
-			  "EnableRegen": true,
-			  "HpRegenSec": 5.0,
-			  "HpRegenHp": 350,
-			  "ZombieSoundVolume": 1.0,
-			  "IdleInterval": 70.0
-			},
-			"Models": 
-			{
-			  "ModelPath": "agents/models/han/hanzombie/rangezombie/rangezombie.vmdl",
-			  "CustomKinfeModelPath": ""
-			},
-			"Sounds": 
-			{
-			  "SoundInfect": "han.human.femdeath,han.zombie.cso2.feminfect",
-			  "SoundPain": "han.hl.zombie.pain",
-			  "SoundHurt": "han.zombie.femclassic_hurt",
-			  "SoundDeath": "han.zombie.femclassic_death",
-			  "IdleSound": "han.zombie.cso2.femidle,han.zombie.state.femidle",
-			  "RegenSound": "han.zombie.state.femheal",
-			  "BurnSound": "han.zombie.state.femburn",
-			  "ExplodeSound": "han.hl.zombie.idle",
-			  "HitSound": "han.zombie.cso2.femclaw",
-			  "HitWallSound": "han.zombie.classic_hitwall",
-			  "SwingSound": "han.zombie.classic_swing"
-			}
-		}
+    "ZombieClassList": [
+      {
+        "Name": "Classic Zombie",
+        "Enable": true,
+        "PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts",
+        "Stats": {
+          "Health": 6000,
+          "MotherZombieHealth": 15000,
+          "Speed": 1.16,
+          "Damage": 60.0,
+          "Gravity": 0.6,
+          "Fov": 110,
+          "EnableRegen": false,
+          "HpRegenSec": 5.0,
+          "HpRegenHp": 0,
+          "ZombieSoundVolume": 1.0,
+          "IdleInterval": 70.0
+        },
+        "Models": {
+          "ModelPath": "agents/models/han/hanzombie/normalzombiea/normalzombiea.vmdl",
+          "CustomKinfeModelPath": ""
+        },
+        "Sounds": {
+          "SoundInfect": "han.human.mandeath",
+          "SoundPain": "han.hl.zombie.pain",
+          "SoundHurt": "han.zombie.manclassic_hurt",
+          "SoundDeath": "han.zombie.manclassic_death",
+          "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
+          "RegenSound": "han.zombie.state.manheal",
+          "BurnSound": "han.zombieplague.zburn",
+          "ExplodeSound": "han.hl.zombie.idle",
+          "HitSound": "han.zombie.classic_hit",
+          "HitWallSound": "han.zombie.classic_hitwall",
+          "SwingSound": "han.zombie.classic_swing"
+        },
+        "Abilities": {
+          "InfectHealAmount": 0,
+          "ExtraJumps": 0,
+          "InfectGlowColor": "",
+          "GlowDurationSeconds": 3.0,
+          "SilentSteps": false
+        }
+      },
+      {
+        "Name": "Raptor",
+        "Enable": true,
+        "PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts",
+        "Stats": {
+          "Health": 4800,
+          "MotherZombieHealth": 12000,
+          "Speed": 1.22,
+          "Damage": 55.0,
+          "Gravity": 1.0,
+          "Fov": 110,
+          "EnableRegen": false,
+          "HpRegenSec": 5.0,
+          "HpRegenHp": 0,
+          "ZombieSoundVolume": 1.0,
+          "IdleInterval": 70.0
+        },
+        "Models": {
+          "ModelPath": "agents/models/han/hl2/boomer_v2/boomer_v2.vmdl",
+          "CustomKinfeModelPath": ""
+        },
+        "Sounds": {
+          "SoundInfect": "han.human.mandeath",
+          "SoundPain": "han.hl.zombie.pain",
+          "SoundHurt": "han.zombie.manclassic_hurt",
+          "SoundDeath": "han.zombie.manclassic_death",
+          "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
+          "RegenSound": "han.zombie.state.manheal",
+          "BurnSound": "han.zombieplague.zburn",
+          "ExplodeSound": "han.hl.zombie.idle",
+          "HitSound": "han.zombie.classic_hit",
+          "HitWallSound": "han.zombie.classic_hitwall",
+          "SwingSound": "han.zombie.classic_swing"
+        },
+        "Abilities": {
+          "InfectHealAmount": 200,
+          "ExtraJumps": 0,
+          "InfectGlowColor": "",
+          "GlowDurationSeconds": 3.0,
+          "SilentSteps": false
+        }
+      },
+      {
+        "Name": "Tight Zombie",
+        "Enable": true,
+        "PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts",
+        "Stats": {
+          "Health": 7500,
+          "MotherZombieHealth": 18750,
+          "Speed": 0.88,
+          "Damage": 70.0,
+          "Gravity": 0.8,
+          "Fov": 110,
+          "EnableRegen": false,
+          "HpRegenSec": 5.0,
+          "HpRegenHp": 0,
+          "ZombieSoundVolume": 1.0,
+          "IdleInterval": 70.0
+        },
+        "Models": {
+          "ModelPath": "agents/models/han/hanzombie/normalzombieab/normalzombieab.vmdl",
+          "CustomKinfeModelPath": ""
+        },
+        "Sounds": {
+          "SoundInfect": "han.human.mandeath",
+          "SoundPain": "han.hl.zombie.pain",
+          "SoundHurt": "han.zombie.manclassic_hurt",
+          "SoundDeath": "han.zombie.manclassic_death",
+          "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
+          "RegenSound": "han.zombie.state.manheal",
+          "BurnSound": "han.zombieplague.zburn",
+          "ExplodeSound": "han.hl.zombie.idle",
+          "HitSound": "han.zombie.classic_hit",
+          "HitWallSound": "han.zombie.classic_hitwall",
+          "SwingSound": "han.zombie.classic_swing"
+        },
+        "Abilities": {
+          "InfectHealAmount": 0,
+          "ExtraJumps": 1,
+          "InfectGlowColor": "",
+          "GlowDurationSeconds": 3.0,
+          "SilentSteps": false
+        }
+      },
+      {
+        "Name": "Mutant",
+        "Enable": true,
+        "PrecacheSoundEvent": "soundevents/hanhl1zombies.vsndevts",
+        "Stats": {
+          "Health": 6250,
+          "MotherZombieHealth": 15625,
+          "Speed": 0.98,
+          "Damage": 80.0,
+          "Gravity": 1.0,
+          "Fov": 110,
+          "EnableRegen": false,
+          "HpRegenSec": 5.0,
+          "HpRegenHp": 0,
+          "ZombieSoundVolume": 1.0,
+          "IdleInterval": 70.0
+        },
+        "Models": {
+          "ModelPath": "agents/models/han/csol1/tank_zombi_host/tank_zombi_host.vmdl",
+          "CustomKinfeModelPath": ""
+        },
+        "Sounds": {
+          "SoundInfect": "han.human.mandeath",
+          "SoundPain": "han.hl.zombie.pain",
+          "SoundHurt": "han.zombie.manclassic_hurt",
+          "SoundDeath": "han.zombie.manclassic_death",
+          "IdleSound": "han.hl.nihilanth.idle,han.hl.nihilanth.idleb,han.hl.nihilanth.idlec",
+          "RegenSound": "han.zombie.state.manheal",
+          "BurnSound": "han.zombieplague.zburn",
+          "ExplodeSound": "han.hl.zombie.idle",
+          "HitSound": "han.zombie.classic_hit",
+          "HitWallSound": "han.zombie.classic_hitwall",
+          "SwingSound": "han.zombie.classic_swing"
+        },
+        "Abilities": {
+          "InfectHealAmount": 0,
+          "ExtraJumps": 0,
+          "InfectGlowColor": "255,215,0,180",
+          "GlowDurationSeconds": 3.0,
+          "SilentSteps": false
+        }
+      },
+      {
+        "Name": "Predator Blue",
+        "Enable": true,
+        "PrecacheSoundEvent": "soundevents/hanzbplayerstate.vsndevts",
+        "Stats": {
+          "Health": 5600,
+          "MotherZombieHealth": 14000,
+          "Speed": 1.12,
+          "Damage": 70.0,
+          "Gravity": 0.8,
+          "Fov": 110,
+          "EnableRegen": false,
+          "HpRegenSec": 5.0,
+          "HpRegenHp": 0,
+          "ZombieSoundVolume": 1.0,
+          "IdleInterval": 70.0
+        },
+        "Models": {
+          "ModelPath": "agents/models/han/hl2/hunter/hunter.vmdl",
+          "CustomKinfeModelPath": ""
+        },
+        "Sounds": {
+          "SoundInfect": "han.human.femdeath,han.zombie.cso2.feminfect",
+          "SoundPain": "han.hl.zombie.pain",
+          "SoundHurt": "han.zombie.femclassic_hurt",
+          "SoundDeath": "han.zombie.femclassic_death",
+          "IdleSound": "han.zombie.cso2.femidle,han.zombie.state.femidle",
+          "RegenSound": "han.zombie.state.femheal",
+          "BurnSound": "han.zombie.state.femburn",
+          "ExplodeSound": "han.hl.zombie.idle",
+          "HitSound": "han.zombie.cso2.femclaw",
+          "HitWallSound": "han.zombie.classic_hitwall",
+          "SwingSound": "han.zombie.classic_swing"
+        },
+        "Abilities": {
+          "InfectHealAmount": 0,
+          "ExtraJumps": 0,
+          "InfectGlowColor": "10,10,255,180",
+          "GlowDurationSeconds": 3.0,
+          "SilentSteps": false
+        }
+      },
+      {
+        "Name": "Regenerator",
+        "Enable": true,
+        "PrecacheSoundEvent": "soundevents/hanzbplayerstate.vsndevts",
+        "Stats": {
+          "Health": 4750,
+          "MotherZombieHealth": 11875,
+          "Speed": 1.0,
+          "Damage": 50.0,
+          "Gravity": 1.0,
+          "Fov": 110,
+          "EnableRegen": true,
+          "HpRegenSec": 5.0,
+          "HpRegenHp": 350,
+          "ZombieSoundVolume": 1.0,
+          "IdleInterval": 70.0
+        },
+        "Models": {
+          "ModelPath": "agents/models/han/hanzombie/rangezombie/rangezombie.vmdl",
+          "CustomKinfeModelPath": ""
+        },
+        "Sounds": {
+          "SoundInfect": "han.human.femdeath,han.zombie.cso2.feminfect",
+          "SoundPain": "han.hl.zombie.pain",
+          "SoundHurt": "han.zombie.femclassic_hurt",
+          "SoundDeath": "han.zombie.femclassic_death",
+          "IdleSound": "han.zombie.cso2.femidle,han.zombie.state.femidle",
+          "RegenSound": "han.zombie.state.femheal",
+          "BurnSound": "han.zombie.state.femburn",
+          "ExplodeSound": "han.hl.zombie.idle",
+          "HitSound": "han.zombie.cso2.femclaw",
+          "HitWallSound": "han.zombie.classic_hitwall",
+          "SwingSound": "han.zombie.classic_swing"
+        },
+        "Abilities": {
+          "InfectHealAmount": 0,
+          "ExtraJumps": 0,
+          "InfectGlowColor": "",
+          "GlowDurationSeconds": 3.0,
+          "SilentSteps": false
+        }
+      }
     ]
   }
 }

@@ -14,6 +14,8 @@ namespace ZombiePlagueLegacyCS2;
 /// Implements the same logic as H-AN/HanLaserTripmineS2 but integrated
 /// into the ZombiePlagueLegacyCS2 plugin.
 /// </summary>
+public enum MineCreateResult { Success, LimitReached, NoSurface, Error }
+
 public class ZPLMineService
 {
     private readonly ILogger<ZPLMineService> _logger;
@@ -23,17 +25,20 @@ public class ZPLMineService
     /// <summary>Units to advance past a hit entity so the next penetration trace doesn't re-hit it.</summary>
     private const float TraceAdvanceDistance = 8f;
     private readonly IOptionsMonitor<ZPLMineCFG> _mineCFG;
+    private readonly ZPLHelpers _helpers;
 
     public ZPLMineService(
         ISwiftlyCore core,
         ILogger<ZPLMineService> logger,
         ZPLGlobals globals,
-        IOptionsMonitor<ZPLMineCFG> mineCFG)
+        IOptionsMonitor<ZPLMineCFG> mineCFG,
+        ZPLHelpers helpers)
     {
         _core    = core;
         _logger  = logger;
         _globals = globals;
         _mineCFG = mineCFG;
+        _helpers = helpers;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -45,8 +50,26 @@ public class ZPLMineService
     /// identified by <paramref name="mineName"/>.  Returns the spawned entity
     /// or null on failure.
     /// </summary>
-    public CBaseModelEntity? CreateMineEnt(IPlayer player, string mineName)
+    /// <summary>Overload used by the AP shop — price already deducted, skip in-game money check.</summary>
+    /// <summary>Quick surface check — does the player have a valid wall/floor to plant on?</summary>
+    public bool HasValidPlacementSurface(IPlayer player)
     {
+        if (player == null || !player.IsValid) return false;
+        return CreateTraceByEyePosition(player, out _, out _);
+    }
+
+    public CBaseModelEntity? CreateMineEnt(IPlayer player, string mineName, bool skipPriceCheck, out MineCreateResult result)
+        => CreateMineEntInternal(player, mineName, skipPriceCheck, out result);
+
+    public CBaseModelEntity? CreateMineEnt(IPlayer player, string mineName, bool skipPriceCheck)
+    { return CreateMineEntInternal(player, mineName, skipPriceCheck, out _); }
+
+    public CBaseModelEntity? CreateMineEnt(IPlayer player, string mineName)
+    { return CreateMineEntInternal(player, mineName, skipPriceCheck: false, out _); }
+
+    private CBaseModelEntity? CreateMineEntInternal(IPlayer player, string mineName, bool skipPriceCheck, out MineCreateResult result)
+    {
+        result = MineCreateResult.Error;
         if (player == null || !player.IsValid) return null;
 
         var pawn = player.PlayerPawn;
@@ -76,13 +99,14 @@ public class ZPLMineService
         }
         if (mineConfig.Limit > 0 && mineSet.Count >= mineConfig.Limit)
         {
+            result = MineCreateResult.LimitReached;
             player.SendMessage(MessageType.Chat,
                 _core.Translation.GetPlayerLocalizer(player)["MineLimit", mineConfig.Limit]);
             return null;
         }
 
-        // ── Price check (uses in-game money, not ammo packs) ──────────────────
-        if (mineConfig.Price > 0)
+        // ── Price check — skipped when purchased via AP shop ─────────────────
+        if (!skipPriceCheck && mineConfig.Price > 0)
         {
             var moneyServices = controller.InGameMoneyServices;
             if (moneyServices != null && moneyServices.IsValid)
@@ -100,7 +124,7 @@ public class ZPLMineService
 
         // ── Trace from eye to find placement surface ──────────────────────────
         if (!CreateTraceByEyePosition(player, out TraceResult trace, out Vector playerForward))
-            return null;
+        { result = MineCreateResult.NoSurface; return null; }
 
         // ── Spawn mine entity ─────────────────────────────────────────────────
         CBaseModelEntity? mineEntity =
@@ -187,10 +211,45 @@ public class ZPLMineService
                 ent.Teleport(endPos, angle, null);
                 mineData.SpawnOrigin = endPos; // store world position for zombie proximity checks
 
-                SetGlow(ent, mineData.GlowColor, mineData.Model, mineData.Team);
+                // Hide glow until planting completes — activated below after delay
             });
 
+            // Play placing sound immediately
             EmitSoundFromEntity(mineHandle, mineData.MineOpenSound);
+
+            // ── Show "PLANTING LASER" progress HUD during the 1-second deploy delay ──
+            if (!player.IsFakeClient)
+            {
+                const float deployTime   = 1.0f;
+                const int   totalBars    = 10;  // dashed bar segments
+                float startTime = _core.Engine.GlobalVars.CurrentTime;
+
+                var hudCts = _core.Scheduler.RepeatBySeconds(0.1f, () =>
+                {
+                    if (!player.IsValid || player.IsFakeClient) return;
+
+                    float elapsed  = _core.Engine.GlobalVars.CurrentTime - startTime;
+                    float progress = Math.Clamp(elapsed / deployTime, 0f, 1f);
+                    int   pct      = (int)(progress * 100);
+
+                    string mineBar = _helpers.BuildProgressBar(progress, totalBars, "#00BFFF", "#666666", player);
+
+                    player.SendCenterHTML(
+                        $"<b><span color='#00CFFF' class='fontSize-l'>PLANTING LASER</span></b><br>" +
+                        mineBar +
+                        $"  <span color='#FFFFFF'><b>{pct}%</b></span>", 150);
+                });
+
+                // After deploy: reveal glow + activate beam
+                _core.Scheduler.DelayBySeconds(deployTime, () =>
+                {
+                    hudCts?.Cancel();
+                    if (!mineHandle.IsValid) return;
+                    var ent2 = mineHandle.Value;
+                    if (ent2 == null || !ent2.IsValid || !ent2.IsValidEntity) return;
+                    SetGlow(ent2, mineData.GlowColor, mineData.Model, mineData.Team);
+                });
+            }
 
             // ── Create beam 1 second after spawn ──────────────────────────────
             if (!TryParseColor(mineData.LaserColor, out SwiftlyS2.Shared.Natives.Color laserColor))
@@ -203,6 +262,7 @@ public class ZPLMineService
                 CreateBeam(player, mineHandle, laserColor, mineData, isVerticalSurface);
             });
 
+            result = MineCreateResult.Success;
             return mineEntity;
         }
         catch (Exception ex)
@@ -532,11 +592,14 @@ public class ZPLMineService
         int newHP = Math.Max(0, currentHP - (int)damage);
         _globals.MineCurrentHP[mineRaw] = newHP;
 
-        string hpMessage = $"Laser Mine HP: {newHP} / {mineData.MineHealth}";
+        // Dynamic color: green when high HP, yellow mid, red low
+        float mineHpPct = mineData.MineHealth > 0 ? (float)newHP / mineData.MineHealth : 0f;
+        string mineHpColor = mineHpPct > 0.6f ? "#00FF7F" : mineHpPct > 0.3f ? "#FFD700" : "#FF3030";
+        string hpMessage = $"<b><span color='#00CFFF'>Laser Mine HP: </span><span color='{mineHpColor}'>{newHP}</span><span color='#AAAAAA'> / {mineData.MineHealth}</span></b>";
 
         // ── HUD update to the attacking zombie ─────────────────────────────────
         if (attacker != null && attacker.IsValid && !attacker.IsFakeClient)
-            attacker.SendMessage(MessageType.Center, hpMessage);
+            attacker.SendCenterHTML(hpMessage, 300);
 
         // ── HUD update to mine owner ───────────────────────────────────────────
         if (_globals.MineOwnerPlayerID.TryGetValue(mineRaw, out int ownerID))
@@ -544,7 +607,7 @@ public class ZPLMineService
             var owner = _core.PlayerManager.GetPlayer(ownerID);
             if (owner != null && owner.IsValid && !owner.IsFakeClient
                 && (attacker == null || owner.PlayerID != attacker.PlayerID))
-                owner.SendMessage(MessageType.Center, hpMessage);
+                owner.SendCenterHTML(hpMessage, 300);
         }
 
         if (newHP > 0) return;
@@ -672,13 +735,11 @@ public class ZPLMineService
         var end   = start + forward * 8192f;
 
         TraceParams? traceParams = TraceParams.Builder()
-            .WithObjectQuery(RnQueryObjectSet.Static | RnQueryObjectSet.Dynamic)
-            .WithInteraction(MaskTrace.Solid | MaskTrace.Player, MaskTrace.Empty, MaskTrace.Empty)
-            .WithCollisionGroup(CollisionGroup.Player)
+            .WithObjectQuery(RnQueryObjectSet.Static)
             .Build();
         trace = _core.Trace.TraceShapeLine(in start, in end, in traceParams);
 
-        return trace.Fraction < 1.0f;
+        return trace.DidHit && trace.Fraction < 0.99f;
     }
 
     private bool CreateTraceByEntity(

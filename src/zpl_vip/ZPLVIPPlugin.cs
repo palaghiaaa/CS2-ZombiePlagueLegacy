@@ -90,7 +90,9 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.GameEvent.HookPre<EventPlayerSpawn>(OnPlayerSpawn);
         Core.GameEvent.HookPre<EventPlayerDeath>(OnPlayerDeath);
         Core.GameEvent.HookPre<EventRoundEnd>(OnRoundEnd);
+#pragma warning disable CS0618 // IOnEntityTakeDamageEvent: deprecated by SwiftlyS2 1.4, migration pending
         Core.Event.OnEntityTakeDamage += OnEntityTakeDamage;
+#pragma warning restore CS0618
         Core.Event.OnTick += OnTick;
         Core.Event.OnClientConnected += OnClientConnected;
         Core.Event.OnClientDisconnected += OnClientDisconnected;
@@ -172,7 +174,9 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         Core.GameEvent.UnhookPre<EventPlayerSpawn>();
         Core.GameEvent.UnhookPre<EventPlayerDeath>();
         Core.GameEvent.UnhookPre<EventRoundEnd>();
+#pragma warning disable CS0618
         Core.Event.OnEntityTakeDamage   -= OnEntityTakeDamage;
+#pragma warning restore CS0618
         Core.Event.OnTick               -= OnTick;
         Core.Event.OnClientConnected    -= OnClientConnected;
         Core.Event.OnClientDisconnected -= OnClientDisconnected;
@@ -405,6 +409,7 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
 
     // ── Event: entity take damage ─────────────────────────────────────────────
 
+#pragma warning disable CS0618
     private void OnEntityTakeDamage(IOnEntityTakeDamageEvent @event)
     {
         // 1. Resolve the victim as a player.

@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,15 +31,18 @@ public partial class ZPLServices
     private readonly ZombiePlagueLegacyAPI _api;
     private readonly ZPLWeaponsMenu _weaponsMenu;
     private readonly ZPLMineService _mineService;
+    private readonly ZPLClassAbilities _classAbilities;
+    private ZPLExtraItemsMenu? _extraItemsMenu;
     public ZPLServices(ISwiftlyCore core, ILogger<ZPLServices> logger,
-        ZPLGlobals globals, ZPLHelpers helpers, 
+        ZPLGlobals globals, ZPLHelpers helpers,
         IOptionsMonitor<ZPLMainCFG> mainCFG,
         IOptionsMonitor<ZPLZombieClassCFG> zombieClassCFG,
         PlayerZombieState zombieState, ZPLGameMode gameMode,
         IOptionsMonitor<ZPLSpecialClassCFG> specialClassCFG,
         ZombiePlagueLegacyAPI api,
         ZPLWeaponsMenu weaponsMenu,
-        ZPLMineService mineService)
+        ZPLMineService mineService,
+        ZPLClassAbilities classAbilities)
     {
         _core = core;
         _logger = logger;
@@ -52,7 +56,11 @@ public partial class ZPLServices
         _api = api;
         _weaponsMenu = weaponsMenu;
         _mineService = mineService;
+        _classAbilities = classAbilities;
     }
+
+    // Post-construction wiring — called from plugin entry after DI resolves
+    public void SetExtraItemsMenu(ZPLExtraItemsMenu menu) => _extraItemsMenu = menu;
 
     public void SelectMotherZombie(int count)
     {
@@ -173,6 +181,9 @@ public partial class ZPLServices
                         attackerPawn.HealthUpdated();
                     }
                 }
+
+                // ── Class on-infect ability (heal, glow) for the infector ──
+                _classAbilities.OnInfectAbility(attacker);
 
                 if (_api != null)
                     _api.NotifyInfect(attacker, victim, grenade, selectedClass.Name);
@@ -339,7 +350,9 @@ public partial class ZPLServices
             PlayerSelectSoundtoAll(_globals.RoundVoxGroup.HumanWinVox, _globals.RoundVoxGroup.Volume);
         }
 
-        _helpers.SendCenterToAllT("ServerGameHumanWin");
+        _helpers.SendCenterHTMLLocalizedToAll(p =>
+            $"<b><span color='#00FF7F' class='fontSize-xl'>{_helpers.T(p, "ServerGameHumanWin")}</span></b>",
+            duration: 4000);
         _helpers.SetTeamScore(Team.CT);
         _helpers.TerminateRound(RoundEndReason.CTsWin, 5.0f);
 
@@ -357,7 +370,9 @@ public partial class ZPLServices
         {
             PlayerSelectSoundtoAll(_globals.RoundVoxGroup.ZombieWinVox, _globals.RoundVoxGroup.Volume);
         }
-        _helpers.SendCenterToAllT("ServerGameZombieWin");
+        _helpers.SendCenterHTMLLocalizedToAll(p =>
+            $"<b><span color='#FF3030' class='fontSize-xl'>{_helpers.T(p, "ServerGameZombieWin")}</span></b>",
+            duration: 4000);
         _helpers.SetTeamScore(Team.T);
         _helpers.TerminateRound(RoundEndReason.TerroristsWin, 5.0f);
 
@@ -474,6 +489,20 @@ public partial class ZPLServices
 
             Vector offsetPos = new(origin.Value.X, origin.Value.Y, origin.Value.Z + 50);
             var particle = _helpers.CreateParticleAtPos(pawn, offsetPos, "particles/explosions_fx/explosion_hegrenade_water_intial_trail.vpcf");
+
+            // ── Mutation HUD: "YOU HAVE MUTATED TO / ZOMBIE LEAPER" ──────────
+            if (!zombie.IsFakeClient)
+            {
+                string mutLabel  = _helpers.T(zombie, isMother ? "YouAreMother" : "YouHaveMutatedTo");
+                string className = Zclass.Name.ToUpperInvariant();
+                zombie.SendCenterHTML(
+                    $"<b><span color='#FF4444'>{mutLabel}</span></b><br>" +
+                    $"<b><span color='#00FF7F' class='fontSize-l'>{className}</span></b>", 3000);
+            }
+
+            // ── Class special abilities (silent steps, extra jumps) ───────────
+            _classAbilities.OnBecomeZombie(zombie, Zclass);
+
             //_logger.LogInformation($"posszombie 完成 [{controller.PlayerName}]");
         }
         catch (Exception ex)
@@ -590,7 +619,15 @@ public partial class ZPLServices
             });
             return;
         }
-        _helpers.SendCenterToAllT("ServerGameCountDown", currentDisplay);
+        // Build progress bar — pass a player so localizer can resolve translation chars
+        var anyPlayer = _core.PlayerManager.GetAllPlayers()
+            .FirstOrDefault(p => p.IsValid && !p.IsFakeClient);
+        float cdProgress    = Math.Clamp((float)currentDisplay / 60f, 0f, 1f);
+        string bar          = _helpers.BuildProgressBar(cdProgress, 12, "#FF8C00", "#666666", anyPlayer);
+        string countdownHtml =
+            $"<span color='#FF8C00' class='fontSize-l'><b>COUNTDOWN {currentDisplay}</b></span><br>" +
+            bar;
+        _core.PlayerManager.SendCenterHTML(countdownHtml, 1100);
     }
 
     public void CheckEndTimer()
@@ -731,6 +768,31 @@ public partial class ZPLServices
         _core.Scheduler.StopOnMapChange(_globals.g_ZombieRegenTimer);
     }
 
+    public void StartActivePlayerRewardTimer()
+    {
+        _globals.g_ActivePlayerRewardTimer?.Cancel();
+        _globals.g_ActivePlayerRewardTimer = null;
+
+        var cfg = _mainCFG.CurrentValue.NormalInfection;
+        float interval = cfg.ActivePlayerRewardInterval;
+        int   amount   = cfg.ActivePlayerRewardAmount;
+        if (interval <= 0f || amount <= 0) return;
+
+        _globals.g_ActivePlayerRewardTimer = _core.Scheduler.RepeatBySeconds(interval, () =>
+        {
+            if (_extraItemsMenu == null) return;
+            foreach (var player in _core.PlayerManager.GetAllPlayers())
+            {
+                if (!player.IsValid || player.IsFakeClient) continue;
+                _extraItemsMenu.AddAmmoPacks(player.PlayerID, amount);
+                player.SendMessage(MessageType.Chat,
+                    _core.Translation.GetPlayerLocalizer(player)["ActivePlayerReward", amount]);
+            }
+        });
+
+        _core.Scheduler.StopOnMapChange(_globals.g_ActivePlayerRewardTimer);
+    }
+
     public void GlobalIdleTimer()
     {
         _globals.g_IdleTimer?.Cancel();
@@ -798,13 +860,22 @@ public partial class ZPLServices
 
         var ZombieClassName = _zombieState.GetPlayerZombieClass(victim.PlayerID);
 
-        string message = $"<span><font color='red'>{_helpers.T(attacker, "HudZombieClass")} {ZombieClassName}</font></span><br>" +
-     $"<span><font color='red'>{_helpers.T(attacker, "HudPlayerName")} {victim.Name}</font></span><br>" +
-     $"<span><font color='orange'>{_helpers.T(attacker, "HudCause")} </font><font color='red'>{damage}</font><font color='orange'> {_helpers.T(attacker, "HudDamage")}</font></span><br>" +
-     $"<span><font color='green'>{_helpers.T(attacker, "HudHpRemaining")} </font><font color='red'>{health}</font><font color='green'> {_helpers.T(attacker, "HudHP")}</font></span><br>" +
-     $"<span><font color='green'>{_helpers.T(attacker, "HudMaxHP")} </font><font color='red'>{Maxhealth}</font><font color='green'> {_helpers.T(attacker, "HudHP")}</font></span><br>";
+        // Dynamic HP color: green → yellow → red
+        float hpPct    = Maxhealth > 0 ? (float)health / Maxhealth : 0f;
+        string hpColor = hpPct > 0.5f ? "#00FF7F" : hpPct > 0.25f ? "#FFD700" : "#FF3030";
 
-        attacker.SendCenterHTML(message);
+        // HP bar — 10 segments
+        string hpBar = _helpers.BuildProgressBar(hpPct, 10, hpColor, "#666666");
+
+        // Compact damage HUD — all on separate lines via <br>
+        // Using @ verbatim strings to avoid quote escaping issues
+        string classLine  = $"<span color=\"#888888\">[</span><span color=\"#FFAA00\">{ZombieClassName}</span><span color=\"#888888\">]</span> <span color=\"#FFFFFF\">{victim.Name}</span>";
+        string hpLine     = hpBar + $" <span color='{hpColor}'>{health}</span><span color=\"#666666\">/</span><span color=\"#888888\">{Maxhealth}</span>";
+        string dmgLine    = $"<span color=\"#FF3030\">-{damage}</span>";
+
+        string message = $"{classLine}<br>{hpLine}<br>{dmgLine}";
+
+        attacker.SendCenterHTML(message, 2000);
 
     }
 

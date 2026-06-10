@@ -212,13 +212,13 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
 
         // ── Mine service and menu ─────────────────────────────────────────────
         collection.AddSingleton<ZPLMineService>();
-        collection.AddSingleton<ZPLMineMenu>();
 
         // ── MySQL zombie class preference service ─────────────────────────────
         collection.AddSingleton<ZPLPlayerPrefsService>();
 
         collection.AddSingleton<ZPLEvents>();
         collection.AddSingleton<ZPLHelpers>();
+        collection.AddSingleton<ZPLClassAbilities>();
         collection.AddSingleton<ZPLServices>();
         collection.AddSingleton<ZPLCommands>();
         collection.AddSingleton<PlayerZombieState>();
@@ -236,6 +236,10 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         // Break circular dependency: inject ZPLServices into ZPLExtraItemsMenu post-build
         ServiceProvider.GetRequiredService<ZPLExtraItemsMenu>()
             .SetServices(ServiceProvider.GetRequiredService<ZPLServices>());
+
+        // Wire ZPLExtraItemsMenu into ZPLServices (needed for active player reward)
+        ServiceProvider.GetRequiredService<ZPLServices>()
+            .SetExtraItemsMenu(ServiceProvider.GetRequiredService<ZPLExtraItemsMenu>());
 
         _apiInstance.Initialize(
             Core,

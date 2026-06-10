@@ -1,203 +1,199 @@
 {
-
   "ZPLExtraItemsCFG": {
-
-    "StartingAmmoPacks":            0,
-
-    "RoundSurviveReward":           3,
-
-    "ZombieKillReward":             2,
-
-    "HumanDamageRewardThreshold":   600,
-
-    "HumanDamageReward":            1,
-
-    "ArmorAmount":                  100,
-
-    "MadnessDuration":              10.0,
-    "MadnessGlowR":                 255,
-    "MadnessGlowG":                 0,
-    "MadnessGlowB":                 0,
-
-    "MultijumpIncrement":           1,
-    "MultijumpMax":                 3,
-
-    "KnifeBlinkCharges":            3,
-    "KnifeBlinkDistance":           300.0,
-    "KnifeBlinkCooldown":           2.0,
-
-    "JetpackMaxFuel":               250.0,
-    "JetpackThrustForce":           350.0,
-    "JetpackHorizontalForce":       300.0,
-    "JetpackFuelConsumeRate":       30.0,
-
-    "ReviveTokenRespawnDelay":      1.5,
-
-    "TryderHealth":                 1000,
-    "TryderArmor":                  500,
-    "TryderGlowR":                  0,
-    "TryderGlowG":                  127,
-    "TryderGlowB":                  255,
-
+    "StartingAmmoPacks": 0,
+    "RoundSurviveReward": 3,
+    "ZombieKillReward": 2,
+    "HumanDamageRewardThreshold": 500,
+    "HumanDamageReward": 1,
+    "ArmorAmount": 100,
+    "MadnessDuration": 10.0,
+    "MadnessGlowR": 255,
+    "MadnessGlowG": 0,
+    "MadnessGlowB": 0,
+    "MultijumpIncrement": 1,
+    "MultijumpMax": 3,
+    "KnifeBlinkCharges": 3,
+    "KnifeBlinkDistance": 300.0,
+    "KnifeBlinkCooldown": 2.0,
+    "JetpackMaxFuel": 250.0,
+    "JetpackThrustForce": 350.0,
+    "JetpackHorizontalForce": 300.0,
+    "JetpackFuelConsumeRate": 30.0,
+    "JetpackRechargeTime": 20.0,
+    "ReviveTokenRespawnDelay": 1.5,
+    "ParachuteFallSpeed": 80.0,
+    "TryderHealth": 1000,
+    "TryderArmor": 500,
+    "TryderGlowR": 0,
+    "TryderGlowG": 127,
+    "TryderGlowB": 255,
     "Items": [
-
       {
-        "Key":    "armor",
-        "Name":   "Armor (100 AP)",
-        "Price":  3,
+        "Key": "armor",
+        "Name": "Armor (100 AP)",
+        "Price": 2,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "he_grenade",
-        "Name":   "HE Grenade",
-        "Price":  2,
+        "Key": "he_grenade",
+        "Name": "HE Grenade",
+        "Price": 2,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "flash_grenade",
-        "Name":   "Flash Grenade",
-        "Price":  2,
+        "Key": "flash_grenade",
+        "Name": "Flash Grenade",
+        "Price": 1,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "smoke_grenade",
-        "Name":   "Smoke Grenade",
-        "Price":  2,
+        "Key": "smoke_grenade",
+        "Name": "Smoke Grenade",
+        "Price": 1,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "multijump",
-        "Name":   "Multi-Jump (+1 jump per purchase)",
-        "Price":  4,
+        "Key": "multijump",
+        "Name": "Multi-Jump (+1 jump per purchase)",
+        "Price": 8,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "knife_blink",
-        "Name":   "Knife Blink (3 charges -- swing knife to teleport)",
-        "Price":  5,
+        "Key": "knife_blink",
+        "Name": "Knife Blink (3 charges -- swing knife to teleport)",
+        "Price": 12,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "jetpack",
-        "Name":   "Jetpack (CTRL+SPACE to fly)",
-        "Price":  10,
+        "Key": "jetpack",
+        "Name": "Jetpack (CTRL+SPACE to fly)",
+        "Price": 50,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "laser_mine",
-        "Name":   "Laser Mine (opens mine menu)",
-        "Price":  6,
+        "Key": "laser_mine",
+        "Name": "Laser Mine (places mine instantly)",
+        "Price": 5,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "revive_token",
-        "Name":   "Revive Token (respawn once on death)",
-        "Price":  8,
+        "Key": "revive_token",
+        "Name": "Revive Token (respawn once on death)",
+        "Price": 7,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "inc_grenade",
-        "Name":   "Incendiary Bomb (CT-only fire grenade)",
-        "Price":  4,
+        "Key": "inc_grenade",
+        "Name": "Incendiary Bomb (CT-only fire grenade)",
+        "Price": 3,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "teleport_grenade",
-        "Name":   "Teleport Grenade (decoy teleporter)",
-        "Price":  3,
+        "Key": "teleport_grenade",
+        "Name": "Teleport Grenade (decoy teleporter)",
+        "Price": 2,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "scba_suit",
-        "Name":   "SCBA Suit (absorb one zombie attack)",
-        "Price":  5,
+        "Key": "scba_suit",
+        "Name": "SCBA Suit (absorb one zombie attack)",
+        "Price": 4,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "tryder",
-        "Name":   "Tryder (bonus HP + armor + infinite clip)",
-        "Price":  15,
+        "Key": "parachute",
         "Enable": true,
-        "Team":   "Human"
+        "Name": "Parachute",
+        "Description": "Slow your fall — hold SPACE while airborne",
+        "Team": "Human",
+        "Price": 3,
+        "Limit": 1,
+        "Permissions": ""
       },
       {
-        "Key":    "unlimited_clip",
-        "Name":   "Unlimited Clip (infinite magazine)",
-        "Price":  8,
+        "Key": "tryder",
+        "Name": "Tryder (bonus HP + armor + infinite clip)",
+        "Price": 60,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "no_recoil",
-        "Name":   "No Recoil (zero weapon spread)",
-        "Price":  6,
+        "Key": "unlimited_clip",
+        "Name": "Unlimited Clip (infinite magazine)",
+        "Price": 6,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "buy_survivor",
-        "Name":   "Become Survivor",
-        "Price":  20,
+        "Key": "no_recoil",
+        "Name": "No Recoil (zero weapon spread)",
+        "Price": 5,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
       {
-        "Key":    "buy_sniper",
-        "Name":   "Become Sniper",
-        "Price":  15,
+        "Key": "buy_survivor",
+        "Name": "Become Survivor",
+        "Price": 200,
         "Enable": true,
-        "Team":   "Human"
+        "Team": "Human"
       },
-
       {
-        "Key":    "antidote",
-        "Name":   "Antidote (cure yourself back to human)",
-        "Price":  8,
+        "Key": "buy_sniper",
+        "Name": "Become Sniper",
+        "Price": 150,
         "Enable": true,
-        "Team":   "Zombie",
+        "Team": "Human"
+      },
+      {
+        "Key": "antidote",
+        "Name": "Antidote (cure yourself back to human)",
+        "Price": 6,
+        "Enable": true,
+        "Team": "Zombie",
         "PurchaseLimit": 3
       },
       {
-        "Key":    "zombie_madness",
-        "Name":   "Zombie Madness (10s invulnerability)",
-        "Price":  6,
+        "Key": "zombie_madness",
+        "Name": "Zombie Madness (10s invulnerability)",
+        "Price": 5,
         "Enable": true,
-        "Team":   "Zombie",
+        "Team": "Zombie",
         "PurchaseLimit": 5
       },
       {
-        "Key":    "t_virus_grenade",
-        "Name":   "T-Virus Grenade (infects humans in range)",
-        "Price":  6,
+        "Key": "t_virus_grenade",
+        "Name": "T-Virus Grenade (infects humans in range)",
+        "Price": 5,
         "Enable": true,
-        "Team":   "Zombie",
+        "Team": "Zombie",
         "PurchaseLimit": 3
       },
       {
-        "Key":    "buy_nemesis",
-        "Name":   "Become Nemesis",
-        "Price":  20,
+        "Key": "buy_nemesis",
+        "Name": "Become Nemesis",
+        "Price": 500,
         "Enable": true,
-        "Team":   "Zombie"
+        "Team": "Zombie"
       },
       {
-        "Key":    "buy_assassin",
-        "Name":   "Become Assassin",
-        "Price":  15,
+        "Key": "buy_assassin",
+        "Name": "Become Assassin",
+        "Price": 300,
         "Enable": true,
-        "Team":   "Zombie"
+        "Team": "Zombie"
       }
     ]
   }

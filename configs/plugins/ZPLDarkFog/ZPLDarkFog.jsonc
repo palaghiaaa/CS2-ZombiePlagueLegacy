@@ -1,19 +1,17 @@
 {
   "ZPLDarkFogCFG": {
     "Enable": true,
-    "HumanExposure": 0.6,
-    "ZombieExposure": 0.3,
-
+    "HumanExposure": 0.12,
+    "ZombieExposure": 0.22,
     "AdminCommandName": "fog",
     "AdminCommandPermission": "admin.fogsettings",
-
     "HiddenExposureCommandEnabled": true,
     "HiddenExposureCommandName": "zpl_priv_exposure",
-     "ZombieGroups": [
-      { 
+    "ZombieGroups": [
+      {
         "Enable": true,
         "ZombieClassName": "Light Zombie",
-        "Exposure": 0.1 
+        "Exposure": 0.08
       }
     ]
   }

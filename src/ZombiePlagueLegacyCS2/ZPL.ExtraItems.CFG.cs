@@ -76,6 +76,16 @@ public class ZPLExtraItemsCFG
     public float JetpackHorizontalForce { get; set; } = 300f;
     /// <summary>Fuel units consumed per second while flying.</summary>
     public float JetpackFuelConsumeRate { get; set; } = 30f;
+    /// <summary>
+    /// Seconds for a full recharge from 0 to max fuel when not flying.
+    /// Recharge starts automatically after landing/releasing thrust keys.
+    /// Set to 0 to disable auto-recharge (must rebuy from shop). Default: 20.
+    /// </summary>
+    public float JetpackRechargeTime { get; set; } = 20f;
+
+    // ── Parachute ─────────────────────────────────────────────────────────────
+    /// <summary>Maximum downward velocity when parachute is active (units/s). CS 1.6: ~80.</summary>
+    public float ParachuteFallSpeed { get; set; } = 80f;
 
     // ── Revive Token ──────────────────────────────────────────────────────────
     /// <summary>Seconds after death before the revive token respawns the player.</summary>

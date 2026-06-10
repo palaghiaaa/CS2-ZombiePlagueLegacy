@@ -26,7 +26,8 @@ public class ZPLExtraItemsMenu
     private readonly IOptionsMonitor<ZPLMainCFG> _mainCFG;
     private readonly AmmoPacksService _ammoPacks;
     private readonly ZPLGameMode _gameMode;
-    private readonly ZPLMineMenu _mineMenu;
+    private readonly ZPLMineService _mineService;
+    private readonly ZPLWeaponsMenu _weaponsMenu;
 
     // Injected post-construction to break circular dependency with ZPLServices
     private ZPLServices? _services;
@@ -42,7 +43,8 @@ public class ZPLExtraItemsMenu
         IOptionsMonitor<ZPLMainCFG> mainCFG,
         AmmoPacksService ammoPacks,
         ZPLGameMode gameMode,
-        ZPLMineMenu mineMenu)
+        ZPLMineService mineService,
+        ZPLWeaponsMenu weaponsMenu)
     {
         _core = core;
         _logger = logger;
@@ -53,7 +55,8 @@ public class ZPLExtraItemsMenu
         _mainCFG = mainCFG;
         _ammoPacks = ammoPacks;
         _gameMode = gameMode;
-        _mineMenu = mineMenu;
+        _mineService = mineService;
+        _weaponsMenu = weaponsMenu;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -193,12 +196,11 @@ public class ZPLExtraItemsMenu
         int playerId = player.PlayerID;
         int ap = GetAmmoPacks(playerId);
 
-        IMenuAPI menu = _menuHelper.CreateMenu(_helpers.T(player, "ExtraItemsMenuTitle"));
+        IMenuAPI menu = _menuHelper.CreateShopMenu(_helpers.T(player, "ExtraItemsMenuTitle"));
 
         menu.AddOption(new TextMenuOption(
-            HtmlGradient.GenerateGradientText(
-                _helpers.T(player, "ExtraItemsMenuAP", ap),
-                DrawingColor.Gold, DrawingColor.LightGoldenrodYellow, DrawingColor.Gold),
+            $"<span color='{ZPLMenuHelper.ColHint}'>Balance: </span>"
+            + $"<span color='{ZPLMenuHelper.ColCost}'><b>{ap} AP</b></span>",
             updateIntervalMs: 800, pauseIntervalMs: 100)
         {
             TextStyle = MenuOptionTextStyle.ScrollLeftLoop
@@ -212,7 +214,9 @@ public class ZPLExtraItemsMenu
             if (!ItemAllowedForPlayer(item, playerId)) continue;
 
             anyVisible = true;
-            string label = $"{item.Name}  [{item.Price} AP]";
+            // Unified palette via ZPLMenuHelper
+            string label = ZPLMenuHelper.ItemLabel(
+                item.Name, item.Price, isZombie: item.Team == ExtraItemTeam.Zombie);
 
             var btn = new ButtonMenuOption(label)
             {
@@ -348,6 +352,9 @@ public class ZPLExtraItemsMenu
             case "teleport_grenade":
                 ApplyTeleportGrenadeItem(player, newAp);
                 break;
+            case "parachute":
+                ApplyParachute(player, newAp);
+                break;
             case "scba_suit":
                 ApplyScbaSuit(player, newAp);
                 break;
@@ -446,6 +453,14 @@ public class ZPLExtraItemsMenu
 
         _helpers.SendChatT(player, "ExtraItemsAntidoteSuccess", remainingAP);
         _helpers.SendChatToAllT("ExtraItemsAntidoteSuccessToAll", player.Name);
+
+        // Auto-open weapon selection after antidote — small delay so posshuman finishes first
+        _core.Scheduler.DelayBySeconds(0.3f, () =>
+        {
+            if (!player.IsValid) return;
+            _globals.CanBuyWeaponsThisRound[player.PlayerID] = true;
+            _weaponsMenu.OpenWeaponsMenuIfAllowed(player);
+        });
     }
 
     private void ApplyZombieMadness(IPlayer player, int remainingAP)
@@ -538,10 +553,77 @@ public class ZPLExtraItemsMenu
 
     private void ApplyLaserMine(IPlayer player, int remainingAP)
     {
-        // Purchasing this extra item opens the mine selection menu directly.
-        // The player picks a mine type from the menu and places it on a surface.
-        _helpers.SendChatT(player, "ExtraItemsLaserMineSuccess", remainingAP);
-        _mineMenu.OpenMineMenu(player);
+        const float plantDuration = 2.0f; // seconds for planting animation/HUD
+        int   playerId    = player.PlayerID;
+        int   minePrice   = _extraItemsCFG.CurrentValue.Items
+                                .FirstOrDefault(i => i.Key == "laser_mine")?.Price ?? 5;
+
+        // ── Pre-check: trace surface before closing menu ────────────────────
+        // Do a quick surface check first — if no surface, refund immediately
+        // without closing the menu, so the player can reposition.
+        if (!_mineService.HasValidPlacementSurface(player))
+        {
+            _ammoPacks.AddBalance(playerId, minePrice);
+            _helpers.SendChatT(player, "ExtraItemsLaserMineFail");
+            return;
+        }
+
+        // ── Close the shop menu ─────────────────────────────────────────────
+        _core.MenusAPI.CloseActiveMenu(player);
+
+        // ── Planting HUD loop ───────────────────────────────────────────────
+        float startTime = _core.Engine.GlobalVars.CurrentTime;
+        var hudCts = _core.Scheduler.RepeatBySeconds(0.07f, () =>
+        {
+            if (!player.IsValid) return;
+            float elapsed  = _core.Engine.GlobalVars.CurrentTime - startTime;
+            float progress = Math.Clamp(elapsed / plantDuration, 0f, 1f);
+            int   pct      = (int)(progress * 100);
+            string bar = _helpers.BuildProgressBar(progress, 12, "#00BFFF", "#666666", player);
+            player.SendCenterHTML(
+                $"<span color='#00CFFF' class='fontSize-l'><b>⚡ PLANTING LASER</b></span><br>" +
+                bar + $" <span color='#FFFFFF'><b>{pct}%</b></span>",
+                120);
+        });
+
+        // ── After planting delay: spawn mine + reopen menu ─────────────────
+        _core.Scheduler.DelayBySeconds(plantDuration, () =>
+        {
+            hudCts?.Cancel();
+            if (!player.IsValid) return;
+
+            var mine = _mineService.CreateMineEnt(player, "Laser Tripwire",
+                skipPriceCheck: true, out var result);
+
+            if (mine == null)
+            {
+                if (result != MineCreateResult.LimitReached)
+                {
+                    _ammoPacks.AddBalance(playerId, minePrice);
+                    _helpers.SendChatT(player, "ExtraItemsLaserMineFail");
+                }
+                // Limit message already sent by mine service
+            }
+            else
+            {
+                _helpers.SendChatT(player, "ExtraItemsLaserMineSuccess", GetAmmoPacks(playerId));
+            }
+
+            // Reopen shop menu regardless of outcome
+            _core.Scheduler.DelayBySeconds(0.15f, () =>
+            {
+                if (player.IsValid) OpenExtraItemsMenu(player);
+            });
+        });
+    }
+
+    /// <summary>Builds a simple ASCII progress bar without translation lookup — guaranteed to render.</summary>
+    private static string BuildSimpleBar(float progress, int total, string fillColor, string emptyColor)
+    {
+        int filled = (int)Math.Round(Math.Clamp(progress, 0f, 1f) * total);
+        string f = new string('|', filled);
+        string e = new string('-', total - filled);
+        return $"<span color='{fillColor}'>{f}</span><span color='{emptyColor}'>{e}</span>";
     }
 
     private void ApplyReviveToken(IPlayer player, int remainingAP)
@@ -590,6 +672,21 @@ public class ZPLExtraItemsMenu
         _helpers.GiveTeleprotGrenade(player);
         _helpers.SendChatT(player, "ExtraItemsGrenadeSuccess",
             _helpers.T(player, "ItemTeleportGrenade"), remainingAP);
+    }
+
+    private void ApplyParachute(IPlayer player, int remainingAP)
+    {
+        int id = player.PlayerID;
+        if (_globals.HasParachute.Contains(id))
+        {
+            // Already has one — refund
+            AddAmmoPacks(id, _extraItemsCFG.CurrentValue.Items
+                .FirstOrDefault(i => i.Key == "parachute")?.Price ?? 0);
+            _helpers.SendChatT(player, "ExtraItemsAlreadyHave");
+            return;
+        }
+        _globals.HasParachute.Add(id);
+        _helpers.SendChatT(player, "ParachuteActive", remainingAP);
     }
 
     private void ApplyScbaSuit(IPlayer player, int remainingAP)
@@ -908,7 +1005,22 @@ public class ZPLExtraItemsMenu
         if (!duckPressed || !spacePressed) return;
 
         _globals.JetpackFuel.TryGetValue(id, out float fuel);
-        if (fuel <= 0) return;
+        if (fuel <= 0)
+        {
+            var cfgEmpty = _extraItemsCFG.CurrentValue;
+            float rechargeTime = cfgEmpty.JetpackRechargeTime;
+            float lastThrust = _globals.JetpackLastThrustTime.TryGetValue(id, out float lt) ? lt : 0f;
+            float elapsed = _core.Engine.GlobalVars.CurrentTime - lastThrust;
+            string rechargeMsg = rechargeTime > 0
+                ? $"<span color='#FF3030'><b>RECHARGING... {Math.Max(0f, rechargeTime - elapsed):F0}s</b></span>"
+                : "<span color='#FF3030'><b>0% — BUY REFUEL</b></span>";
+            player.SendCenterHTML(
+                "<b><span color='#AAAAAA' class='fontSize-m'>JETPACK FUEL</span></b><br>"
+                + _helpers.BuildProgressBar(0f, 10, "#666666", "#666666", player) + "<br>"
+                + rechargeMsg,
+                2000);
+            return;
+        }
 
         float now = _core.Engine.GlobalVars.CurrentTime;
         _globals.JetpackLastFuelTime.TryGetValue(id, out float lastTime);
@@ -919,7 +1031,8 @@ public class ZPLExtraItemsMenu
         var cfg = _extraItemsCFG.CurrentValue;
         float fuelUsed = cfg.JetpackFuelConsumeRate * dt;
         _globals.JetpackFuel[id] = Math.Max(0f, fuel - fuelUsed);
-        _globals.JetpackLastFuelTime[id] = now;
+        _globals.JetpackLastFuelTime[id]   = now;
+        _globals.JetpackLastThrustTime[id] = now;   // reset recharge countdown
 
         // ── Horizontal thrust from WASD keys relative to eye yaw ──────────────
         bool wPressed = (player.PressedButtons & GameButtonFlags.W) != 0;
@@ -964,6 +1077,23 @@ public class ZPLExtraItemsMenu
         );
 
         pawn.Teleport(null, null, newVel);
+
+        // ── Jetpack fuel HUD — shown every tick while thrusting ───────────────
+        float currentFuel = _globals.JetpackFuel.TryGetValue(id, out float f2) ? f2 : 0f;
+        float maxFuel     = cfg.JetpackMaxFuel > 0 ? cfg.JetpackMaxFuel : 1f;
+        float fuelPct     = Math.Clamp(currentFuel / maxFuel, 0f, 1f);
+        int   fuelPctInt  = (int)(fuelPct * 100);
+
+        // Fuel color: green when full, yellow mid, red when low
+        string fuelColor = fuelPct > 0.5f ? "#00FF7F" : fuelPct > 0.25f ? "#FFD700" : "#FF3030";
+        string fuelBar = _helpers.BuildProgressBar(fuelPct, 10, fuelColor, "#666666", player);
+
+        // Duration 2000ms — stays visible after releasing keys
+        player.SendCenterHTML(
+            $"<b><span color='#AAAAAA' class='fontSize-m'>JETPACK FUEL</span></b><br>"
+            + fuelBar
+            + $" <span color='{fuelColor}'><b>{fuelPctInt}%</b></span>",
+            2000);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -974,6 +1104,7 @@ public class ZPLExtraItemsMenu
     {
         _globals.HasJetpack.Remove(playerId);
         _globals.JetpackFuel.Remove(playerId);
+        _globals.JetpackLastThrustTime.Remove(playerId);
         _globals.JetpackLastFuelTime.Remove(playerId);
     }
 }

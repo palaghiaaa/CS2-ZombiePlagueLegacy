@@ -21,6 +21,14 @@ public class GameModeConfig
     public int Weight { get; set; } = 100;
     public bool EnableInfiniteClipMode { get; set; } = true;
     public virtual bool ZombieCanReborn { get; set; } = true;
+    /// <summary>When true, dead humans respawn as zombies after RespawnDelay seconds (CS 1.6: zp_respawn_humans).</summary>
+    public virtual bool HumanCanReborn { get; set; } = true;
+    /// <summary>Seconds before a dead player respawns (CS 1.6: zp_spawn_delay default 5).</summary>
+    public float RespawnDelay { get; set; } = 5.0f;
+    /// <summary>Seconds for active-player AP bonus interval (0 = disabled). CS 1.6 zp_informer: +4 AP / 4 min.</summary>
+    public float ActivePlayerRewardInterval { get; set; } = 240.0f;
+    /// <summary>AP given to each connected player every ActivePlayerRewardInterval seconds.</summary>
+    public int ActivePlayerRewardAmount { get; set; } = 4;
     /// <summary>
     /// Minimum number of connected (non-fake) players required for this game mode to
     /// be eligible for random selection.  Set to 0 (default) to impose no minimum.
@@ -31,18 +39,22 @@ public class GameModeConfig
 
 public class NemesisModeConfig : GameModeConfig
 {
-    // In Nemesis mode, killing the Nemesis should immediately end the round (human win).
-    // Allowing the Nemesis to respawn conflicts with the win-condition check and is
-    // unintuitive; disable it by default so the mode plays as designed.
     public override bool ZombieCanReborn { get; set; } = false;
     public string NemesisNames { get; set; } = string.Empty;
-    /// <summary>
-    /// HP assigned to the Nemesis at round start.
-    /// Balanced for CS2: tanky enough that a single player cannot solo it,
-    /// but a coordinated team of 5+ players can bring it down in a round.
-    /// Set to 0 to leave the Nemesis with its special-class default HP.
-    /// </summary>
+    /// <summary>HP assigned to the Nemesis at round start.</summary>
     public int NemesisHealth { get; set; } = 120000;
+
+    // ── Frost Ability (CS 1.6: amx_nemesis_ability) ───────────────────────
+    /// <summary>Enable Nemesis frost freeze ability (E key = freeze nearest human in crosshair).</summary>
+    public bool FrostAbilityEnabled { get; set; } = true;
+    /// <summary>Max uses of frost ability per round (CS 1.6 default: 35).</summary>
+    public int FrostMaxCharges { get; set; } = 35;
+    /// <summary>Max distance to freeze a human (units). CS 1.6 default: 650.</summary>
+    public float FrostRange { get; set; } = 650f;
+    /// <summary>Freeze duration in seconds. CS 1.6 default: 3.0.</summary>
+    public float FrostDuration { get; set; } = 3.0f;
+    /// <summary>Cooldown between frost uses in seconds. CS 1.6 default: 5.0.</summary>
+    public float FrostCooldown { get; set; } = 5.0f;
 }
 
 public class NormalInfectionModeConfig : GameModeConfig

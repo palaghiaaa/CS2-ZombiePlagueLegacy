@@ -99,7 +99,7 @@
     "WeaponsMenuNotEligible": "You are not eligible to use the weapon menu.",
     "WeaponsMenuAlreadyUsed": "You have already used the weapon selection menu this round!",
     "WeaponsMenuDisabledInMode": "The buy weapons menu is not available [red]in this game mode.",
-    "WeaponsMenuInfectionStarted": "Weapon selection is only available [red]before infection begins.",
+    "WeaponsMenuInfectionStarted": "Weapon selection is not available [red]in this mode/situation.",
 
     // ── Main Game Menu ─────────────────────────────────────────────────────
     "GameMenuTitle": "CS2 ZP Game Menu",
@@ -169,7 +169,8 @@
     "ExtraItemsJetpackRefueled": "Jetpack refueled to [green]{0}[default] units. Ammo Packs remaining: [green]{1}[default].",
 
     // ── Laser Mine ────────────────────────────────────────────────────────
-    "ExtraItemsLaserMineSuccess": "Laser mine menu opened! Select a mine type to place. Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsLaserMineSuccess": "Laser Mine planted! Ammo Packs remaining: [green]{0}[default].",
+    "ExtraItemsLaserMineFail": "[red]Could not place Laser Mine — aim at a surface and try again. AP refunded.[default]",
     "ItemSpecialRoleCantUse": "Special roles cannot use this item.",
 
     // ── Revive Token ──────────────────────────────────────────────────────
@@ -205,8 +206,8 @@
     "RoundStartAnnounce": "New round [green]begins[default]! | Your credits: [green]{0}[default] | Players connected: [green]{1}[default]",
 
     // ── Mine Menu ─────────────────────────────────────────────────────────
-    "MineMenuTitle": "Laser Tripmine",
-    "MineMenuSelectPrompt": "Select a mine type",
+    "MineMenuTitle": "Laser Mine",
+    "MineMenuSelectPrompt": "Place a Laser Mine (6 AP | Limit: 2)",
     "MineMenuEmpty": "No mines configured.",
     "FreeText": "Free",
     "LimitText": "∞",
@@ -235,6 +236,31 @@
     "AdminMenuMadeAssassinToAll": "Admin made player [green]{0}[default] an Assassin!",
     "AdminMenuMadeSurvivorToAll": "Admin made player [green]{0}[default] a Survivor!",
     "AdminMenuMadeSniperToAll": "Admin made player [green]{0}[default] a Sniper!",
-    "AdminMenuRespawnedToAll": "Admin respawned player [green]{0}[default]!"
+    "AdminMenuRespawnedToAll": "Admin respawned player [green]{0}[default]!",
+
+    // ── Zombie mutation HUD ────────────────────────────────────────────────
+    "YouHaveMutatedTo": "YOU HAVE MUTATED TO",
+    "YouAreMother": "YOU ARE THE MOTHER ZOMBIE",
+
+    // ── Progress bar characters (change these if they do not render on your server) ──
+    "BarCharFilled": "█",
+    "BarCharEmpty":  "░",
+
+    // ── Respawn ───────────────────────────────────────────────────────────────
+    "RespawnedAsZombie": "[red]You have been respawned as a [green]Zombie[red]!",
+
+    // ── Nemesis Frost Ability ────────────────────────────────────────────────
+    "NemesisFrostUsed": "[red]Frost used! [green]{0}[default] charges remaining.",
+    "NemesisFrostNoCharges": "[red]No frost charges remaining!",
+    "NemesisFrostCooldown": "[red]Frost ability cooling down... [green]{0}s[default] remaining.",
+    "NemesisFrozenByNemesis": "[blue]You have been [red]frozen[blue] by the Nemesis!",
+
+    // ── Parachute ────────────────────────────────────────────────────────────
+    "ExtraItemsAlreadyHave": "[red]You already have this item!",
+    "ParachuteActive": "[green]Parachute deployed! Hold [cyan]SPACE[green] to slow your fall.",
+    "ParachuteLanded": "[default]Parachute folded.",
+
+    // ── Active player reward ─────────────────────────────────────────────────
+    "ActivePlayerReward": "[green]+{0} AP[default] for being active on the server!"
 
 }

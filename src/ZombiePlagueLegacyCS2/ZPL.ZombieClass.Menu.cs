@@ -39,21 +39,21 @@ public class ZPLZombieClassMenu
     {
         if (!player.IsValid) return;
 
-        IMenuAPI menu = _menuhelper.CreateMenu(_helpers.T(player, "ZClassMenu"));
+        IMenuAPI menu = _menuhelper.CreateZombieClassMenu(_helpers.T(player, "ZClassMenu"));
 
         var Id = player.PlayerID;
         var steamId = player.SteamID;
         var currentPreference = _zombieState.GetPlayerPreference(Id, steamId);
 
-        menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(
-            _helpers.T(player, "ZClassMenuSelect"),
-            Color.Red, Color.LightBlue, Color.Red),
+        menu.AddOption(new TextMenuOption(
+            $"<span color=\"{ZPLMenuHelper.ColHint}\">{_helpers.T(player, "ZClassMenuSelect")}</span>",
             updateIntervalMs: 500, pauseIntervalMs: 100)
         {
             TextStyle = MenuOptionTextStyle.ScrollLeftLoop
         });
 
-        string randomButtonText = $"{_helpers.T(player, "ZClassMenuRandomSelect")} {(currentPreference?.Preference == ZombiePreference.Random ? "✓" : "")}";
+        bool randomSelected = currentPreference?.Preference == ZombiePreference.Random;
+        string randomButtonText = ZPLMenuHelper.ClassLabel(_helpers.T(player, "ZClassMenuRandomSelect"), randomSelected);
         var RandomButton = new ButtonMenuOption(randomButtonText)
         {
             TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
@@ -88,7 +88,9 @@ public class ZPLZombieClassMenu
         {
             foreach (var Cfg in zombieClasses)
             {
-                string buttonText = $"{Cfg.Name} {(currentPreference?.Preference == ZombiePreference.Fixed && currentPreference.FixedZombieName == Cfg.Name ? "✓" : "")}";
+                bool classSelected = currentPreference?.Preference == ZombiePreference.Fixed
+                    && currentPreference.FixedZombieName == Cfg.Name;
+                string buttonText = ZPLMenuHelper.ClassLabel(Cfg.Name, classSelected);
 
                 var Button = new ButtonMenuOption(buttonText)
                 {

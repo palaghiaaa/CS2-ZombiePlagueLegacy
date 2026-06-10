@@ -17,6 +17,12 @@ public class ZPLWeaponsCFG
     public bool GiveMenuOnRoundStart { get; set; } = true;
     /// <summary>When true, players can re-open weapon selection via the sw_buyweapons command (once per round).</summary>
     public bool AllowOpenFromGameMenu { get; set; } = true;
+
+    /// <summary>
+    /// When true, humans can open the weapons menu at any time during the round
+    /// (e.g. after using an Antidote or late-joining). Default true.
+    /// </summary>
+    public bool AllowWeaponsMenuDuringRound { get; set; } = true;
     /// <summary>Reserve ammo amount set on a weapon when given via the menu (default: 9999).</summary>
     public int ReserveAmmoAmount { get; set; } = 9999;
     /// <summary>Primary weapons available in the primary weapon menu.</summary>

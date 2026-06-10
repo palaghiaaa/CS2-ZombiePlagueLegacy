@@ -88,7 +88,9 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
         // ── Event hooks ───────────────────────────────────────────────────────
         Core.GameEvent.HookPre<EventPlayerDeath>(OnPlayerDeath);
         Core.GameEvent.HookPre<EventRoundEnd>(OnRoundEnd);
+#pragma warning disable CS0618 // IOnEntityTakeDamageEvent: deprecated by SwiftlyS2 1.4, migration pending
         Core.Event.OnEntityTakeDamage  += OnEntityTakeDamage;
+#pragma warning restore CS0618
         Core.Event.OnClientConnected   += OnClientConnected;
         Core.Event.OnClientDisconnected += OnClientDisconnected;
 
@@ -140,7 +142,9 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
         // event processing or memory leaks.
         Core.GameEvent.UnhookPre<EventPlayerDeath>();
         Core.GameEvent.UnhookPre<EventRoundEnd>();
+#pragma warning disable CS0618
         Core.Event.OnEntityTakeDamage   -= OnEntityTakeDamage;
+#pragma warning restore CS0618
         Core.Event.OnClientConnected    -= OnClientConnected;
         Core.Event.OnClientDisconnected -= OnClientDisconnected;
 
@@ -333,6 +337,7 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
     /// Accumulates damage dealt by any player to any other player.
     /// Both zombie-to-human and human-to-zombie damage is counted.
     /// </summary>
+#pragma warning disable CS0618
     private void OnEntityTakeDamage(IOnEntityTakeDamageEvent @event)
     {
         // Victim must be a valid player pawn.

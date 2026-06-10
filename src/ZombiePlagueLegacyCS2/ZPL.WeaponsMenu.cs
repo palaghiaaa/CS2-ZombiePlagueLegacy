@@ -37,16 +37,18 @@ public class ZPLWeaponsMenu
 
     private bool IsWeaponSelectionWindowOpen(IPlayer player, bool sendReason = false)
     {
+        // Before infection starts — always open
+        if (!_globals.InfectionStartedThisRound && !_globals.AdminForcedModeThisRound)
+            return true;
 
-        // Once infection/custom start begins, late selections are no longer allowed.
-        if (_globals.InfectionStartedThisRound || _globals.AdminForcedModeThisRound)
-        {
-            if (sendReason)
-                _helpers.SendChatT(player, "WeaponsMenuInfectionStarted");
-            return false;
-        }
+        // After infection — allow if config permits mid-round access for live humans
+        var CFG = _weaponsCFG.CurrentValue;
+        if (CFG.AllowWeaponsMenuDuringRound && IsEligibleHuman(player))
+            return true;
 
-        return true;
+        if (sendReason)
+            _helpers.SendChatT(player, "WeaponsMenuInfectionStarted");
+        return false;
     }
 
     public bool IsEligibleHuman(IPlayer player)
@@ -81,10 +83,21 @@ public class ZPLWeaponsMenu
         }
 
         var id = player.PlayerID;
-        if (!_globals.CanBuyWeaponsThisRound.TryGetValue(id, out bool canBuy) || !canBuy)
+
+        // During the pre-infection window, enforce one-use-per-round
+        // After infection starts, any eligible human may use the menu freely
+        if (!_globals.InfectionStartedThisRound && !_globals.AdminForcedModeThisRound)
         {
-            _helpers.SendChatT(player, "WeaponsMenuAlreadyUsed");
-            return;
+            if (!_globals.CanBuyWeaponsThisRound.TryGetValue(id, out bool canBuy) || !canBuy)
+            {
+                _helpers.SendChatT(player, "WeaponsMenuAlreadyUsed");
+                return;
+            }
+        }
+        else
+        {
+            // Mid-round: (re-)enable buy token so weapons are actually given
+            _globals.CanBuyWeaponsThisRound[id] = true;
         }
 
         ShowPrimaryMenu(player);
@@ -129,9 +142,8 @@ public class ZPLWeaponsMenu
 
         IMenuAPI menu = _menuHelper.CreateMenu(_helpers.T(player, "WeaponMenuPrimaryTitle"));
 
-        menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(
-            _helpers.T(player, "WeaponMenuPrimarySelect"),
-            Color.Red, Color.LightBlue, Color.Red),
+        menu.AddOption(new TextMenuOption(
+            $"<span color=\"{ZPLMenuHelper.ColHint}\">{_helpers.T(player, "WeaponMenuPrimarySelect")}</span>",
             updateIntervalMs: 500, pauseIntervalMs: 100)
         {
             TextStyle = MenuOptionTextStyle.ScrollLeftLoop
@@ -185,9 +197,8 @@ public class ZPLWeaponsMenu
 
         IMenuAPI menu = _menuHelper.CreateMenu(_helpers.T(player, "WeaponMenuSecondaryTitle"));
 
-        menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(
-            _helpers.T(player, "WeaponMenuSecondarySelect"),
-            Color.Red, Color.LightBlue, Color.Red),
+        menu.AddOption(new TextMenuOption(
+            $"<span color=\"{ZPLMenuHelper.ColHint}\">{_helpers.T(player, "WeaponMenuSecondarySelect")}</span>",
             updateIntervalMs: 500, pauseIntervalMs: 100)
         {
             TextStyle = MenuOptionTextStyle.ScrollLeftLoop

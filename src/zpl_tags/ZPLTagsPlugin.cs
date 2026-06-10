@@ -169,7 +169,6 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         // its own JIT compilation succeeds.
         if (!EnsureTagsBridgeConnected(interfaceManager))
         {
-            _logger?.LogInformation("[ZPLTags] Tags API not found – score tags will be applied directly; chat tags require cs2-tags.");
             if (_tagsApiProbeCts != null)
                 ScheduleTagsApiProbe(_tagsApiProbeCts.Token, 1);
         }
@@ -193,7 +192,6 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         }
         else
         {
-            _logger?.LogInformation("[ZPLTags] Admins API not found – group-based tag matching disabled (permission-only mode).");
         }
 
         // ── Cookies plugin (optional) ─────────────────────────────────────────

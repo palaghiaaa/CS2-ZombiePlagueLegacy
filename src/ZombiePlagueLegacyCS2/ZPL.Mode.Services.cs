@@ -519,6 +519,11 @@ public partial class ZPLServices
         var Id = player.PlayerID;
         _globals.IsNemesis[Id] = true;
 
+        // Initialize frost ability charges
+        var nemCfg = _mainCFG.CurrentValue.Nemesis;
+        _globals.NemesisFrostCharges[Id]  = nemCfg.FrostMaxCharges;
+        _globals.NemesisFrostCooldown[Id] = 0f;
+
         var configuredNemesisNames = GetConfiguredNemesisNames();
         var selectedNemesisName = _helpers.SelectConfiguredName(configuredNemesisNames);
         if (selectedNemesisName == null)
@@ -573,15 +578,15 @@ public partial class ZPLServices
             posszombie(player, zombieClass, true);
 
             // Apply configured HP from main config (overrides the special-class default).
-            var nemCfg = _mainCFG.CurrentValue.Nemesis;
-            if (nemCfg.NemesisHealth > 0)
+            var nemHpCfg = _mainCFG.CurrentValue.Nemesis;
+            if (nemHpCfg.NemesisHealth > 0)
             {
                 var pawn = player.PlayerPawn;
                 if (pawn != null && pawn.IsValid)
                 {
-                    pawn.MaxHealth = nemCfg.NemesisHealth;
+                    pawn.MaxHealth = nemHpCfg.NemesisHealth;
                     pawn.MaxHealthUpdated();
-                    pawn.Health = nemCfg.NemesisHealth;
+                    pawn.Health = nemHpCfg.NemesisHealth;
                     pawn.HealthUpdated();
                 }
             }
@@ -910,7 +915,7 @@ public partial class ZPLServices
         if (pawn == null || !pawn.IsValid)
             return;
 
-        player.SendMessage(MessageType.Center, _helpers.T(player, "GameModeBecomeHero"));
+        player.SendCenterHTML($"<b><span color=\"#FFD700\" class='fontSize-l'>{_helpers.T(player, "GameModeBecomeHero")}</span></b>", 3000);
         _helpers.SendChatToAllT("GameInfoBecomeHero", player.Name);
         var ws = pawn.WeaponServices;
         if (ws == null || !ws.IsValid)

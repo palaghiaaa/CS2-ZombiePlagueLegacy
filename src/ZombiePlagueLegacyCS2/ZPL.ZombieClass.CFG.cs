@@ -43,6 +43,28 @@ public class ZPLZombieClassCFG
         public string SwingSound { get; set; } = string.Empty;
     }
 
+    // ── Per-class special abilities ──────────────────────────────────────────
+    public class ZombieAbilities
+    {
+        /// <summary>HP given to the infector each time they infect a human. 0 = disabled.</summary>
+        public int InfectHealAmount { get; set; } = 0;
+
+        /// <summary>Extra mid-air jumps available to this zombie class. 0 = disabled.</summary>
+        public int ExtraJumps { get; set; } = 0;
+
+        /// <summary>
+        /// Glow color applied to this zombie for GlowDurationSeconds after infecting someone.
+        /// Format: "R,G,B,A"  e.g. "255,215,0,180". Empty = no glow-on-infect.
+        /// </summary>
+        public string InfectGlowColor { get; set; } = string.Empty;
+
+        /// <summary>How many seconds the infect-glow lasts. 0 = permanent until removed.</summary>
+        public float GlowDurationSeconds { get; set; } = 3.0f;
+
+        /// <summary>When true, this zombie class moves silently (no audible footsteps).</summary>
+        public bool SilentSteps { get; set; } = false;
+    }
+
     // 丧尸类定义（组合）
     public class ZombieClass
     {
@@ -53,6 +75,7 @@ public class ZPLZombieClassCFG
         public ZombieStats Stats { get; set; } = new();
         public ZombieModels Models { get; set; } = new();
         public ZombieSounds Sounds { get; set; } = new();
+        public ZombieAbilities Abilities { get; set; } = new();
     }
 
 }

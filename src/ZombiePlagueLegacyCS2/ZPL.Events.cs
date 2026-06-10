@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // IOnEntityTakeDamageEvent / IOnWeaponServicesCanUseHookEvent: deprecated by SwiftlyS2 1.4 — migration to GameHooks pending
 using System.Numerics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -38,11 +39,20 @@ public partial class ZPLEvents
 
     private readonly ZombiePlagueLegacyAPI _api;
     private readonly ZPLExtraItemsMenu _extraItemsMenu;
+
+    // ── FlashingHtmlHudFix ───────────────────────────────────────────────────
+    // Adapted from Ghost23161/FlashingHtmlHudFix (CSS) to SwiftlyS2.
+    // Prevents HUD flicker caused by GameRestart flag being out-of-sync
+    // with RestartRoundTime after Armory/AG2 CS2 updates.
+    private CCSGameRulesProxy? _gameRulesProxy;
+    private bool _hudFixRunThisTick;
+
     private readonly IOptionsMonitor<ZPLExtraItemsCFG> _extraItemsCFG;
     private readonly ZPLWeaponsMenu _weaponsMenu;
     private readonly AmmoPacksService _ammoPacks;
     private readonly ZPLMineService _mineService;
     private readonly IOptionsMonitor<ZPLMineCFG> _mineCFG;
+    private readonly ZPLClassAbilities _classAbilities;
 
     public ZPLEvents(ISwiftlyCore core, ILogger<ZPLEvents> logger
         , ZPLGlobals globals, ZPLServices services,
@@ -57,7 +67,8 @@ public partial class ZPLEvents
         ZPLWeaponsMenu weaponsMenu,
         AmmoPacksService ammoPacks,
         ZPLMineService mineService,
-        IOptionsMonitor<ZPLMineCFG> mineCFG)
+        IOptionsMonitor<ZPLMineCFG> mineCFG,
+        ZPLClassAbilities classAbilities)
     {
         _core = core;
         _logger = logger;
@@ -78,6 +89,7 @@ public partial class ZPLEvents
         _ammoPacks = ammoPacks;
         _mineService = mineService;
         _mineCFG = mineCFG;
+        _classAbilities = classAbilities;
     }
 
     public void HookEvents()
@@ -94,16 +106,21 @@ public partial class ZPLEvents
 
         _core.Event.OnClientDisconnected += Event_OnClientDisconnected;
         _core.Event.OnClientConnected += Event_OnClientConnected;
+#pragma warning disable CS0618 // IOnEntityTakeDamageEvent / IOnWeaponServicesCanUseHookEvent: deprecated by SwiftlyS2 1.4, migration pending
         _core.Event.OnEntityTakeDamage += Event_OnEntityTakeDamage;
         _core.Event.OnMapLoad += Event_OnMapLoad;
         _core.Event.OnMapUnload += Event_OnMapUnload;
         _core.Event.OnWeaponServicesCanUseHook += Event_OnWeaponServicesCanUseHook;
+#pragma warning restore CS0618
         _core.Event.OnPrecacheResource += Event_OnPrecacheResource;
         _core.Event.OnTick += Event_OnTickSpeed;
         _core.Event.OnTick += Event_OnTickNoRecoil;
         _core.Event.OnTick += Event_OnTickMultijump;
         _core.Event.OnTick += Event_OnTickJetpack;
         _core.Event.OnTick += Event_OnTickLeap;
+        _core.Event.OnTick += Event_OnTickNemesisFrost;
+        _core.Event.OnTick += Event_OnTickParachute;
+        _core.Event.OnTick += Event_OnTickHudFix;
 
         _core.GameEvent.HookPre<EventWeaponFire>(OnHumanWeaponFire);
 
@@ -119,6 +136,7 @@ public partial class ZPLEvents
 
         _core.GameEvent.HookPre<EventPlayerBlind>(OnPlayerBlind);
         _core.GameEvent.HookPre<EventFlashbangDetonate>(OnFlashbangDetonate);
+        _core.GameEvent.HookPre<EventPlayerFootstep>(OnPlayerFootstep);
 
         _core.GameEvent.HookPre<EventSmokegrenadeDetonate>(OnSmokegrenadeDetonate);
 
@@ -150,22 +168,28 @@ public partial class ZPLEvents
         _core.GameEvent.UnhookPre<EventHegrenadeDetonate>();
         _core.GameEvent.UnhookPre<EventPlayerBlind>();
         _core.GameEvent.UnhookPre<EventFlashbangDetonate>();
+        _core.GameEvent.UnhookPre<EventPlayerFootstep>();
         _core.GameEvent.UnhookPre<EventSmokegrenadeDetonate>();
         _core.GameEvent.UnhookPre<EventDecoyFiring>();
 
         // Remove C# multicast delegate subscriptions from HookEvents.
         _core.Event.OnClientDisconnected         -= Event_OnClientDisconnected;
         _core.Event.OnClientConnected            -= Event_OnClientConnected;
+#pragma warning disable CS0618
         _core.Event.OnEntityTakeDamage           -= Event_OnEntityTakeDamage;
         _core.Event.OnMapLoad                    -= Event_OnMapLoad;
         _core.Event.OnMapUnload                  -= Event_OnMapUnload;
         _core.Event.OnWeaponServicesCanUseHook   -= Event_OnWeaponServicesCanUseHook;
+#pragma warning restore CS0618
         _core.Event.OnPrecacheResource           -= Event_OnPrecacheResource;
         _core.Event.OnTick                       -= Event_OnTickSpeed;
         _core.Event.OnTick                       -= Event_OnTickNoRecoil;
         _core.Event.OnTick                       -= Event_OnTickMultijump;
         _core.Event.OnTick                       -= Event_OnTickJetpack;
         _core.Event.OnTick                       -= Event_OnTickLeap;
+        _core.Event.OnTick                       -= Event_OnTickNemesisFrost;
+        _core.Event.OnTick                       -= Event_OnTickParachute;
+        _core.Event.OnTick                       -= Event_OnTickHudFix;
         _core.Event.OnEntityCreated              -= Event_OnEntityCreated;
     }
 
@@ -245,7 +269,9 @@ public partial class ZPLEvents
             {
                 _globals.g_hCountdown?.Cancel();
                 _globals.g_hCountdown = null;
-                _helpers.SendCenterToAllT("ServerGameWaitingForPlayers");
+                _helpers.SendCenterHTMLLocalizedToAll(p =>
+                    $"<b><span color='#AAAAAA'>{_helpers.T(p, "ServerGameWaitingForPlayers")}</span></b>",
+                    duration: 1100);
                 return HookResult.Continue;
             }
 
@@ -334,6 +360,7 @@ public partial class ZPLEvents
         {
             _service.GlobalIdleTimer();
             _service.ZombieRegenTimer();
+            _service.StartActivePlayerRewardTimer();
             _service.StartAssassinInvisibilityTimer(configDist);
         });
 
@@ -362,9 +389,13 @@ public partial class ZPLEvents
         // Show winner center message based on event winner team
         int winner = @event.Winner;
         if (winner == (int)Team.CT)
-            _helpers.SendCenterToAllT("ServerGameHumanWin");
+            _helpers.SendCenterHTMLLocalizedToAll(p =>
+                $"<b><span color='#00FF7F' class='fontSize-xl'>{_helpers.T(p, "ServerGameHumanWin")}</span></b>",
+                duration: 4000);
         else if (winner == (int)Team.T)
-            _helpers.SendCenterToAllT("ServerGameZombieWin");
+            _helpers.SendCenterHTMLLocalizedToAll(p =>
+                $"<b><span color='#FF3030' class='fontSize-xl'>{_helpers.T(p, "ServerGameZombieWin")}</span></b>",
+                duration: 4000);
         
         _helpers.ClearAllBurns();
         _helpers.ClearAllLights();
@@ -395,36 +426,40 @@ public partial class ZPLEvents
                 _globals.IsNemesis[id] = false;
                 _globals.IsHero[id] = false;
 
-                _globals.ScbaSuit[id] = false;
                 _globals.GodState[id] = false;
                 _globals.InfiniteAmmoState[id] = false;
 
-                // Extra items: reset per-round state
-                _globals.ExtraJumps.Remove(id);
-                _globals.JumpsUsed.Remove(id);
-                _globals.KnifeBlinkCharges.Remove(id);
-                _globals.KnifeBlinkCooldownEnd.Remove(id);
-                _globals.ZombieMadnessActive.Remove(id);
-                _globals.PrevJumpPressed.Remove(id);
-                _globals.PrevOnGround.Remove(id);
-                _globals.DamageAccumulator.Remove(id);
-                _globals.InfiniteClipState.Remove(id);
-                _globals.ExtraNoRecoilState.Remove(id);
-                _globals.TryderState.Remove(id);
+                // ── Per-round resets (consumables / temporary) ──────────────────
+                // These do NOT persist between rounds (consumed on use or round-specific)
+                _globals.ZombieMadnessActive.Remove(id);  // 10s invuln — expires each round
+                _globals.HasReviveToken.Remove(id);        // consumed on death
+                _globals.ScbaSuit[id] = false;             // consumed on infection
                 _globals.SpawnProtectionEndTime.Remove(id);
                 _globals.LeapCooldownEnd.Remove(id);
-                _globals.ItemPurchaseCount.Remove(id);
-                // Jetpack / Revive Token
-                _extraItemsMenu.CleanupJetpack(id);
-                _globals.HasReviveToken.Remove(id);
+                _globals.ItemPurchaseCount.Remove(id);     // per-round purchase limits
+                _globals.DamageAccumulator.Remove(id);
+                _globals.PrevJumpPressed.Remove(id);
+                _globals.PrevOnGround.Remove(id);
+                _globals.JumpsUsed.Remove(id);
+                _globals.KnifeBlinkCooldownEnd.Remove(id);
+
+                // ── Persistent items (kept between rounds — CS 1.6 behaviour) ─────
+                // Multijump: keep the purchased jump count (already stored in ExtraJumps)
+                // JumpsUsed already cleared above — ExtraJumps count carries over unchanged
+                // Knife Blink: restore charges if player owns blink
+                if (_globals.KnifeBlinkCharges.ContainsKey(id))
+                    _globals.KnifeBlinkCharges[id] = _extraItemsCFG.CurrentValue.KnifeBlinkCharges;
+                // Jetpack: keep ownership, refill fuel
+                if (_globals.HasJetpack.TryGetValue(id, out bool hasJp) && hasJp)
+                    _globals.JetpackFuel[id] = _extraItemsCFG.CurrentValue.JetpackMaxFuel;
+                // InfiniteClip, NoRecoil, Tryder, Parachute — ownership persists, no reset needed
                 if (!wasZombie && player.Controller != null && player.Controller.IsValid && player.Controller.PawnIsAlive)
                 {
                     int reward = _extraItemsCFG.CurrentValue.RoundSurviveReward;
                     if (reward > 0)
                     {
                         _extraItemsMenu.AddAmmoPacks(id, reward);
-                        _helpers.SendCenterT(player, "APRoundSurviveReward", reward,
-                            _extraItemsMenu.GetAmmoPacks(id));
+                        player.SendCenterHTML($"<b><span color='#FFD700'>{_helpers.T(player, "APRoundSurviveReward", reward, _extraItemsMenu.GetAmmoPacks(id))}</span></b>", 2500);
                     }
                 }
 
@@ -689,6 +724,28 @@ public partial class ZPLEvents
                     currentPawn.ActualGravityScale = CFG.HumanInitialGravity;
 
                     _service.GiveSpawnGrenade(player, CFG);
+
+                    // ── Re-apply persistent extra items on new pawn ──────────────
+                    var extraCFG = _extraItemsCFG.CurrentValue;
+
+                    // Tryder: restore HP bonus + armor
+                    if (_globals.TryderState.TryGetValue(Id, out bool hasTryder) && hasTryder)
+                    {
+                        currentPawn.MaxHealth = CFG.HumanMaxHealth + extraCFG.TryderHealth;
+                        currentPawn.MaxHealthUpdated();
+                        currentPawn.Health = CFG.HumanMaxHealth + extraCFG.TryderHealth;
+                        currentPawn.HealthUpdated();
+                        currentPawn.ArmorValue = extraCFG.TryderArmor;
+                        currentPawn.ArmorValueUpdated();
+                        _helpers.SetGlow(player,
+                            extraCFG.TryderGlowR, extraCFG.TryderGlowG, extraCFG.TryderGlowB, 200);
+                    }
+
+                    // InfiniteClip / NoRecoil: flags are re-checked per-shot in tick handlers
+                    // — no pawn action needed, the dict flags survive round transition.
+
+                    // Jetpack: fuel was refilled at round-end, ownership in HasJetpack persists.
+                    // No pawn action needed — thrust tick checks HasJetpack dict.
                 });
 
                 
@@ -738,6 +795,8 @@ public partial class ZPLEvents
 
         // Extra items: reset per-death state for the victim
         _globals.ExtraJumps.Remove(Id);
+        // Class abilities cleanup
+        _classAbilities.ClearPlayer(Id);
         _globals.JumpsUsed.Remove(Id);
         _globals.KnifeBlinkCharges.Remove(Id);
         _globals.KnifeBlinkCooldownEnd.Remove(Id);
@@ -746,8 +805,17 @@ public partial class ZPLEvents
         _globals.InfiniteClipState.Remove(Id);
         _globals.ExtraNoRecoilState.Remove(Id);
         _globals.TryderState.Remove(Id);
-        // Jetpack and mines cleanup on death
+        // Jetpack, parachute and mines cleanup on death
         _extraItemsMenu.CleanupJetpack(Id);
+        if (_globals.HasParachute.Remove(Id))
+        {
+            // Restore gravity in case player dies while parachuting
+            var deathPawn = player.PlayerPawn;
+            if (deathPawn != null && deathPawn.IsValid && deathPawn.ActualGravityScale == 0f)
+                deathPawn.ActualGravityScale = 1.0f;
+        }
+        _globals.NemesisFrostCharges.Remove(Id);
+        _globals.NemesisFrostCooldown.Remove(Id);
         _mineService.CleanupMinesForPlayer(steamId);
         // (HasReviveToken is intentionally kept here – handled below)
 
@@ -769,24 +837,21 @@ public partial class ZPLEvents
                     if (reward > 0)
                     {
                         _extraItemsMenu.AddAmmoPacks(aId, reward);
-                        _helpers.SendCenterT(attacker, "APZombieKillReward", reward,
-                            _extraItemsMenu.GetAmmoPacks(aId));
+                        attacker.SendCenterHTML($"<b><span color='#FF8C00'>{_helpers.T(attacker, "APZombieKillReward", reward, _extraItemsMenu.GetAmmoPacks(aId))}</span></b>", 2500);
                     }
                 }
             }
         }
 
         _globals.IsZombie.TryGetValue(Id, out bool IsZombie);
+        float respawnDelay = _gameMode.GetRespawnDelay();
         if (IsZombie && _gameMode.CanZombieReborn())
         {
 
             var zombieClasses = _zombieClassCFG.CurrentValue.ZombieClassList;
             var specialClasses = _SpecialClassCFG.CurrentValue.SpecialClassList;
-            _core.Scheduler.DelayBySeconds(1.0f, () =>
+            _core.Scheduler.DelayBySeconds(respawnDelay, () =>
             {
-                // Don't respawn if the round has already ended (e.g. win condition
-                // triggered immediately after the kill). Calling Respawn() during a
-                // round transition can crash the server.
                 if (!_globals.GameStart) return;
                 var p = _core.PlayerManager.GetPlayer(Id);
                 if (p == null || !p.IsValid) return;
@@ -843,14 +908,29 @@ public partial class ZPLEvents
             }
             // ── End Revive Token ────────────────────────────────────────────
 
+            // ── Human auto-respawn (CS 1.6: zp_respawn_humans) ──────────────
+            if (_gameMode.CanHumanReborn())
+            {
+                _core.Scheduler.DelayBySeconds(respawnDelay, () =>
+                {
+                    var p = _core.PlayerManager.GetPlayer(Id);
+                    if (p == null || !p.IsValid || !_globals.GameStart) return;
+                    // Respawn as zombie (infection has started — can't be human again)
+                    var zombieClasses = _zombieClassCFG.CurrentValue.ZombieClassList;
+                    var specialClasses = _SpecialClassCFG.CurrentValue.SpecialClassList;
+                    _zombieState.ClearSpecialAndSetPlayerZombie(p, zombieClasses, specialClasses);
+                    p.Respawn();
+                    _helpers.SendChatT(p, "RespawnedAsZombie");
+                });
+                return HookResult.Continue;
+            }
+
             _core.Scheduler.DelayBySeconds(1.0f, () =>
             {
                 var player = _core.PlayerManager.GetPlayer(Id);
                 if (player == null || !player.IsValid)
                     return;
 
-                // Don't respawn if the round has already ended. Calling Respawn()
-                // during a round transition can crash the server.
                 if (!_globals.GameStart) return;
 
                 player.Respawn();
@@ -970,8 +1050,7 @@ public partial class ZPLEvents
                     accumulated -= packs * threshold;
                     int totalReward = packs * rewardPerThreshold;
                     _extraItemsMenu.AddAmmoPacks(aId, totalReward);
-                    _helpers.SendCenterT(attacker, "APHumanDamageReward", totalReward,
-                        _extraItemsMenu.GetAmmoPacks(aId));
+                    attacker.SendCenterHTML($"<b><span color='#FF8C00'>{_helpers.T(attacker, "APHumanDamageReward", totalReward, _extraItemsMenu.GetAmmoPacks(aId))}</span></b>", 2500);
                 }
                 _globals.DamageAccumulator[aId] = accumulated;
             }
@@ -1009,6 +1088,7 @@ public partial class ZPLEvents
 
     }
 
+#pragma warning disable CS0618
     public void Event_OnWeaponServicesCanUseHook(IOnWeaponServicesCanUseHookEvent @event)
     {
         var weapon = @event.Weapon;
@@ -1080,6 +1160,8 @@ public partial class ZPLEvents
         // Reset the cached fog controller so a fresh entity is always created on every
         // map load instead of accidentally reusing a stale handle from the previous map.
         _globals.GlobalFogController = default;
+        _helpers.ResetBarCharCache();
+        _gameRulesProxy = null; // invalidate cached GameRulesProxy on map change
 
         // Apply fog and skybox after a world tick so entities are fully ready.
         _core.Scheduler.NextWorldUpdate(() =>
@@ -1181,6 +1263,10 @@ public partial class ZPLEvents
         _globals.CanBuyWeaponsThisRound.Clear();
         _globals.DamageAccumulator.Clear();
         _globals.ExtraJumps.Clear();
+        _globals.HasParachute.Clear();
+        _globals.NemesisFrostCharges.Clear();
+        _globals.NemesisFrostCooldown.Clear();
+        _classAbilities.ClearAll();
         _globals.JumpsUsed.Clear();
         _globals.KnifeBlinkCharges.Clear();
         _globals.KnifeBlinkCooldownEnd.Clear();
@@ -1304,6 +1390,15 @@ public partial class ZPLEvents
 
     private void Event_OnEntityTakeDamage(IOnEntityTakeDamageEvent @event)
     {
+        // ── No fall damage — same as CS 1.6 Zombie Plague ──────────────────────
+        const DamageTypes_t DMG_FALL = (DamageTypes_t)32;
+        if ((@event.Info.DamageType & DMG_FALL) != 0)
+        {
+            @event.Info.Damage = 0f;
+            @event.Result = HookResult.Stop;
+            return;
+        }
+
         if (!TryBuildDamageContext(@event, out var context))
             return;
 
@@ -1504,6 +1599,7 @@ public partial class ZPLEvents
         _globals.SpawnProtectionEndTime.Remove(id);
         _globals.LeapCooldownEnd.Remove(id);
         _globals.PrevOnGround.Remove(id);
+        _classAbilities.ClearPlayer(id);
 
         // Remove the player's local AP balance cache entry.
         _ammoPacks.RemovePlayer(id);
@@ -1661,9 +1757,6 @@ public partial class ZPLEvents
                 continue;
 
             int id = player.PlayerID;
-            _globals.IsZombie.TryGetValue(id, out bool isZombie);
-            if (isZombie) continue;
-
             _globals.ExtraJumps.TryGetValue(id, out int extraJumps);
             if (extraJumps <= 0)
                 continue;
@@ -1685,10 +1778,21 @@ public partial class ZPLEvents
             if (!jumpPressed || prevJumpPressed)
                 continue;
 
-            // Only grant extra jump when player is airborne (not on ground)
+            // Restore jumps when player lands
             bool onGround = pawn.GroundEntity.IsValid;
             if (onGround)
+            {
+                // Re-read max jumps from class ability config for zombies
+                _globals.IsZombie.TryGetValue(id, out bool isZombieForReset);
+                if (isZombieForReset)
+                {
+                    var cfg = _zombieClassCFG.CurrentValue;
+                    var zclass = _zombieState.GetZombieClass(id, cfg.ZombieClassList);
+                    int maxJumps = zclass?.Abilities.ExtraJumps ?? 0;
+                    if (maxJumps > 0) _globals.ExtraJumps[id] = maxJumps;
+                }
                 continue;
+            }
 
             // Consume one extra jump and apply upward impulse
             _globals.ExtraJumps[id] = extraJumps - 1;
@@ -1699,6 +1803,9 @@ public partial class ZPLEvents
 
     private void Event_OnTickJetpack()
     {
+        var jetpackCFG = _extraItemsCFG.CurrentValue;
+        float rechargeTime = jetpackCFG.JetpackRechargeTime;
+
         foreach (var player in _core.PlayerManager.GetAlive())
         {
             if (!player.IsValid) continue;
@@ -1710,6 +1817,232 @@ public partial class ZPLEvents
             if (isZombie) continue;
 
             _extraItemsMenu.TryExecuteJetpackThrust(player);
+
+            // ── Auto-recharge when not thrusting ─────────────────────────────
+            if (rechargeTime <= 0f) continue;
+
+            _globals.JetpackFuel.TryGetValue(id, out float fuel);
+            float maxFuel = jetpackCFG.JetpackMaxFuel;
+            if (fuel >= maxFuel) continue;
+
+            float now        = _core.Engine.GlobalVars.CurrentTime;
+            float lastThrust = _globals.JetpackLastThrustTime.TryGetValue(id, out float lt) ? lt : 0f;
+
+            // Only recharge if not currently thrusting
+            // (lastThrustTime is updated every thrust tick, so if it's recent = still flying)
+            if (now - lastThrust < 0.15f) continue;
+
+            // Recharge rate = maxFuel / rechargeTime units per second
+            // Tick runs at ~64Hz so dt ≈ 0.015s
+            float rechargeRate = maxFuel / rechargeTime;
+            float dt           = 1f / 64f;   // safe constant tick rate
+            float newFuel      = Math.Min(maxFuel, fuel + rechargeRate * dt);
+            _globals.JetpackFuel[id] = newFuel;
+
+            // ── Recharge HUD — show every ~0.5s to avoid spam ────────────────
+            // Use lastThrust as a proxy: show HUD on ticks where int(now*2) changes
+            if ((int)(now * 2f) % 32 == 0)
+            {
+                float fuelPct   = Math.Clamp(newFuel / maxFuel, 0f, 1f);
+                float remaining = rechargeTime * (1f - fuelPct);
+                string fuelColor = "#FFD700"; // gold during recharge
+                string bar = _helpers.BuildProgressBar(fuelPct, 10, fuelColor, "#666666", player);
+                player.SendCenterHTML(
+                    $"<b><span color='#AAAAAA' class='fontSize-m'>JETPACK FUEL</span></b><br>"
+                    + bar
+                    + $" <span color='{fuelColor}'><b>{(int)(fuelPct * 100)}%</b></span><br>"
+                    + $"<span color='#FF3030'><b>RECHARGING... {remaining:F0}s</b></span>",
+                    600);
+            }
+        }
+    }
+
+    private void Event_OnTickHudFix()
+    {
+        // Alternate ticks — runs every other tick to reduce overhead
+        _hudFixRunThisTick = !_hudFixRunThisTick;
+        if (!_hudFixRunThisTick) return;
+
+        // Get (and cache) the CCSGameRulesProxy entity
+        if (_gameRulesProxy == null || !_gameRulesProxy.IsValid || !_gameRulesProxy.IsValidEntity)
+        {
+            _gameRulesProxy = _core.EntitySystem
+                .GetAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules")
+                .FirstOrDefault();
+        }
+        if (_gameRulesProxy == null || !_gameRulesProxy.IsValid) return;
+
+        var gameRules = _gameRulesProxy.GameRules;
+        if (gameRules == null) return;
+        if (gameRules.WarmupPeriod) return; // no fix needed during warmup
+
+        float currentTime   = _core.Engine.GlobalVars.CurrentTime;
+        float restartTime   = gameRules.RestartRoundTime.Value;
+        bool  expectedState = restartTime < currentTime;
+
+        // Only write when out-of-sync to avoid unnecessary schema churn
+        if (gameRules.GameRestart != expectedState)
+        {
+            gameRules.GameRestart = expectedState;
+            gameRules.GameRestartUpdated();
+        }
+    }
+
+    private void Event_OnTickParachute()
+    {
+        if (!_globals.GameStart) return;
+        if (_globals.HasParachute.Count == 0) return;
+
+        var extraCfg = _extraItemsCFG.CurrentValue;
+        float maxFallSpeed = extraCfg.ParachuteFallSpeed; // max downward speed (positive u/s)
+
+        foreach (var player in _core.PlayerManager.GetAlive())
+        {
+            if (!player.IsValid || player.IsFakeClient) continue;
+
+            int id = player.PlayerID;
+            if (!_globals.HasParachute.Contains(id)) continue;
+
+            _globals.IsZombie.TryGetValue(id, out bool isZombie);
+            if (isZombie) continue;
+
+            var pawn = player.PlayerPawn;
+            if (pawn == null || !pawn.IsValid) continue;
+
+            bool onGround = pawn.GroundEntity.IsValid;
+            bool eHeld    = (player.PressedButtons & GameButtonFlags.E) != 0;
+
+            // Restore gravity when on ground or E released
+            if (onGround || !eHeld)
+            {
+                if (pawn.ActualGravityScale == 0f)
+                {
+                    pawn.ActualGravityScale = 1.0f;
+                }
+                continue;
+            }
+
+            // E held while airborne — parachute active
+            // Kill gravity so engine stops accelerating downward
+            if (pawn.ActualGravityScale != 0f)
+            {
+                pawn.ActualGravityScale = 0f;
+            }
+
+            // Clamp downward velocity to maxFallSpeed
+            var vel = pawn.AbsVelocity;
+            if (vel.Z < -maxFallSpeed)
+                pawn.Teleport(null, null,
+                    new SwiftlyS2.Shared.Natives.Vector(vel.X, vel.Y, -maxFallSpeed));
+        }
+    }
+
+    private void Event_OnTickNemesisFrost()
+    {
+        if (!_globals.GameStart) return;
+
+        var nemCfg = _mainCFG.CurrentValue.Nemesis;
+        if (!nemCfg.FrostAbilityEnabled) return;
+
+        foreach (var player in _core.PlayerManager.GetAlive())
+        {
+            if (!player.IsValid || player.IsFakeClient) continue;
+
+            int id = player.PlayerID;
+            _globals.IsNemesis.TryGetValue(id, out bool isNemesis);
+            if (!isNemesis) continue;
+
+            // E key triggers frost
+            bool ePressed  = (player.PressedButtons & GameButtonFlags.E) != 0;
+            _globals.PrevJumpPressed.TryGetValue(id + 10000, out bool prevE);
+            _globals.PrevJumpPressed[id + 10000] = ePressed;
+            if (!ePressed || prevE) continue; // rising edge only
+
+            // Check charges
+            _globals.NemesisFrostCharges.TryGetValue(id, out int charges);
+            if (charges <= 0)
+            {
+                player.SendCenterHTML(
+                    "<span color='#00CFFF' class='fontSize-l'><b>❄ FROST</b></span><br>" +
+                    _helpers.BuildProgressBar(0f, 10, "#666666", "#666666", player) +
+                    " <span color='#FF3030'><b>NO CHARGES</b></span>", 2000);
+                continue;
+            }
+
+            // Check cooldown
+            float now = _core.Engine.GlobalVars.CurrentTime;
+            _globals.NemesisFrostCooldown.TryGetValue(id, out float nextUse);
+            if (now < nextUse)
+            {
+                float wait = nextUse - now;
+                float cdPct = 1f - Math.Clamp(wait / nemCfg.FrostCooldown, 0f, 1f);
+                player.SendCenterHTML(
+                    "<span color='#00CFFF' class='fontSize-l'><b>❄ FROST</b></span><br>" +
+                    _helpers.BuildProgressBar(cdPct, 10, "#00CFFF", "#666666", player) +
+                    $" <span color='#FFD700'><b>COOLDOWN {wait:F1}s</b></span>", 500);
+                continue;
+            }
+
+            // Find nearest human in range
+            var pawn = player.PlayerPawn;
+            if (pawn == null || !pawn.IsValid) continue;
+            var origin = pawn.AbsOrigin;
+            if (origin == null) continue;
+
+            IPlayer? target = null;
+            float closestDist = nemCfg.FrostRange;
+
+            foreach (var other in _core.PlayerManager.GetAlive())
+            {
+                if (!other.IsValid || other.IsFakeClient) continue;
+                int oid = other.PlayerID;
+                _globals.IsZombie.TryGetValue(oid, out bool otherIsZombie);
+                if (otherIsZombie) continue; // skip zombies
+
+                var oPawn = other.PlayerPawn;
+                if (oPawn == null || !oPawn.IsValid) continue;
+                var oPos = oPawn.AbsOrigin;
+                if (oPos == null) continue;
+
+                float dx = oPos.Value.X - origin.Value.X;
+                float dy = oPos.Value.Y - origin.Value.Y;
+                float dz = oPos.Value.Z - origin.Value.Z;
+                float dist = MathF.Sqrt(dx*dx + dy*dy + dz*dz);
+
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    target = other;
+                }
+            }
+
+            if (target == null) continue;
+
+            // Apply frost
+            int chargesLeft = charges - 1;
+            _globals.NemesisFrostCharges[id] = chargesLeft;
+            _globals.NemesisFrostCooldown[id] = now + nemCfg.FrostCooldown;
+
+            _helpers.SetZombieFreezeOrStun(target, nemCfg.FrostDuration);
+
+            // ── Frost HUD for Nemesis ─────────────────────────────────────────
+            float chargesPct = nemCfg.FrostMaxCharges > 0
+                ? Math.Clamp((float)chargesLeft / nemCfg.FrostMaxCharges, 0f, 1f)
+                : 0f;
+            string chargesBar = _helpers.BuildProgressBar(chargesPct, 10, "#00CFFF", "#666666", player);
+            string frozenName  = target.Name;
+            player.SendCenterHTML(
+                $"<span color='#00CFFF' class='fontSize-l'><b>❄ FROST</b></span>" +
+                $" <span color='#AAAAAA'>→</span> <span color='#FFFFFF'>{frozenName}</span><br>" +
+                chargesBar +
+                $" <span color='#00CFFF'><b>{chargesLeft}/{nemCfg.FrostMaxCharges}</b></span>",
+                2500);
+
+            // Chat notifications
+            player.SendMessage(MessageType.Chat,
+                _core.Translation.GetPlayerLocalizer(player)["NemesisFrostUsed", chargesLeft]);
+            target.SendMessage(MessageType.Chat,
+                _core.Translation.GetPlayerLocalizer(target)["NemesisFrozenByNemesis"]);
         }
     }
 
@@ -2175,6 +2508,28 @@ public partial class ZPLEvents
             }
 
         }
+        return HookResult.Continue;
+    }
+
+    /// <summary>
+    /// Suppresses the player_footstep event for zombie classes with SilentSteps=true (Hunter).
+    /// Returns HookResult.Stop to prevent the footstep sound from broadcasting to other players.
+    /// </summary>
+    private HookResult OnPlayerFootstep(EventPlayerFootstep @event)
+    {
+        var player = @event.UserIdPlayer;
+        if (player == null || !player.IsValid || player.IsFakeClient)
+            return HookResult.Continue;
+
+        int id = player.PlayerID;
+        _globals.IsZombie.TryGetValue(id, out bool isZombie);
+        if (!isZombie)
+            return HookResult.Continue;
+
+        // Stop footstep sound for silent-step zombie classes
+        if (_globals.SilentStepsActive.Contains(id))
+            return HookResult.Stop;
+
         return HookResult.Continue;
     }
 

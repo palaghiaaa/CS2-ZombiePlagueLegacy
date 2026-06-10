@@ -139,6 +139,30 @@ public class ZPLGameMode
         };
     }
 
+    public bool CanHumanReborn()
+    {
+        var mode = CurrentMode;
+        var config = _mainCFG.CurrentValue;
+
+        return mode switch
+        {
+            GameModeType.Normal           => config.NormalInfection.HumanCanReborn,
+            GameModeType.NormalInfection  => config.NormalInfection.HumanCanReborn,
+            GameModeType.MultiInfection   => config.MultiInfection.HumanCanReborn,
+            GameModeType.Swarm            => config.Swarm.HumanCanReborn,
+            GameModeType.Plague           => config.Plague.HumanCanReborn,
+            GameModeType.Hero             => config.Hero.HumanCanReborn,
+            // Special modes: humans should NOT respawn (would break win conditions)
+            _ => false
+        };
+    }
+
+    public float GetRespawnDelay()
+    {
+        var config = _mainCFG.CurrentValue;
+        return config.NormalInfection.RespawnDelay;
+    }
+
     public bool CanZombieReborn()
     {
         var mode = CurrentMode;

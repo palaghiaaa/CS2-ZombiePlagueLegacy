@@ -56,6 +56,7 @@ public class ZPLGlobals
     public Dictionary<int, ZombieRegenState> g_ZombieRegenStates = new();
 
     public CancellationTokenSource? g_ZombieRegenTimer = null;
+    public CancellationTokenSource? g_ActivePlayerRewardTimer = null;
 
     public CancellationTokenSource? g_hAmbMusic { get; set; } = null;
 
@@ -75,6 +76,35 @@ public class ZPLGlobals
     public readonly Dictionary<SpawnType, List<SpawnPointData>> spawnCache= new();
 
     public Dictionary<int, float> StopZombieTimers = new();
+
+    /// <summary>
+    /// Active freeze particle handles per zombie PlayerID.
+    /// Killed and removed when the freeze wears off or is cleared manually.
+    /// </summary>
+    public Dictionary<int, List<CHandle<CParticleSystem>>> FreezeParticles = new();
+
+    /// <summary>
+    /// Active freeze beam ring handles per zombie PlayerID (3 rings × 16 segments each).
+    /// Killed by KillFreezeParticles when the freeze ends.
+    /// </summary>
+    public Dictionary<int, List<List<CHandle<CBeam>>>> FreezeBeamHandles = new();
+
+    /// <summary>
+    /// Tracks which zombie players currently have silent steps active.
+    /// Set on posszombie for classes with SilentSteps=true, cleared on death/disconnect.
+    /// </summary>
+    public HashSet<int> SilentStepsActive = new();
+
+    /// <summary>Pending infect-glow removal timers: playerID → CancellationTokenSource.</summary>
+    public Dictionary<int, CancellationTokenSource> InfectGlowTimers = new();
+
+    /// <summary>Nemesis frost charges remaining per player. Reset on round start.</summary>
+    public Dictionary<int, int> NemesisFrostCharges = new();
+    /// <summary>Next allowed frost use time (CurrentTime) per player.</summary>
+    public Dictionary<int, float> NemesisFrostCooldown = new();
+
+    /// <summary>Tracks which human players currently own a parachute.</summary>
+    public HashSet<int> HasParachute = new();
 
     public Dictionary<int, bool> ScbaSuit = new Dictionary<int, bool>();
     public Dictionary<int, bool> GodState = new Dictionary<int, bool>();
@@ -147,6 +177,8 @@ public class ZPLGlobals
     public Dictionary<int, float> JetpackFuel = new Dictionary<int, float>();
     /// <summary>Server time (CurrentTime) at which fuel was last consumed.</summary>
     public Dictionary<int, float> JetpackLastFuelTime = new Dictionary<int, float>();
+    /// <summary>Server time at which the player last actively used thrust. Used for recharge delay.</summary>
+    public Dictionary<int, float> JetpackLastThrustTime = new Dictionary<int, float>();
 
     // ── Laser Trip Mines (HLT-style) ──────────────────────────────────────────
     /// <summary>Per-mine think (RepeatBySeconds) cancellation tokens, keyed by entity handle Raw.</summary>

@@ -68,9 +68,8 @@ public class ZPLGameMenu
 
         IMenuAPI menu = _menuHelper.CreateMenu(_helpers.T(player, "GameMenuTitle"));
 
-        menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(
-            _helpers.T(player, "GameMenuHint"),
-            DrawingColor.LightGreen, DrawingColor.Cyan, DrawingColor.LightGreen),
+        menu.AddOption(new TextMenuOption(
+            $"<span color=\"{ZPLMenuHelper.ColHint}\">{_helpers.T(player, "GameMenuHint")}</span>",
             updateIntervalMs: 600, pauseIntervalMs: 100)
         {
             TextStyle = MenuOptionTextStyle.ScrollLeftLoop

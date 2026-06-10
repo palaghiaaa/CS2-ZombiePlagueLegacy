@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SwiftlyS2.Shared.Events;
+#pragma warning disable CS0618 // IOnEntityTakeDamageEvent: deprecated by SwiftlyS2 1.4, migration pending
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.SchemaDefinitions;

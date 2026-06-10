@@ -992,10 +992,12 @@ public partial class ZPLHelpers
 
         var Id = player.PlayerID;
 
-        // 合并时间：取最大值
+        // If a longer freeze is already active, do NOT reset/extend it with a shorter stun.
+        // This prevents bullet stuns (0.1s) from continuously refreshing a grenade freeze (3s).
         if (_globals.StopZombieTimers.TryGetValue(Id, out var existing))
         {
-            duration = Math.Max(duration, existing);
+            if (existing > duration)
+                return; // already frozen longer — ignore this shorter stun entirely
         }
 
         _globals.StopZombieTimers[Id] = duration;
@@ -1008,11 +1010,21 @@ public partial class ZPLHelpers
         if (!string.IsNullOrEmpty(sound))
             EmitSoundFormPlayer(player, sound, 0.6f);
 
+        // Attach glowing freeze ring effect only for real freezes (not bullet stuns)
+        // Bullet knockback stun is 0.1s — threshold 0.5s keeps rings only for grenade/nemesis freezes
+        if (duration >= 0.5f)
+        {
+            KillFreezeParticles(Id); // clear any leftover from a previous freeze
+            AttachFreezeParticles(player);
+        }
+
         _core.Scheduler.DelayBySeconds(duration, () =>
         {
             if (_globals.StopZombieTimers.TryGetValue(Id, out var current) && current <= duration)
             {
                 _globals.StopZombieTimers.Remove(Id);
+                // Remove freeze visual when thawing
+                KillFreezeParticles(Id);
                 var moveType = MoveType_t.MOVETYPE_WALK;
                 pawn.MoveType = moveType;
                 pawn.ActualMoveType = moveType;
@@ -1029,11 +1041,170 @@ public partial class ZPLHelpers
         if (pawn == null || !pawn.IsValid)
             return;
 
-        _globals.StopZombieTimers.Remove(player.PlayerID);
+        int Id = player.PlayerID;
+        _globals.StopZombieTimers.Remove(Id);
+
+        // Kill any active freeze visual particles
+        KillFreezeParticles(Id);
 
         pawn.MoveType = MoveType_t.MOVETYPE_WALK;
         pawn.ActualMoveType = MoveType_t.MOVETYPE_WALK;
         pawn.MoveTypeUpdated();
+    }
+
+    /// <summary>
+    /// Cancels the freeze ring refresh timer for a player.
+    /// Safe to call even when no freeze is active.
+    /// </summary>
+    private void KillFreezeParticles(int playerId)
+    {
+        // Cancel the ring refresh timer (stored in InfectGlowTimers)
+        if (_globals.InfectGlowTimers.TryGetValue(playerId, out var cts))
+        {
+            cts.Cancel();
+            _globals.InfectGlowTimers.Remove(playerId);
+        }
+        _globals.FreezeParticles.Remove(playerId);
+
+        // Kill all beam ring entities for this player
+        if (_globals.FreezeBeamHandles.TryGetValue(playerId, out var rings))
+        {
+            KillFreezeBeamRings(rings);
+            _globals.FreezeBeamHandles.Remove(playerId);
+        }
+    }
+
+    /// <summary>
+    /// Creates 3 concentric cyan beam rings around the frozen zombie's feet,
+    /// matching the visual from the ZmBio CS2 screenshot (glowing circles orbiting the zombie).
+    /// The rings are rebuilt every 0.1 s to follow the zombie's position.
+    /// </summary>
+    private void AttachFreezeParticles(IPlayer player)
+    {
+        var pawn = player.PlayerPawn;
+        if (pawn == null || !pawn.IsValid) return;
+
+        int playerId = player.PlayerID;
+
+        // Three ring heights (foot-level, knee-level, waist-level)
+        float[] heights    = { 4f, 22f, 40f };
+        float[] radii      = { 28f, 24f, 20f };
+        const int Segments = 16;
+        const float Thickness = 3.0f;
+
+        // Build the rings once and store beam handles
+        var allHandles = new List<CHandle<CParticleSystem>>();
+        var beamHandles = new List<List<CHandle<CBeam>>>();
+
+        var origin = pawn.AbsOrigin;
+        if (origin == null) return;
+
+        for (int r = 0; r < heights.Length; r++)
+        {
+            float h      = heights[r];
+            float radius = radii[r];
+            var ringBeams = new List<CHandle<CBeam>>();
+
+            for (int i = 0; i < Segments; i++)
+            {
+                float angle     = MathF.PI * 2f * i / Segments;
+                float nextAngle = MathF.PI * 2f * (i + 1) / Segments;
+
+                Vector start = new(
+                    origin.Value.X + radius * MathF.Cos(angle),
+                    origin.Value.Y + radius * MathF.Sin(angle),
+                    origin.Value.Z + h);
+                Vector end = new(
+                    origin.Value.X + radius * MathF.Cos(nextAngle),
+                    origin.Value.Y + radius * MathF.Sin(nextAngle),
+                    origin.Value.Z + h);
+
+                // Cyan-white glow matching ice/freeze theme
+                var beam = CreateLaser(start, end,
+                    new SwiftlyS2.Shared.Natives.Color(0, 220, 255, 200), Thickness);
+                if (beam != null && beam.IsValid && beam.IsValidEntity)
+                    ringBeams.Add(_core.EntitySystem.GetRefEHandle(beam));
+            }
+            beamHandles.Add(ringBeams);
+        }
+
+        // Refresh timer — moves rings with the zombie every 0.1 s
+        CancellationTokenSource? refreshTimer = null;
+        refreshTimer = _core.Scheduler.RepeatBySeconds(0.1f, () =>
+        {
+            if (!player.IsValid || !pawn.IsValid)
+            {
+                refreshTimer?.Cancel();
+                KillFreezeBeamRings(beamHandles);
+                return;
+            }
+
+            // Check freeze is still active
+            if (!_globals.StopZombieTimers.ContainsKey(playerId))
+            {
+                refreshTimer?.Cancel();
+                KillFreezeBeamRings(beamHandles);
+                return;
+            }
+
+            var pos = pawn.AbsOrigin;
+            if (pos == null) return;
+
+            for (int r = 0; r < heights.Length; r++)
+            {
+                float h      = heights[r];
+                float radius = radii[r];
+                var ringBeams = beamHandles[r];
+
+                for (int i = 0; i < Segments; i++)
+                {
+                    if (i >= ringBeams.Count) break;
+                    if (!ringBeams[i].IsValid) continue;
+                    var beam = ringBeams[i].Value;
+                    if (beam == null || !beam.IsValid || !beam.IsValidEntity) continue;
+
+                    float angle     = MathF.PI * 2f * i / Segments;
+                    float nextAngle = MathF.PI * 2f * (i + 1) / Segments;
+
+                    Vector start = new(
+                        pos.Value.X + radius * MathF.Cos(angle),
+                        pos.Value.Y + radius * MathF.Sin(angle),
+                        pos.Value.Z + h);
+                    Vector end = new(
+                        pos.Value.X + radius * MathF.Cos(nextAngle),
+                        pos.Value.Y + radius * MathF.Sin(nextAngle),
+                        pos.Value.Z + h);
+
+                    TeleportLaser(beam, start, end);
+                }
+            }
+        });
+
+        // Store beam handles so KillFreezeParticles can destroy them later
+        _globals.FreezeBeamHandles[playerId] = beamHandles;
+
+        // Store the refresh timer CTS in InfectGlowTimers for cleanup
+        // (reusing InfectGlowTimers as a general per-player CTS store)
+        if (_globals.InfectGlowTimers.TryGetValue(playerId, out var old))
+            old.Cancel();
+        _globals.InfectGlowTimers[playerId] = refreshTimer;
+
+        // Also draw initial expanding ring flash for visual impact
+        DrawExpandingRing(
+            new Vector(origin.Value.X, origin.Value.Y, origin.Value.Z + 4f),
+            40f, 0, 220, 255, 220, 0.3f, 16, 4.0f);
+    }
+
+    private void KillFreezeBeamRings(List<List<CHandle<CBeam>>> beamHandles)
+    {
+        foreach (var ring in beamHandles)
+        foreach (var h in ring)
+        {
+            if (!h.IsValid) continue;
+            var b = h.Value;
+            if (b != null && b.IsValid && b.IsValidEntity)
+                b.AcceptInput("Kill", 0);
+        }
     }
 
     public bool CheckIsGrenade(CBasePlayerWeapon activeWeapon)
@@ -1118,7 +1289,61 @@ public partial class ZPLHelpers
         }
     }
 
+    /// <summary>Sends a colorful HTML center message to all real players.</summary>
+    public void SendCenterHTMLToAll(string html, int duration = 3000)
+    {
+        foreach (var player in _core.PlayerManager.GetAllPlayers())
+        {
+            if (!player.IsValid || player.IsFakeClient)
+                continue;
+            player.SendCenterHTML(html, duration);
+        }
+    }
+
+    /// <summary>Builds a localized HTML center message for each player individually and sends it.</summary>
+    public void SendCenterHTMLLocalizedToAll(Func<IPlayer, string> htmlBuilder, int duration = 3000)
+    {
+        foreach (var player in _core.PlayerManager.GetAllPlayers())
+        {
+            if (!player.IsValid || player.IsFakeClient)
+                continue;
+            player.SendCenterHTML(htmlBuilder(player), duration);
+        }
+    }
+
     
+
+    /// <summary>
+    /// Builds a progress bar string.
+    /// Characters are read from translations (BarCharFilled/BarCharEmpty) with
+    /// immediate fallback to █/░ if translations aren't loaded yet.
+    /// </summary>
+    // ── Progress bar ─────────────────────────────────────────────────────────
+
+    /// <summary>Clears the cached bar chars so they reload on next use (e.g. after map change).</summary>
+    public void ResetBarCharCache() { /* no-op — no cache needed with hardcoded █/░ */ }
+
+    public string BuildProgressBar(float progress, int totalBars,
+        string filledColor = "#FF8C00", string emptyColor = "#666666",
+        IPlayer? player = null)
+    {
+        progress = Math.Clamp(progress, 0f, 1f);
+        int filled = Math.Clamp((int)Math.Round(totalBars * progress), 0, totalBars);
+        int empty  = totalBars - filled;
+
+        // Pattern from official SwiftlyS2 docs:
+        // var bar = new string('█', filled) + new string('░', empty);
+        // $"<span color=\"green\">{bar}</span>"
+        // Note: double quotes required — Panorama does not parse single-quoted attributes
+        string barFilled = new string('█', filled);
+        string barEmpty  = new string('░', empty);
+
+        if (filled > 0 && empty > 0)
+            return $"<span color='{filledColor}'>{barFilled}</span><span color='{emptyColor}'>{barEmpty}</span>";
+        if (filled == totalBars)
+            return $"<span color='{filledColor}'>{barFilled}</span>";
+        return $"<span color='{emptyColor}'>{barEmpty}</span>";
+    }
 
     public string T(IPlayer? player, string key, params object[] args)
     {
@@ -1282,6 +1507,17 @@ public partial class ZPLHelpers
         // Store handle so spawning players can reuse the same controller.
         _globals.GlobalFogController = _core.EntitySystem.GetRefEHandle(fogController);
 
+        // Override env_tonemap_controller2 on the map to darken scene lighting globally.
+        // This affects ambient light that post_processing_volume alone cannot reach.
+        foreach (var tc in _core.EntitySystem
+            .GetAllEntitiesByDesignerName<CTonemapController2>("env_tonemap_controller2"))
+        {
+            if (tc == null || !tc.IsValid || !tc.IsValidEntity) continue;
+            tc.AcceptInput("SetMinExposure", 0.03f);
+            tc.AcceptInput("SetMaxExposure", 0.10f);
+            tc.AcceptInput("SetExposureAdaptationSpeedUp", 2.0f);
+        }
+
         // Apply to every player currently in the server.
         foreach (var player in _core.PlayerManager.GetAllPlayers())
             ApplyFogToPlayer(player, fogController);
@@ -1309,28 +1545,34 @@ public partial class ZPLHelpers
         pawn.AcceptInput("SetFogController", "!activator", fogController, pawn);
     }
 
-    // ── Skybox ───────────────────────────────────────────────────────────────
-
-    private static readonly System.Text.RegularExpressions.Regex _safeSkynamePattern =
-        new(@"^[a-zA-Z0-9_/]+$", System.Text.RegularExpressions.RegexOptions.Compiled);
+    // ── Skybox / Sky Darkening ───────────────────────────────────────────────
 
     /// <summary>
-    /// Overrides the map skybox via the engine. No-op when <paramref name="skyName"/>
-    /// is empty or whitespace (keep the map's default sky).
-    /// Only names matching [a-zA-Z0-9_/]+ are accepted to prevent command injection.
+    /// Darkens the map's existing env_sky entity by applying a dark tint and
+    /// reducing brightness. sv_skyname does not work in CS2 Source 2 — instead
+    /// we manipulate the CEnvSky schema fields directly.
+    /// skyName is ignored but kept for config compatibility.
     /// </summary>
     public void ApplySkybox(string skyName)
     {
-        if (string.IsNullOrWhiteSpace(skyName))
-            return;
-
-        if (!_safeSkynamePattern.IsMatch(skyName))
+        // Darken all env_sky entities on the map
+        // TintColor: dark purple-black (20,15,25,255) for horror atmosphere
+        // BrightnessScale: 0.05 = very dark sky
+        foreach (var sky in _core.EntitySystem.GetAllEntitiesByDesignerName<CEnvSky>("env_sky"))
         {
-            _logger.LogWarning("[ZM] Skybox name '{Name}' contains invalid characters and was not applied.", skyName);
-            return;
+            if (sky == null || !sky.IsValid || !sky.IsValidEntity) continue;
+            try
+            {
+                sky.TintColor       = new Color(20, 15, 25, 255);
+                sky.TintColorUpdated();
+                sky.BrightnessScale = 0.05f;
+                sky.BrightnessScaleUpdated();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("[ZM] Failed to darken env_sky: {Msg}", ex.Message);
+            }
         }
-
-        _core.Engine.ExecuteCommand($"sv_skyname {skyName}");
     }
 
     
