@@ -9,7 +9,7 @@ A lightweight **rank and top-players** plugin for [ZombiePlagueLegacy CS2](https
 | Command | Description |
 |---------|-------------|
 | `!rank` | Shows your current rank, kills and deaths in chat |
-| `!top` | Opens a scrollable menu of the top N players (configurable) |
+| `!top` | Opens a top-anchored large-text menu of the top N players (configurable) |
 | `!top15` | Always opens a top-15 menu |
 | `!top10` | Always opens a top-10 menu |
 
@@ -47,8 +47,8 @@ A lightweight **rank and top-players** plugin for [ZombiePlagueLegacy CS2](https
     // How many players !top shows (top10/top15 always use 10/15).
     "TopListSize": 15,
 
-    // Rows visible at once in the scrollable top menu.
-    "TopMenuVisibleRows": 5,
+    // Rows visible at once in the top menu.
+    "TopMenuVisibleRows": 4,
 
     // Set to false to disable individual features.
     "EnableRankCommand": true,

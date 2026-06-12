@@ -1,4 +1,3 @@
-using System.Drawing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SwiftlyS2.Core.Menus.OptionsBase;
@@ -42,13 +41,7 @@ public class ZPLAdminItemMenu
     {
         IMenuAPI menu = _menuhelper.CreateMenu(_helpers.T(admin, "AdminItemMenu"));
 
-        menu.AddOption(new TextMenuOption(HtmlGradient.GenerateGradientText(
-            _helpers.T(admin, "AdminMenuSelect"),
-            Color.Red, Color.LightBlue, Color.Red),
-            updateIntervalMs: 500, pauseIntervalMs: 100)
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop
-        });
+        menu.AddOption(ZPLMenuHelper.LargeText(_helpers.T(admin, "AdminMenuSelect")));
 
         // 1 – Make Zombie / Human (toggle)
         AddMenuButton(menu, _helpers.T(admin, "AdminMenuMakeZombieHuman"), clicker =>
@@ -159,11 +152,7 @@ public class ZPLAdminItemMenu
 
     private void AddMenuButton(IMenuAPI menu, string label, Action<IPlayer> onClick)
     {
-        var btn = new ButtonMenuOption(label)
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-            CloseAfterClick = true
-        };
+        var btn = ZPLMenuHelper.LargeButton(label, ZPLMenuHelper.ColAmber);
         btn.Click += async (_, args) =>
         {
             var clicker = args.Player;
@@ -208,11 +197,7 @@ public class ZPLAdminItemMenu
             var capturedType = modeType;
             var capturedKey = labelKey;
 
-            var btn = new ButtonMenuOption(_helpers.T(admin, labelKey))
-            {
-                TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-                CloseAfterClick = true
-            };
+            var btn = ZPLMenuHelper.LargeButton(_helpers.T(admin, labelKey), "#5E98D9");
             btn.Click += async (_, args) =>
             {
                 var clicker = args.Player;
@@ -259,20 +244,16 @@ public class ZPLAdminItemMenu
             anyTarget = true;
             var capturedTarget = target;
 
-            string label = target.Name;
+            string label = ZPLMenuHelper.OptionLabel(target.Name);
             if (showStateTag)
             {
                 _globals.IsZombie.TryGetValue(target.PlayerID, out bool isZ);
                 label = isZ
-                    ? $"[Z] {target.Name}"
-                    : $"[H] {target.Name}";
+                    ? $"<span color=\"{ZPLMenuHelper.ColZombie}\" class=\"fontSize-xxl fontWeight-bold\">[Z]</span> {ZPLMenuHelper.OptionLabel(target.Name)}"
+                    : $"<span color=\"{ZPLMenuHelper.ColSelected}\" class=\"fontSize-xxl fontWeight-bold\">[H]</span> {ZPLMenuHelper.OptionLabel(target.Name)}";
             }
 
-            var btn = new ButtonMenuOption(label)
-            {
-                TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-                CloseAfterClick = true
-            };
+            var btn = ZPLMenuHelper.LargeButton(label);
             btn.Click += async (_, args) =>
             {
                 _core.Scheduler.NextTick(() =>
@@ -286,7 +267,7 @@ public class ZPLAdminItemMenu
 
         if (!anyTarget)
         {
-            menu.AddOption(new TextMenuOption(_helpers.T(admin, "AdminMenuNoTargets")));
+            menu.AddOption(ZPLMenuHelper.LargeText(_helpers.T(admin, "AdminMenuNoTargets")));
         }
 
         _core.MenusAPI.OpenMenuForPlayer(admin, menu);

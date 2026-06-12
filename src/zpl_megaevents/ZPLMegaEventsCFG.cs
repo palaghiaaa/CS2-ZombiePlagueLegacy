@@ -10,7 +10,7 @@ public class ZPLMegaEventsCFG
     // ── General ───────────────────────────────────────────────────────────────
 
     /// <summary>Prefix prepended to every chat message sent by this plugin.</summary>
-    public string ChatPrefix { get; set; } = "[gold][MegaEvents][default]";
+    public string ChatPrefix { get; set; } = "[red][ZM][default]";
 
     /// <summary>
     /// Minimum number of connected real players required before mega events can start.

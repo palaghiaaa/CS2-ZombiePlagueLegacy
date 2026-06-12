@@ -1,0 +1,14 @@
+{
+  // Interval in seconds - how often to show the image
+  // Delay in seconds - how long to wait before showing next image
+  // Images - list of image URLs to show
+  // For best results, use images that are the same size (Recommended: 870x350px or 782x150px w/ transparent bg )
+  // Use images that are hosted on a server that dosen't have rate limits e.g github
+  "Interval": 15,
+  "Delay": 2,
+  "Images": [
+    "https://raw.githubusercontent.com/itsAudioo/plugin-resources/refs/heads/main/resource/msg_pulse_v1.png",
+    "https://raw.githubusercontent.com/itsAudioo/plugin-resources/refs/heads/main/resource/msg_pulse_v2.png",
+    "https://raw.githubusercontent.com/itsAudioo/plugin-resources/refs/heads/main/resource/msg_pulse_v3.png"
+  ]
+}

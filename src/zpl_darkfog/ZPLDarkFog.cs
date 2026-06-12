@@ -323,6 +323,12 @@ public sealed class ZPLDarkFogPlugin : BasePlugin
             return true;
         }
 
+        if (_zpApi != null && !_zpApi.ZPL_GetUserPreference(player, ZPLUserPreferenceKeys.Fog, true))
+        {
+            _service.ResetPlayer(player);
+            return true;
+        }
+
         if (_manualExposureOverrideByPlayerId.TryGetValue(player.PlayerID, out var manualExposure))
         {
             return _service.ApplyExposure(player, MathF.Max(0.0f, manualExposure));
@@ -677,6 +683,7 @@ public sealed class ZPLDarkFogPlugin : BasePlugin
         _zpApi.ZPL_OnHeroSelected += OnZombieRoleSelected;
         _zpApi.ZPL_OnSurvivorSelected += OnZombieRoleSelected;
         _zpApi.ZPL_OnSniperSelected += OnZombieRoleSelected;
+        _zpApi.ZPL_OnUserPreferenceChanged += OnZombieUserPreferenceChanged;
 
         _logger.LogInformation("Attached ZombiePlagueLegacy API.");
     }
@@ -696,8 +703,28 @@ public sealed class ZPLDarkFogPlugin : BasePlugin
         _zpApi.ZPL_OnHeroSelected -= OnZombieRoleSelected;
         _zpApi.ZPL_OnSurvivorSelected -= OnZombieRoleSelected;
         _zpApi.ZPL_OnSniperSelected -= OnZombieRoleSelected;
+        _zpApi.ZPL_OnUserPreferenceChanged -= OnZombieUserPreferenceChanged;
 
         _zpApi = null;
+    }
+
+    private void OnZombieUserPreferenceChanged(ulong steamId, string key, bool enabled)
+    {
+        if (!string.Equals(key, ZPLUserPreferenceKeys.Fog, StringComparison.Ordinal))
+            return;
+
+        Core.Scheduler.NextWorldUpdate(() =>
+        {
+            var player = Core.PlayerManager.GetAllValidPlayers()
+                .FirstOrDefault(p => !p.IsFakeClient && p.SteamID == steamId);
+            if (player == null)
+                return;
+
+            if (!enabled)
+                _service?.ResetPlayer(player);
+            else
+                ApplyVisionForCurrentRole(player);
+        });
     }
 
     private void OnZombieGameStart(bool gameStart)

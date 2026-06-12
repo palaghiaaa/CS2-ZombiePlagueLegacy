@@ -329,6 +329,18 @@ public interface IZombiePlagueLegacyAPI
     string? ZPL_GetZombieNameBySteamid(ulong steamId);
 
     /// <summary>
+    /// Gets a saved boolean user preference by SteamID64.
+    /// Unknown keys return <paramref name="defaultValue"/>.
+    /// </summary>
+    bool ZPL_GetUserPreference(ulong steamId, string preferenceKey, bool defaultValue = true);
+
+    /// <summary>
+    /// Gets a saved boolean user preference for the specified player.
+    /// Unknown keys return <paramref name="defaultValue"/>.
+    /// </summary>
+    bool ZPL_GetUserPreference(IPlayer player, string preferenceKey, bool defaultValue = true);
+
+    /// <summary>
     /// Gets a snapshot of all core properties for the specified zombie class/type by name.
     /// 根据丧尸职业名称获取该职业的所有核心属性快照（当前配置值）。
     /// </summary>
@@ -459,6 +471,12 @@ public interface IZombiePlagueLegacyAPI
     ///    string? Zombie class name - New preferred zombie class name; null or empty string means "random"
     /// </summary>
     event Action<ulong, string?>? ZPL_OnPreferenceChanged;
+
+    /// <summary>
+    /// Broadcasts changes to boolean user preferences stored in zpl_user_preferences.
+    /// Parameters: SteamID64, preference key, enabled value.
+    /// </summary>
+    event Action<ulong, string, bool>? ZPL_OnUserPreferenceChanged;
 
 
 

@@ -13,8 +13,12 @@ public class ZPLWeaponsCFG
 {
     /// <summary>Master switch – set false to disable the entire weapon menu feature.</summary>
     public bool EnableWeaponsMenu { get; set; } = true;
-    /// <summary>When true, the primary weapon menu is automatically shown to eligible humans at round start.</summary>
-    public bool GiveMenuOnRoundStart { get; set; } = true;
+    /// <summary>When true, the primary weapon menu is automatically shown to eligible humans at round start when no remembered loadout is available.</summary>
+    public bool GiveMenuOnRoundStart { get; set; } = false;
+    /// <summary>When true, players can toggle a remembered primary + secondary weapon loadout from the weapon menus.</summary>
+    public bool EnableRememberChoice { get; set; } = true;
+    /// <summary>When true, remembered loadouts are given automatically at round start without opening the weapon menu.</summary>
+    public bool AutoGiveRememberedChoiceOnRoundStart { get; set; } = true;
     /// <summary>When true, players can re-open weapon selection via the sw_buyweapons command (once per round).</summary>
     public bool AllowOpenFromGameMenu { get; set; } = true;
 

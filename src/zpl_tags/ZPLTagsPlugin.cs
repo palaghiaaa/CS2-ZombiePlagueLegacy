@@ -19,6 +19,8 @@ using System.Data;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using TagsApi;
+using ZombiePlagueLegacyCS2;
+using ZombiePlagueLegacyCS2.SharedUi;
 using static TagsApi.Tags;
 
 namespace ZPLTags;
@@ -55,6 +57,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private TagsBridge?           _tagsBridge;
     private IAdminsManager?       _adminsManager;
     private IPlayerCookiesAPIv1?  _cookiesApi;
+    private IZombiePlagueLegacyAPI? _zplApi;
 
     // SteamID64 → ALL eligible GroupTagEntry items, sorted desc by Priority.
     private readonly Dictionary<ulong, List<GroupTagEntry>> _eligibleTags = new();
@@ -213,6 +216,23 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
             _logger?.LogInformation("[ZPLTags] Cookies API not found – tag selections will not persist across sessions.");
         }
 
+        if (interfaceManager.HasSharedInterface("ZombiePlagueLegacy"))
+        {
+            try
+            {
+                _zplApi = interfaceManager.GetSharedInterface<IZombiePlagueLegacyAPI>("ZombiePlagueLegacy");
+                if (_zplApi != null)
+                {
+                    _zplApi.ZPL_OnUserPreferenceChanged += OnZplUserPreferenceChanged;
+                    _logger?.LogInformation("[ZPLTags] Connected to ZombiePlagueLegacy user preferences.");
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger?.LogWarning("[ZPLTags] ZombiePlagueLegacy API unavailable: {Error}", ex.Message);
+            }
+        }
+
         Core.Scheduler.NextWorldUpdate(RebuildAllPlayers);
     }
 
@@ -294,6 +314,12 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         _tagsApiProbeCts = null;
 
         _interfaceManager = null;
+
+        if (_zplApi != null)
+        {
+            _zplApi.ZPL_OnUserPreferenceChanged -= OnZplUserPreferenceChanged;
+            _zplApi = null;
+        }
 
         foreach (var player in Core.PlayerManager.GetAllPlayers())
         {
@@ -637,6 +663,14 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private void InitPlayer(IPlayer player)
     {
         ulong sid      = player.SteamID;
+        if (!AreTagsEnabled(player))
+        {
+            _eligibleTags.Remove(sid);
+            _activeTag[sid] = null;
+            ApplyFullTag(player, null);
+            return;
+        }
+
         var eligible   = BuildEligibleList(player);
 
         if (eligible.Count == 0)
@@ -690,6 +724,36 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
             // Apply all attributes so chat tags are active immediately on connect.
             ApplyFullTag(player, eligible[0]);
         }
+    }
+
+    private bool AreTagsEnabled(IPlayer player)
+    {
+        return _zplApi?.ZPL_GetUserPreference(player, ZPLUserPreferenceKeys.Tags, true) ?? true;
+    }
+
+    private void OnZplUserPreferenceChanged(ulong steamId, string key, bool enabled)
+    {
+        if (!string.Equals(key, ZPLUserPreferenceKeys.Tags, StringComparison.Ordinal))
+            return;
+
+        Core.Scheduler.NextWorldUpdate(() =>
+        {
+            var player = Core.PlayerManager.GetAllPlayers()
+                .FirstOrDefault(p => p != null && p.IsValid && !p.IsFakeClient && p.SteamID == steamId);
+            if (player == null)
+                return;
+
+            if (!enabled)
+            {
+                _activeTag[player.SteamID] = null;
+                ApplyFullTag(player, null);
+                Chat(player, "TagsDisabledByUser");
+                return;
+            }
+
+            InitPlayer(player);
+            Chat(player, "TagsEnabledByUser");
+        });
     }
 
     // ── Event handlers ────────────────────────────────────────────────────────
@@ -952,6 +1016,13 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         if (!IsValidRealPlayer(player)) return;
 
         ulong sid = player!.SteamID;
+        if (!AreTagsEnabled(player))
+        {
+            _activeTag[sid] = null;
+            ApplyFullTag(player, null);
+            Chat(player, "TagsDisabledByUser");
+            return;
+        }
 
         // Re-compute in case eligibility changed since connect (e.g. late admin load).
         if (!_eligibleTags.TryGetValue(sid, out var eligible) || eligible.Count == 0)
@@ -974,15 +1045,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         ulong sid = player.SteamID;
         _activeTag.TryGetValue(sid, out var current);
 
-        var menuCfg = new MenuConfiguration
-        {
-            Title                    = HtmlGradient.GenerateGradientText(_config.MenuTitle, Color.Gold, Color.Orange),
-            FreezePlayer             = false,
-            MaxVisibleItems          = 5,
-            PlaySound                = true,
-            AutoIncreaseVisibleItems = false,
-            HideFooter               = false
-        };
+        var menuCfg = ZPLMenuStyle.MenuConfig(_config.MenuTitle, playSound: true);
 
         IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default, null, MenuOptionScrollStyle.LinearScroll);
 
@@ -995,14 +1058,10 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                             string.Equals(current.GroupName, entry.GroupName, StringComparison.Ordinal) &&
                             string.Equals(current.Permission, entry.Permission, StringComparison.Ordinal);
 
-            string label = isActive ? $"✓ {entry.GetMenuLabel()}" : entry.GetMenuLabel();
+            string label = isActive ? $"* {entry.GetMenuLabel()}" : entry.GetMenuLabel();
 
-            var btn = new ButtonMenuOption(label)
-            {
-                TextStyle       = MenuOptionTextStyle.ScrollLeftLoop,
-                CloseAfterClick = true,
-                Tag             = capturedEntry
-            };
+            var btn = ZPLMenuStyle.Button(label, isActive ? ZPLMenuStyle.ColSelected : ZPLMenuStyle.ColButton);
+            btn.Tag = capturedEntry;
 
             btn.Click += async (_, args) =>
             {
@@ -1028,14 +1087,10 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         // ── "Remove tag" button ───────────────────────────────────────────────
         // Shows ✓ when no tag is currently active.
         string removeLabel = (current == null)
-            ? $"✓ {_config.NoTagLabel}"
+            ? $"* {_config.NoTagLabel}"
             : _config.NoTagLabel;
 
-        var removeBtn = new ButtonMenuOption(removeLabel)
-        {
-            TextStyle       = MenuOptionTextStyle.ScrollLeftLoop,
-            CloseAfterClick = true
-        };
+        var removeBtn = ZPLMenuStyle.Button(removeLabel, current == null ? ZPLMenuStyle.ColSelected : ZPLMenuStyle.ColButton);
 
         removeBtn.Click += async (_, args) =>
         {

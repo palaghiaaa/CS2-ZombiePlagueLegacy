@@ -19,7 +19,7 @@ public class ZPLRankCFG
     // ── Chat ─────────────────────────────────────────────────────────────────
 
     /// <summary>Tag prepended to every chat message sent by this plugin.</summary>
-    public string ChatTag { get; set; } = "[ZPL Rank]";
+    public string ChatTag { get; set; } = "[red][ZM][default]";
 
     // ── Commands ──────────────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ public class ZPLRankCFG
     public int TopListSize { get; set; } = 15;
 
     /// <summary>Number of rows visible at once in the top-players menu.</summary>
-    public int TopMenuVisibleRows { get; set; } = 5;
+    public int TopMenuVisibleRows { get; set; } = 4;
 
     // ── Feature toggles ───────────────────────────────────────────────────────
 

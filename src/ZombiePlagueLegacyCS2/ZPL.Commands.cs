@@ -25,13 +25,15 @@ public class ZPLCommands
     private readonly ZPLWeaponsMenu _weaponsMenu;
     private readonly ZPLGameMenu _gameMenu;
     private readonly ZPLExtraItemsMenu _extraItemsMenu;
+    private readonly ZPLUserSettingsMenu _userSettingsMenu;
 
     public ZPLCommands(ISwiftlyCore core, ILogger<ZPLCommands> logger,
         ZPLServices services, IOptionsMonitor<ZPLMainCFG> mainCFG,
         ZPLGlobals globals, ZPLAdminItemMenu hZPAdminItemMenu,
         ZPLZombieClassMenu hZPZombieClassMenu, ZPLHelpers helpers,
         ZPLWeaponsMenu weaponsMenu, ZPLGameMenu gameMenu,
-        ZPLExtraItemsMenu extraItemsMenu)
+        ZPLExtraItemsMenu extraItemsMenu,
+        ZPLUserSettingsMenu userSettingsMenu)
     {
         _core = core;
         _logger = logger;
@@ -44,6 +46,7 @@ public class ZPLCommands
         _weaponsMenu = weaponsMenu;
         _gameMenu = gameMenu;
         _extraItemsMenu = extraItemsMenu;
+        _userSettingsMenu = userSettingsMenu;
     }
 
     public void MenuCommands()
@@ -58,6 +61,8 @@ public class ZPLCommands
         _core.Command.RegisterCommand(CFG.MainMenuCommand, OpenGameMenu, true);
 
         _core.Command.RegisterCommand(CFG.ExtraItemsCommand, OpenExtraItemsMenu, true);
+
+        _core.Command.RegisterCommand(CFG.UserSettingsCommand, OpenUserSettingsMenu, true);
 
     }
     public void SelectZombieClass(ICommandContext context)
@@ -77,7 +82,7 @@ public class ZPLCommands
             return;
 
 
-        if (!HasAdminMenuPermission(player))
+        if (!_helpers.HasAdminMenuPermission(player))
         {
             _helpers.SendChatT(player, "NoPermission");
             return;
@@ -110,31 +115,11 @@ public class ZPLCommands
         _extraItemsMenu.OpenExtraItemsMenu(player);
     }
 
-    private bool HasAdminMenuPermission(IPlayer player)
+    public void OpenUserSettingsMenu(ICommandContext context)
     {
-        if (!player.IsValid)
-            return false;
-
-        ulong steamId = player.SteamID;
-        if (steamId == 0)
-            return false;
-
-        var permString = _mainCFG.CurrentValue.AdminMenuPermission;
-
-        if (string.IsNullOrWhiteSpace(permString))
-            return true;
-
-        foreach (var perm in permString.Split(','))
-        {
-            var p = perm.Trim();
-            if (p.Length == 0)
-                continue;
-
-            if (_core.Permission.PlayerHasPermission(steamId, p))
-                return true;
-        }
-
-        return false;
+        var player = context.Sender;
+        if (player == null || !player.IsValid) return;
+        _userSettingsMenu.OpenUserSettingsMenu(player);
     }
 
     public void RoundCvar()
@@ -220,4 +205,3 @@ public class ZPLCommands
 
 
 }
-

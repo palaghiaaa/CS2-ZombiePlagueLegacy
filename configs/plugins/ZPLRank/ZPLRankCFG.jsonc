@@ -23,7 +23,7 @@
 
     "TopListSize": 15,
 
-    "TopMenuVisibleRows": 5,
+    "TopMenuVisibleRows": 4,
 
     "EnableRankCommand": true,
     "EnableTopCommands": true

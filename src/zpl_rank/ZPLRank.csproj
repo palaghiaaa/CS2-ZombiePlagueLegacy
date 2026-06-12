@@ -22,6 +22,7 @@
 		     and prevents the "No keyed service for type IZombiePlagueLegacyAPI" error
 		     that occurs when SwiftlyS2 loads the same assembly from two different paths. -->
 		<ProjectReference Include="../IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj" Private="false" />
+		<Compile Include="../ZPLShared/ZPLMenuStyle.cs" Link="ZPLMenuStyle.cs" />
 	</ItemGroup>
 	<!-- Bundle the plugin's own translation files -->
 	<ItemGroup>

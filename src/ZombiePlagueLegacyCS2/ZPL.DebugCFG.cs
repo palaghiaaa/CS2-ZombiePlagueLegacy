@@ -10,5 +10,5 @@ public class ZPLDebugCFG
     public bool EnableCommandDebugChatReply { get; set; } = false;
 
     /// <summary>Prefix prepended to chat messages sent by the plugin.</summary>
-    public string ChatPrefix { get; set; } = "[ZM]";
+    public string ChatPrefix { get; set; } = "[red][ZM][default]";
 }

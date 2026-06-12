@@ -54,10 +54,55 @@ public partial class ZPLHelpers
 
         pawn.VelocityModifier = initialSpeed;
         pawn.VelocityModifierUpdated();
+        pawn.ActualGravityScale = _mainCFG.CurrentValue.HumanInitialGravity;
 
         ClearFreezeStaten(player);
+        ResetTemporaryHumanExtraItems(player, removeGlow: true);
         EmitSoundFormPlayer(player, sound, volume);
         HelperCheckRoundWin();
+    }
+
+    public void ResetTemporaryHumanExtraItems(IPlayer player, bool removeGlow = false)
+    {
+        if (player == null || !player.IsValid)
+            return;
+
+        int id = player.PlayerID;
+        _globals.InfiniteAmmoState.Remove(id);
+        _globals.InfiniteClipState.Remove(id);
+        _globals.ExtraNoRecoilState.Remove(id);
+        _globals.TryderState.Remove(id);
+        _globals.ExtraJumps.Remove(id);
+        _globals.JumpsUsed.Remove(id);
+        _globals.KnifeBlinkCharges.Remove(id);
+        _globals.KnifeBlinkCooldownEnd.Remove(id);
+        _globals.HasReviveToken.Remove(id);
+        _globals.HasJetpack.Remove(id);
+        _globals.JetpackFuel.Remove(id);
+        _globals.JetpackLastFuelTime.Remove(id);
+        _globals.JetpackLastThrustTime.Remove(id);
+        _globals.HasParachute.Remove(id);
+
+        var pawn = player.PlayerPawn;
+        if (pawn != null && pawn.IsValid)
+        {
+            if (_globals.ParachuteRestoreGravity.TryGetValue(id, out float gravity))
+            {
+                pawn.ActualGravityScale = gravity;
+                _globals.ParachuteRestoreGravity.Remove(id);
+            }
+            else if (pawn.ActualGravityScale == 0f)
+            {
+                pawn.ActualGravityScale = _mainCFG.CurrentValue.HumanInitialGravity;
+            }
+        }
+        else
+        {
+            _globals.ParachuteRestoreGravity.Remove(id);
+        }
+
+        if (removeGlow)
+            RemoveGlow(player);
     }
 
     public void TVirusGrenade(IPlayer player)
@@ -283,7 +328,7 @@ public partial class ZPLHelpers
                 var sound = RandomSelectSound(_globals.RoundVoxGroup.HumanWinVox);
                 if (sound != null)
                 {
-                    EmitSoundToAll(sound, _globals.RoundVoxGroup.Volume);
+                    EmitVoxSoundToEnabledPlayers(sound, _globals.RoundVoxGroup.Volume);
                 }
             }
         }
@@ -302,7 +347,7 @@ public partial class ZPLHelpers
                 var sound = RandomSelectSound(_globals.RoundVoxGroup.ZombieWinVox);
                 if (sound != null)
                 {
-                    EmitSoundToAll(sound, _globals.RoundVoxGroup.Volume);
+                    EmitVoxSoundToEnabledPlayers(sound, _globals.RoundVoxGroup.Volume);
                 }
             }
         }

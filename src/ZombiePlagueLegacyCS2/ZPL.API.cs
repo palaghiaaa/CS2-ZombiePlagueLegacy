@@ -614,6 +614,26 @@ public partial class ZombiePlagueLegacyAPI : IZombiePlagueLegacyAPI, IDisposable
         return null;
     }
 
+    public bool ZPL_GetUserPreference(ulong steamId, string preferenceKey, bool defaultValue = true)
+    {
+        ThrowIfDisposed();
+        if (steamId == 0 || string.IsNullOrWhiteSpace(preferenceKey))
+            return defaultValue;
+
+        return _globals.UserPreferences.TryGetValue(steamId, out var preferences)
+            ? preferences.Get(preferenceKey, defaultValue)
+            : defaultValue;
+    }
+
+    public bool ZPL_GetUserPreference(IPlayer player, string preferenceKey, bool defaultValue = true)
+    {
+        ThrowIfDisposed();
+        if (player == null || !player.IsValid)
+            return defaultValue;
+
+        return ZPL_GetUserPreference(player.SteamID, preferenceKey, defaultValue);
+    }
+
     public void ZPL_SetExternalPreference(ulong steamId, string? className)
     {
         if (string.IsNullOrEmpty(className))
@@ -674,6 +694,9 @@ public partial class ZombiePlagueLegacyAPI : IZombiePlagueLegacyAPI, IDisposable
         OnSurvivorSelected = null;
         OnSniperSelected = null;
         OnHumanWin = null;
+        OnGameModeSelect = null;
+        OnPreferenceChanged = null;
+        OnUserPreferenceChanged = null;
 
         _disposed = true;
 

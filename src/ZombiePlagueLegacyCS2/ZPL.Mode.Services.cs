@@ -414,6 +414,37 @@ public partial class ZPLServices
             : mainConfig.Assassin.AssassinNames;
     }
 
+    private ZPLSpecialClassCFG.SpecialZombieClass? ResolveSpecialClass(
+        string? selectedName,
+        string fallbackName,
+        string context)
+    {
+        var specialConfig = _specialClassCFG.CurrentValue;
+        var classes = specialConfig.SpecialClassList;
+
+        if (!string.IsNullOrWhiteSpace(selectedName))
+        {
+            var exact = classes.FirstOrDefault(c =>
+                c.Enable &&
+                c.Name.Equals(selectedName, StringComparison.OrdinalIgnoreCase));
+            if (exact != null)
+                return exact;
+        }
+
+        var fallback = classes.FirstOrDefault(c =>
+            c.Enable &&
+            c.Name.Equals(fallbackName, StringComparison.OrdinalIgnoreCase));
+        if (fallback != null)
+            return fallback;
+
+        _logger.LogWarning(
+            "{Context}: no usable special class found. configured='{Configured}', fallback='{Fallback}'.",
+            context,
+            selectedName ?? "",
+            fallbackName);
+        return null;
+    }
+
     public void SetupMotherZombie(IPlayer player)
     {
         if (!player.IsValid)
@@ -424,15 +455,7 @@ public partial class ZPLServices
 
         var configuredMotherZombieNames = GetConfiguredMotherZombieNames();
         var selectedMotherZombieName = _helpers.SelectConfiguredName(configuredMotherZombieNames);
-        if (selectedMotherZombieName == null)
-        {
-            _logger.LogWarning("SetupMotherZombie: no configured name found; skipping special class setup.");
-        }
-
-        var specialConfig = _specialClassCFG.CurrentValue;
-        var MotherZombieClass = selectedMotherZombieName != null
-            ? specialConfig.SpecialClassList.FirstOrDefault(c => c.Name == selectedMotherZombieName)
-            : null;
+        var MotherZombieClass = ResolveSpecialClass(selectedMotherZombieName, "Mother Zombie", nameof(SetupMotherZombie));
 
         if (MotherZombieClass != null)
         {
@@ -526,15 +549,7 @@ public partial class ZPLServices
 
         var configuredNemesisNames = GetConfiguredNemesisNames();
         var selectedNemesisName = _helpers.SelectConfiguredName(configuredNemesisNames);
-        if (selectedNemesisName == null)
-        {
-            _logger.LogWarning("SetupNemesis: no configured name found; skipping special class setup.");
-        }
-
-        var specialConfig = _specialClassCFG.CurrentValue;
-        var nemesisClass = selectedNemesisName != null
-            ? specialConfig.SpecialClassList.FirstOrDefault(c => c.Name == selectedNemesisName)
-            : null;
+        var nemesisClass = ResolveSpecialClass(selectedNemesisName, "Nemesis", nameof(SetupNemesis));
 
         if (nemesisClass != null)
         {
@@ -616,15 +631,7 @@ public partial class ZPLServices
 
         var configuredAssassinNames = GetConfiguredAssassinNames();
         var selectedAssassinName = _helpers.SelectConfiguredName(configuredAssassinNames);
-        if (selectedAssassinName == null)
-        {
-            _logger.LogWarning("SetupAssassin: no configured name found; skipping special class setup.");
-        }
-
-        var specialConfig = _specialClassCFG.CurrentValue;
-        var AssassinClass = selectedAssassinName != null
-            ? specialConfig.SpecialClassList.FirstOrDefault(c => c.Name == selectedAssassinName)
-            : null;
+        var AssassinClass = ResolveSpecialClass(selectedAssassinName, "Assassin", nameof(SetupAssassin));
 
         if (AssassinClass != null)
         {
@@ -915,7 +922,12 @@ public partial class ZPLServices
         if (pawn == null || !pawn.IsValid)
             return;
 
-        player.SendCenterHTML($"<b><span color=\"#FFD700\" class='fontSize-l'>{_helpers.T(player, "GameModeBecomeHero")}</span></b>", 3000);
+        _helpers.SendStackedCenterHTML(
+            player,
+            "hero",
+            $"<span color=\"#FFD700\" class=\"fontSize-xl fontWeight-bold\">{_helpers.T(player, "GameModeBecomeHero")}</span>",
+            3000,
+            priority: 5);
         _helpers.SendChatToAllT("GameInfoBecomeHero", player.Name);
         var ws = pawn.WeaponServices;
         if (ws == null || !ws.IsValid)

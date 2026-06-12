@@ -49,7 +49,7 @@
 
 **ZombiePlagueLegacyCS2** is a complete Zombie Plague gamemode for CS2, ported from the classic **TheZombieApocalypse CS 1.6** addon. It preserves the original gameplay feel — including class abilities, balance, and mechanics — while being fully rebuilt for the CS2 / SwiftlyS2 architecture.
 
-The project ships as a **suite of 9 plugins** that work together out of the box, each independently loadable.
+The project ships as a **suite of 10 plugins** that work together out of the box, each independently loadable.
 
 ---
 
@@ -65,6 +65,7 @@ The project ships as a **suite of 9 plugins** that work together out of the box,
 | **ZPLMegaEvents** | Special-class selection hooks and mega-event triggers |
 | **ZPLFlashlight** | Flashlight toggle for humans |
 | **ZPLDarkFog** | Per-server atmospheric fog and tonemap on every map load |
+| **MessagePulse** | Scheduled ads/custom messages, wired to Zombie Plague user ad preferences |
 | **IZombiePlagueLegacyAPI** | Shared contracts DLL for external plugin integration |
 
 ---
@@ -116,7 +117,8 @@ Download and mount the following Workshop items before starting the server:
 ### Build from Source
 
 ```bash
-dotnet publish -c Release -r linux-x64
+dotnet restore ZombiePlagueLegacyCS2.sln -r linux-x64
+dotnet publish ZombiePlagueLegacyCS2.sln -c Release -r linux-x64 --self-contained false --no-restore
 ```
 
 Requires **.NET 10 SDK** and internet access (to restore SwiftlyS2 NuGet packages).
@@ -133,17 +135,22 @@ Requires **.NET 10 SDK** and internet access (to restore SwiftlyS2 NuGet package
 | `sw_zextra` | `!zextra` | Open the Extra Items shop |
 | `sw_zclass` | `!zclass` | Choose your zombie class preference |
 | `sw_buyweapons` | `!buyweapons` | Buy weapons (available before infection starts) |
+| `sw_zsettings` | `!zsettings` | Open personal user settings |
 | `sw_rank` | `!rank` | Show your current rank and K/D |
 | `sw_top` | `!top` / `!top10` / `!top15` | View the top players leaderboard |
 | `sw_vip` | `!vip` | View your VIP perks |
 | `sw_vips` | `!vips` | List online VIP players |
 | `sw_bet` | `!bet` | Place a bet on the round outcome |
 
+Weapon selection can be kept quiet after the first setup: set `"GiveMenuOnRoundStart": false`, keep `"EnableRememberChoice": true`, and keep `"AutoGiveRememberedChoiceOnRoundStart": true`. Players can toggle `Remember choice` in the weapon menu; remembered primary + secondary weapons are stored in MySQL table `zpl_user_preferences` and equipped automatically at round start, while manual changes from `!zmenu` / `!buyweapons` remain limited to one use per round.
+
+User settings are also stored in `zpl_user_preferences`: VOX sounds, fog, flashlight, tags, MessagePulse ads, hide-player preference, and VIP reward messages. Open them from `!zmenu` -> `User Settings` or directly with `!zsettings`.
+
 ### Admin Commands
 
 | Command | Permission | Description |
 |---------|-----------|-------------|
-| `sw_zadmin` | `hzp.adminmenu` | Admin menu — infect, respawn, set roles, force modes |
+| `sw_zadmin` | `admin.hzpmenu` | Admin menu — infect, respawn, set roles, force modes |
 
 > Set `AdminMenuPermission` to `""` in `ZombiePlagueLegacyCFG.jsonc` to open the admin menu to all players.
 
@@ -223,33 +230,34 @@ Open with `!zextra` or through the main menu (`!zmenu`). All items are purchased
 
 | Item | Price | Description |
 |------|------:|-------------|
-| 🛡️ Armor | 3 AP | +100 armor |
+| 🛡️ Armor | 2 AP | +100 armor |
 | 💥 HE Grenade | 2 AP | Standard explosive |
-| ⚡ Flash Grenade | 2 AP | Flashbang / light effect |
-| 💨 Smoke Grenade | 2 AP | Smoke screen |
-| 🔥 Incendiary Bomb | 4 AP | Fire area-denial |
-| 🌀 Teleport Grenade | 3 AP | Teleports the thrower on detonation |
-| 🧪 SCBA Suit | 5 AP | Absorbs one zombie infection |
-| 🦘 Multi-Jump | 4 AP | +1 extra mid-air jump (stackable) |
-| 🗡️ Knife Blink | 5 AP | 3 charges — knife swing teleports you forward; stops at walls |
-| 🚀 Jetpack | 10 AP | Hold **CTRL + SPACE** to fly; WASD + eye direction for thrust |
-| 💣 Laser Mine | 6 AP | Places a laser tripwire mine instantly (limit: 2) |
-| ❤️ Revive Token | 8 AP | Auto-respawns you once if you die |
-| ⚡ Tryder | 15 AP | +1 000 HP, +500 armor, infinite clip, blue glow |
-| ♾️ Unlimited Clip | 8 AP | Infinite magazine for your current weapon |
-| 🎯 No Recoil | 6 AP | Zero weapon spread |
-| 🏹 Become Survivor | 20 AP | Transform into Survivor mid-round *(disabled by default)* |
-| 🎯 Become Sniper | 15 AP | Transform into Sniper mid-round *(disabled by default)* |
+| ⚡ Flash Grenade | 1 AP | Flashbang / light effect |
+| 💨 Smoke Grenade | 1 AP | Smoke screen |
+| 🔥 Incendiary Bomb | 3 AP | Fire area-denial |
+| 🌀 Teleport Grenade | 2 AP | Teleports the thrower on detonation |
+| 🧪 SCBA Suit | 4 AP | Absorbs one zombie infection |
+| 🦘 Multi-Jump | 8 AP | +1 extra mid-air jump per purchase (max 3) |
+| 🗡️ Knife Blink | 12 AP | 3 charges — knife swing teleports you forward; stops at walls |
+| 🚀 Jetpack | 50 AP | Hold **CTRL + SPACE** to fly; consumes fuel and recharges after release |
+| 🪂 Parachute | 3 AP | Hold **E** while falling to slow descent |
+| 💣 Laser Mine | 5 AP | Plants a laser tripwire mine on a valid aimed surface |
+| ❤️ Revive Token | 7 AP | Auto-respawns you once if you die |
+| ⚡ Tryder | 60 AP | +1 000 HP, +500 armor, infinite clip, blue glow |
+| ♾️ Unlimited Clip | 6 AP | Infinite magazine for your current weapon |
+| 🎯 No Recoil | 5 AP | Zero weapon recoil |
+| 🏹 Become Survivor | 200 AP | Transform into Survivor mid-round |
+| 🎯 Become Sniper | 150 AP | Transform into Sniper mid-round |
 
 ### 🔴 Zombie Items
 
 | Item | Price | Limit | Description |
 |------|------:|------:|-------------|
-| 💊 Antidote | 8 AP | 3/round | Revert back to human |
-| 🛡️ Zombie Madness | 6 AP | 5/round | 10 s invulnerability + red glow |
-| 🧬 T-Virus Grenade | 6 AP | 3/round | Infects nearby humans on detonation |
-| 💀 Become Nemesis | 20 AP | — | Transform into Nemesis mid-round *(disabled by default)* |
-| 🥷 Become Assassin | 15 AP | — | Transform into Assassin mid-round *(disabled by default)* |
+| 💊 Antidote | 6 AP | 3/round | Revert back to human |
+| 🛡️ Zombie Madness | 5 AP | 5/round | 10 s invulnerability + red glow |
+| 🧬 T-Virus Grenade | 5 AP | 3/round | Infects nearby humans on detonation |
+| 💀 Become Nemesis | 500 AP | — | Transform into Nemesis mid-round |
+| 🥷 Become Assassin | 300 AP | — | Transform into Assassin mid-round |
 
 ### 💣 Laser Mines
 
@@ -257,13 +265,15 @@ Open with `!zextra` or through the main menu (`!zmenu`). All items are purchased
 |------|------:|------:|----------|
 | 💚 Laser Mine | 6 AP | 2/player | Continuous beam damage (10 dmg / 0.1 s tick) — identical to CS 1.6 |
 
-**Mine HP system** — set `MineHealth > 0` to make mines destroyable by zombie knife melee. The mine owner sees a live center-screen HP readout (`Mine HP: X / max`). At 0 HP the mine detonates.
+**Mine HP system** — set `MineHealth > 0` to make mines destroyable by zombie knife melee. Mine HP is shown in the unified center HUD with a segmented bar and current HP. At 0 HP the mine detonates.
+
+**Unified status HUD** — countdown, planting, jetpack fuel, damage, mine HP, frost and AP rewards are merged into one center-screen HUD instead of overlapping separate messages.
 
 **Planting progress HUD** — when a player places a mine, a 1-second deploy animation plays. During this time a center-screen HUD is shown with a cyan progress bar and percentage counter:
 
 ```
 PLANTING LASER
-━━━━━━━╌╌╌   73%
+■■■■■■■□□□   73%
 ```
 
 The mine beam activates automatically when the bar completes.
@@ -292,9 +302,9 @@ Ammo Packs are the in-game currency for the Extra Items shop. Balances are manag
 |--------|-------:|-----------|
 | Survive the round as human | +3 AP | `RoundSurviveReward` |
 | Infect / kill a human (as zombie) | +2 AP | `ZombieKillReward` |
-| Deal 600 cumulative damage to zombies | +1 AP | `HumanDamageRewardThreshold` / `HumanDamageReward` |
+| Deal 500 cumulative damage to zombies | +1 AP | `HumanDamageRewardThreshold` / `HumanDamageReward` |
 
-> Damage rewards stack — deal 1 200 damage in one round to earn +2 AP.
+> Damage rewards stack — deal 1 000 damage in one round to earn +2 AP.
 
 ---
 
@@ -319,15 +329,14 @@ Ammo Packs are the in-game currency for the Extra Items shop. Balances are manag
     // ── Knockback ───────────────────────────────────────────────────────────
     "KnockZombieForce": 200.0,
     "StunZombieTime": 0.1,
-    "HumanKnockBackHeadMultiply": 2.0,
-    "HumanKnockBackBodyMultiply": 1.0,
-    "HumanKnockBackGroundMultiply": 1.0,
-    "HumanKnockBackAirMultiply": 0.5,
-    "HumanHeroKnockBackMultiply": 1.0,
+    "HumanKnockBackHeadMultiply": 0.8,
+    "HumanKnockBackBodyMultiply": 0.4,
+    "HumanKnockBackGroundMultiply": 0.4,
+    "HumanKnockBackAirMultiply": 0.2,
+    "HumanHeroKnockBackMultiply": 0.5,
 
     // ── HUD ─────────────────────────────────────────────────────────────────
     "EnableDamageHud": true,        // Center-screen damage info on hit
-    "EnableStatusHud": true,        // Permanent HUD: mode / class / AP
 
     // ── Grenades (enable + auto-give on spawn) ───────────────────────────────
     "FireGrenade": true,            "SpawnGiveFireGrenade": true,
@@ -340,14 +349,25 @@ Ammo Packs are the in-game currency for the Extra Items shop. Balances are manag
     "TVirusCanInfectHero": true,
     "NormalRoundsInterval": 5,      // Min normal rounds between special modes (0 = off)
 
+    // ── Atmosphere ──────────────────────────────────────────────────────────
+    "Fog": {
+      "Enable": true,
+      "ColorR": 24,  "ColorG": 58,  "ColorB": 30,
+      "StartDist": 60.0,
+      "EndDist": 750.0,
+      "MaxDensity": 0.94,
+      "Exponent": 2.0
+    },
+    "Skybox": "sky_csgo_night02",
+
     // ── Commands ────────────────────────────────────────────────────────────
     "MainMenuCommand":      "sw_zmenu",
     "ExtraItemsCommand":    "sw_zextra",
     "ZombieClassCommand":   "sw_zclass",
-    "AdminMenuCommand":     "sw_zadmin",
+    "AdminMenuItemCommand": "sw_zadmin",
     "BuyWeaponsCommand":    "sw_buyweapons",
-    "MineMenuCommand":      "sw_mine",
-    "AdminMenuPermission":  "hzp.adminmenu",  // "" = allow everyone
+    "UserSettingsCommand":  "sw_zsettings",
+    "AdminMenuPermission":  "admin.hzpmenu",  // "" = allow everyone
 
     // ── Economy ─────────────────────────────────────────────────────────────
     "ChatPrefix":         "[red][ZM][default]",
@@ -411,9 +431,10 @@ Ammo Packs are the in-game currency for the Extra Items shop. Balances are manag
 ```jsonc
 {
   "ZPLExtraItemsCFG": {
+    "StartingAmmoPacks": 0,
     "RoundSurviveReward": 3,
     "ZombieKillReward": 2,
-    "HumanDamageRewardThreshold": 600,
+    "HumanDamageRewardThreshold": 500,
     "HumanDamageReward": 1,
 
     // Tryder
@@ -434,6 +455,15 @@ Ammo Packs are the in-game currency for the Extra Items shop. Balances are manag
     "JetpackThrustForce": 350.0,
     "JetpackHorizontalForce": 300.0,
     "JetpackFuelConsumeRate": 30.0,
+    "JetpackRechargeTime": 20.0,
+
+    // Parachute
+    "ParachuteFallSpeed": 80.0,
+
+    // Multi-jump / revive
+    "MultijumpIncrement": 1,
+    "MultijumpMax": 3,
+    "ReviveTokenRespawnDelay": 1.5,
 
     "Items": [ ... ]
   }
@@ -491,8 +521,9 @@ public override void UseSharedInterface(IInterfaceManager interfaceManager)
 | Category | Members |
 |----------|---------|
 | **State queries** | `IsZombie()`, `IsNemesis()`, `IsAssassin()`, `IsSurvivor()`, `IsSniper()`, `IsHero()`, `CurrentMode` |
-| **Events** | `ZPL_OnPlayerInfect`, `ZPL_OnNemesisSelected`, `ZPL_OnGameStart`, `ZPL_OnHumanWin`, `ZPL_OnZombieWin` |
+| **Events** | `ZPL_OnPlayerInfect`, `ZPL_OnNemesisSelected`, `ZPL_OnGameStart`, `ZPL_OnHumanWin`, `ZPL_OnZombieWin`, `ZPL_OnUserPreferenceChanged` |
 | **Actions** | Force roles, give/take AP, set glow / FOV / god mode / speed |
+| **User preferences** | `ZPL_GetUserPreference(...)` for `vox_sounds`, `fog_enabled`, `flashlight_enabled`, `tags_enabled`, `ads_enabled`, `hide_players`, `vip_reward_messages` |
 
 Full interface definition: [`src/IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.cs`](src/IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.cs)
 

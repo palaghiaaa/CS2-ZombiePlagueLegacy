@@ -181,7 +181,7 @@ public partial class ZombiePlagueLegacyAPI : IZombiePlagueLegacyAPI, IDisposable
      * 调用这个方法，触发事件
      * 让外部插件知道玩家改了偏好，可以存数据库
     */
-    private Action<ulong, string>? OnPreferenceChanged;
+    private Action<ulong, string?>? OnPreferenceChanged;
 
     public event Action<ulong, string?>? ZPL_OnPreferenceChanged
     {
@@ -211,6 +211,19 @@ public partial class ZombiePlagueLegacyAPI : IZombiePlagueLegacyAPI, IDisposable
         }
 
         OnPreferenceChanged?.Invoke(steamId, newClassName ?? string.Empty);
+    }
+
+    private Action<ulong, string, bool>? OnUserPreferenceChanged;
+
+    public event Action<ulong, string, bool>? ZPL_OnUserPreferenceChanged
+    {
+        add => OnUserPreferenceChanged += value;
+        remove => OnUserPreferenceChanged -= value;
+    }
+
+    public void NotifyUserPreferenceChanged(ulong steamId, string key, bool enabled)
+    {
+        OnUserPreferenceChanged?.Invoke(steamId, key, enabled);
     }
 
 }

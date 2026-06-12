@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+		<AssemblyName>MessagePulse</AssemblyName>
+		<OutputPath>$(MSBuildThisFileDirectory)../../build/</OutputPath>
+		<PublishDir>$(OutputPath)publish/MessagePulse</PublishDir>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0"
+			ExcludeAssets="runtime" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0"
+			ExcludeAssets="runtime" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0"
+			ExcludeAssets="runtime" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0"
+			ExcludeAssets="runtime" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0"
+			ExcludeAssets="runtime" PrivateAssets="all" />
+		<PackageReference Include="SwDevtools" Version="0.0.1" />
+		<PackageReference Include="SwiftlyS2.CS2" Version="1.4.0-beta.38" ExcludeAssets="runtime"
+			PrivateAssets="all" />
+	</ItemGroup>
+
+	<!-- Placeholder API -->
+	<ItemGroup>
+		<ProjectReference Include="../IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj" Private="false" />
+		<Reference Include="PlaceholderAPI.Contract">
+			<HintPath>resources/exports/PlaceholderAPI.Contract/PlaceholderAPI.Contract.dll</HintPath>
+			<Private>false</Private>
+			<CopyLocal>false</CopyLocal>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content
+			Include="resources/gamedata/**/*;resources/configs/**/*;resources/translations/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<Target Name="CreateZip" AfterTargets="Publish">
+		<ItemGroup>
+			<PublishFiles Include="$(PublishDir)**\*.*" />
+		</ItemGroup>
+
+		<ZipDirectory SourceDirectory="$(PublishDir)../"
+			DestinationFile="$(OutputPath)../$(AssemblyName).zip" Overwrite="true" />
+	</Target>
+
+</Project>

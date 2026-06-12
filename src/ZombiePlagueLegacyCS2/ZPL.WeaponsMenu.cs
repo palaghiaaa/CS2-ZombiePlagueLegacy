@@ -1,4 +1,3 @@
-using System.Drawing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SwiftlyS2.Core.Menus.OptionsBase;
@@ -18,6 +17,7 @@ public class ZPLWeaponsMenu
     private readonly ZPLHelpers _helpers;
     private readonly ZPLMenuHelper _menuHelper;
     private readonly IOptionsMonitor<ZPLWeaponsCFG> _weaponsCFG;
+    private readonly ZPLPlayerPrefsService _prefsService;
 
     public ZPLWeaponsMenu(
         ISwiftlyCore core,
@@ -25,7 +25,8 @@ public class ZPLWeaponsMenu
         ZPLGlobals globals,
         ZPLHelpers helpers,
         ZPLMenuHelper menuHelper,
-        IOptionsMonitor<ZPLWeaponsCFG> weaponsCFG)
+        IOptionsMonitor<ZPLWeaponsCFG> weaponsCFG,
+        ZPLPlayerPrefsService prefsService)
     {
         _core = core;
         _logger = logger;
@@ -33,6 +34,7 @@ public class ZPLWeaponsMenu
         _helpers = helpers;
         _menuHelper = menuHelper;
         _weaponsCFG = weaponsCFG;
+        _prefsService = prefsService;
     }
 
     private bool IsWeaponSelectionWindowOpen(IPlayer player, bool sendReason = false)
@@ -67,6 +69,113 @@ public class ZPLWeaponsMenu
         return true;
     }
 
+    private static ulong GetPreferenceKey(IPlayer player)
+        => player.SteamID != 0 ? player.SteamID : (ulong)player.PlayerID;
+
+    private WeaponLoadoutPreference GetLoadoutPreference(IPlayer player)
+    {
+        ulong key = GetPreferenceKey(player);
+        if (!_globals.WeaponLoadoutPreferences.TryGetValue(key, out var preference))
+        {
+            preference = new WeaponLoadoutPreference();
+            _globals.WeaponLoadoutPreferences[key] = preference;
+        }
+
+        return preference;
+    }
+
+    private static bool TryFindWeapon(IEnumerable<WeaponEntry> weapons, string classname, out WeaponEntry weapon)
+    {
+        weapon = weapons.FirstOrDefault(entry =>
+            !string.IsNullOrWhiteSpace(entry.Classname) &&
+            entry.Classname.Equals(classname, StringComparison.OrdinalIgnoreCase))!;
+
+        return weapon != null;
+    }
+
+    private void SavePrimaryChoice(IPlayer player, string name, string classname)
+    {
+        var preference = GetLoadoutPreference(player);
+        preference.PrimaryName = name;
+        preference.PrimaryClassname = classname;
+        PersistLoadoutPreference(player, preference);
+    }
+
+    private void SaveSecondaryChoice(IPlayer player, string name, string classname)
+    {
+        var preference = GetLoadoutPreference(player);
+        preference.SecondaryName = name;
+        preference.SecondaryClassname = classname;
+        PersistLoadoutPreference(player, preference);
+    }
+
+    private void PersistLoadoutPreference(IPlayer player, WeaponLoadoutPreference preference)
+    {
+        if (player.SteamID == 0)
+            return;
+
+        _prefsService.SaveWeaponPreference(player.SteamID, preference);
+    }
+
+    private void AddRememberChoiceOption(IMenuAPI menu, IPlayer player, Action<IPlayer> reopenMenu)
+    {
+        var CFG = _weaponsCFG.CurrentValue;
+        if (!CFG.EnableRememberChoice)
+            return;
+
+        var preference = GetLoadoutPreference(player);
+        string state = preference.RememberChoice
+            ? _helpers.T(player, "CommonOn")
+            : _helpers.T(player, "CommonOff");
+
+        string color = preference.RememberChoice ? ZPLMenuHelper.ColSelected : ZPLMenuHelper.ColHint;
+        var rememberBtn = ZPLMenuHelper.LargeButton(_helpers.T(player, "WeaponMenuRememberChoice", state), color);
+
+        rememberBtn.Click += async (_, args) =>
+        {
+            var clicker = args.Player;
+            _core.Scheduler.NextTick(() =>
+            {
+                if (!clicker.IsValid)
+                    return;
+
+                var clickerPreference = GetLoadoutPreference(clicker);
+                clickerPreference.RememberChoice = !clickerPreference.RememberChoice;
+                PersistLoadoutPreference(clicker, clickerPreference);
+                _helpers.SendChatT(clicker, clickerPreference.RememberChoice
+                    ? "WeaponMenuRememberEnabled"
+                    : "WeaponMenuRememberDisabled");
+
+                reopenMenu(clicker);
+            });
+        };
+
+        menu.AddOption(rememberBtn);
+    }
+
+    public bool TryGiveRememberedLoadout(IPlayer player)
+    {
+        var CFG = _weaponsCFG.CurrentValue;
+        if (!CFG.EnableWeaponsMenu || !CFG.EnableRememberChoice || !CFG.AutoGiveRememberedChoiceOnRoundStart)
+            return false;
+
+        if (!IsEligibleHuman(player))
+            return false;
+
+        var preference = GetLoadoutPreference(player);
+        if (!preference.RememberChoice)
+            return false;
+
+        if (!TryFindWeapon(CFG.PrimaryWeapons, preference.PrimaryClassname, out var primary) ||
+            !TryFindWeapon(CFG.SecondaryWeapons, preference.SecondaryClassname, out var secondary))
+            return false;
+
+        GiveWeaponBySlot(player, primary.Classname, gear_slot_t.GEAR_SLOT_RIFLE);
+        GiveWeaponBySlot(player, secondary.Classname, gear_slot_t.GEAR_SLOT_PISTOL);
+        GiveDefaultGrenadesOnce(player);
+        return true;
+    }
+
     public void OpenWeaponsMenuIfAllowed(IPlayer player)
     {
         var CFG = _weaponsCFG.CurrentValue;
@@ -83,12 +192,9 @@ public class ZPLWeaponsMenu
         }
 
         var id = player.PlayerID;
-
-        // During the pre-infection window, enforce one-use-per-round
-        // After infection starts, any eligible human may use the menu freely
-        if (!_globals.InfectionStartedThisRound && !_globals.AdminForcedModeThisRound)
+        if (_globals.CanBuyWeaponsThisRound.TryGetValue(id, out bool canBuy))
         {
-            if (!_globals.CanBuyWeaponsThisRound.TryGetValue(id, out bool canBuy) || !canBuy)
+            if (!canBuy)
             {
                 _helpers.SendChatT(player, "WeaponsMenuAlreadyUsed");
                 return;
@@ -96,7 +202,6 @@ public class ZPLWeaponsMenu
         }
         else
         {
-            // Mid-round: (re-)enable buy token so weapons are actually given
             _globals.CanBuyWeaponsThisRound[id] = true;
         }
 
@@ -106,7 +211,8 @@ public class ZPLWeaponsMenu
     public void ShowPrimaryMenuToAllEligible()
     {
         var CFG = _weaponsCFG.CurrentValue;
-        if (!CFG.EnableWeaponsMenu || !CFG.GiveMenuOnRoundStart)
+        if (!CFG.EnableWeaponsMenu ||
+            (!CFG.GiveMenuOnRoundStart && !CFG.AutoGiveRememberedChoiceOnRoundStart))
             return;
 
 
@@ -124,7 +230,11 @@ public class ZPLWeaponsMenu
                 continue;
 
             _globals.CanBuyWeaponsThisRound[id] = true;
-            ShowPrimaryMenu(player);
+            if (TryGiveRememberedLoadout(player))
+                continue;
+
+            if (CFG.GiveMenuOnRoundStart)
+                ShowPrimaryMenu(player);
         }
     }
 
@@ -142,23 +252,16 @@ public class ZPLWeaponsMenu
 
         IMenuAPI menu = _menuHelper.CreateMenu(_helpers.T(player, "WeaponMenuPrimaryTitle"));
 
-        menu.AddOption(new TextMenuOption(
-            $"<span color=\"{ZPLMenuHelper.ColHint}\">{_helpers.T(player, "WeaponMenuPrimarySelect")}</span>",
-            updateIntervalMs: 500, pauseIntervalMs: 100)
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop
-        });
+        menu.AddOption(ZPLMenuHelper.LargeText(_helpers.T(player, "WeaponMenuPrimarySelect")));
+
+        AddRememberChoiceOption(menu, player, ShowPrimaryMenu);
 
         foreach (var weapon in CFG.PrimaryWeapons)
         {
             string weaponName = weapon.Name;
             string classname = weapon.Classname;
 
-            var btn = new ButtonMenuOption(weaponName)
-            {
-                TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-                CloseAfterClick = true
-            };
+            var btn = ZPLMenuHelper.LargeButton(weaponName, "#5E98D9");
 
             btn.Click += async (_, args) =>
             {
@@ -172,6 +275,7 @@ public class ZPLWeaponsMenu
 
                     var id = clicker.PlayerID;
                     _globals.CanBuyWeaponsThisRound[id] = false;
+                    SavePrimaryChoice(clicker, weaponName, classname);
                     GiveWeaponBySlot(clicker, classname, gear_slot_t.GEAR_SLOT_RIFLE);
                     ShowSecondaryMenu(clicker);
                 });
@@ -197,23 +301,16 @@ public class ZPLWeaponsMenu
 
         IMenuAPI menu = _menuHelper.CreateMenu(_helpers.T(player, "WeaponMenuSecondaryTitle"));
 
-        menu.AddOption(new TextMenuOption(
-            $"<span color=\"{ZPLMenuHelper.ColHint}\">{_helpers.T(player, "WeaponMenuSecondarySelect")}</span>",
-            updateIntervalMs: 500, pauseIntervalMs: 100)
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop
-        });
+        menu.AddOption(ZPLMenuHelper.LargeText(_helpers.T(player, "WeaponMenuSecondarySelect")));
+
+        AddRememberChoiceOption(menu, player, ShowSecondaryMenu);
 
         foreach (var weapon in CFG.SecondaryWeapons)
         {
             string weaponName = weapon.Name;
             string classname = weapon.Classname;
 
-            var btn = new ButtonMenuOption(weaponName)
-            {
-                TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-                CloseAfterClick = true
-            };
+            var btn = ZPLMenuHelper.LargeButton(weaponName, "#5E98D9");
 
             btn.Click += async (_, args) =>
             {
@@ -225,8 +322,9 @@ public class ZPLWeaponsMenu
                     if (!IsWeaponSelectionWindowOpen(clicker, sendReason: true))
                         return;
 
+                    SaveSecondaryChoice(clicker, weaponName, classname);
                     GiveWeaponBySlot(clicker, classname, gear_slot_t.GEAR_SLOT_PISTOL);
-                    GiveDefaultGrenades(clicker);
+                    GiveDefaultGrenadesOnce(clicker);
                 });
             };
 
@@ -261,6 +359,14 @@ public class ZPLWeaponsMenu
 
         int reserveAmmo = _weaponsCFG.CurrentValue.ReserveAmmoAmount;
         weapon.ReserveAmmo[0] = reserveAmmo;
+    }
+
+    private void GiveDefaultGrenadesOnce(IPlayer player)
+    {
+        if (!_globals.WeaponGrenadesGivenThisRound.Add(player.PlayerID))
+            return;
+
+        GiveDefaultGrenades(player);
     }
 
     private void GiveDefaultGrenades(IPlayer player)

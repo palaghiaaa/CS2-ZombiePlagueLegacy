@@ -413,6 +413,7 @@ public partial class ZPLServices
             _helpers.RemoveScbaSuit(zombie, CFG.ScbaSuitBrokenSound);
             _helpers.RemoveGodState(zombie);
             _helpers.RemoveInfiniteAmmo(zombie);
+            _helpers.ResetTemporaryHumanExtraItems(zombie, removeGlow: true);
 
             // Disable human-only extra items when player becomes zombie
             _globals.HasJetpack.Remove(Id);
@@ -495,9 +496,13 @@ public partial class ZPLServices
             {
                 string mutLabel  = _helpers.T(zombie, isMother ? "YouAreMother" : "YouHaveMutatedTo");
                 string className = Zclass.Name.ToUpperInvariant();
-                zombie.SendCenterHTML(
-                    $"<b><span color='#FF4444'>{mutLabel}</span></b><br>" +
-                    $"<b><span color='#00FF7F' class='fontSize-l'>{className}</span></b>", 3000);
+                _helpers.SendStackedCenterHTML(
+                    zombie,
+                    "mutation",
+                    $"<span color=\"#FF4444\" class=\"fontSize-l fontWeight-bold\">{mutLabel}</span><br>" +
+                    $"<span color=\"#00FF7F\" class=\"fontSize-xl fontWeight-bold\">{className}</span>",
+                    3000,
+                    priority: 5);
             }
 
             // ── Class special abilities (silent steps, extra jumps) ───────────
@@ -581,7 +586,7 @@ public partial class ZPLServices
             if (soundIndex >= 0 && soundIndex < soundList.Length)
             {
                 CheckEndTimer();
-                _helpers.EmitSoundToAll(soundList[soundIndex].Trim(), _globals.RoundVoxGroup.Volume);
+                _helpers.EmitVoxSoundToEnabledPlayers(soundList[soundIndex].Trim(), _globals.RoundVoxGroup.Volume);
             }
         }
         else if (currentDisplay == 20 && _globals.RoundVoxGroup != null)
@@ -622,12 +627,14 @@ public partial class ZPLServices
         // Build progress bar — pass a player so localizer can resolve translation chars
         var anyPlayer = _core.PlayerManager.GetAllPlayers()
             .FirstOrDefault(p => p.IsValid && !p.IsFakeClient);
-        float cdProgress    = Math.Clamp((float)currentDisplay / 60f, 0f, 1f);
-        string bar          = _helpers.BuildProgressBar(cdProgress, 12, "#FF8C00", "#666666", anyPlayer);
+        float countdownTotal = CFG.RoundReadyTime > 0f ? (float)Math.Ceiling(CFG.RoundReadyTime) : 3f;
+        countdownTotal = Math.Max(1f, countdownTotal);
+        float cdProgress    = Math.Clamp((countdownTotal - currentDisplay + 1f) / countdownTotal, 0f, 1f);
+        string bar          = _helpers.BuildProgressBar(cdProgress, 10, "#FF8C00", "#777777", anyPlayer);
         string countdownHtml =
-            $"<span color='#FF8C00' class='fontSize-l'><b>COUNTDOWN {currentDisplay}</b></span><br>" +
+            $"<span color=\"#FF8C00\" class=\"fontSize-l fontWeight-bold\">COUNTDOWN {currentDisplay}</span><br>" +
             bar;
-        _core.PlayerManager.SendCenterHTML(countdownHtml, 1100);
+        _helpers.SendStackedCenterHTMLToAll("countdown", _ => countdownHtml, 1100, priority: 10);
     }
 
     public void CheckEndTimer()
@@ -646,7 +653,7 @@ public partial class ZPLServices
             var sound = _helpers.RandomSelectSound(soundevent);
             if (sound != null)
             {
-                _helpers.EmitSoundToAll(sound, Volume);
+                _helpers.EmitVoxSoundToEnabledPlayers(sound, Volume);
             }
         }
     }
@@ -658,7 +665,7 @@ public partial class ZPLServices
             var sound = _helpers.RandomSelectSound(soundevent);
             if (sound != null)
             {
-                _helpers.EmitSoundFormPlayer(player, sound, Volume);
+                _helpers.EmitVoxSoundToEnabledPlayers(sound, Volume, player);
             }
         }
     }
@@ -869,13 +876,13 @@ public partial class ZPLServices
 
         // Compact damage HUD — all on separate lines via <br>
         // Using @ verbatim strings to avoid quote escaping issues
-        string classLine  = $"<span color=\"#888888\">[</span><span color=\"#FFAA00\">{ZombieClassName}</span><span color=\"#888888\">]</span> <span color=\"#FFFFFF\">{victim.Name}</span>";
-        string hpLine     = hpBar + $" <span color='{hpColor}'>{health}</span><span color=\"#666666\">/</span><span color=\"#888888\">{Maxhealth}</span>";
-        string dmgLine    = $"<span color=\"#FF3030\">-{damage}</span>";
+        string classLine  = $"<span color=\"#888888\" class=\"fontSize-l\">[</span><span color=\"#FFAA00\" class=\"fontSize-l fontWeight-bold\">{ZombieClassName}</span><span color=\"#888888\" class=\"fontSize-l\">]</span> <span color=\"#FFFFFF\" class=\"fontSize-l\">{victim.Name}</span>";
+        string hpLine     = hpBar + $" <span color=\"{hpColor}\" class=\"fontSize-l fontWeight-bold\">{health}</span><span color=\"#666666\" class=\"fontSize-l\">/</span><span color=\"#888888\" class=\"fontSize-l\">{Maxhealth}</span>";
+        string dmgLine    = $"<span color=\"#FF3030\" class=\"fontSize-xl fontWeight-bold\">-{damage}</span>";
 
         string message = $"{classLine}<br>{hpLine}<br>{dmgLine}";
 
-        attacker.SendCenterHTML(message, 2000);
+        _helpers.SendStackedCenterHTML(attacker, "damage", message, 2000, priority: 50);
 
     }
 

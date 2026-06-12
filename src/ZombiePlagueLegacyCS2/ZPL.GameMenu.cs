@@ -1,4 +1,3 @@
-using System.Drawing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SwiftlyS2.Core.Menus.OptionsBase;
@@ -7,7 +6,6 @@ using SwiftlyS2.Shared.Menus;
 using SwiftlyS2.Shared.Misc;
 using SwiftlyS2.Shared.Natives;
 using SwiftlyS2.Shared.Players;
-using DrawingColor = System.Drawing.Color;
 using Vector = SwiftlyS2.Shared.Natives.Vector;
 
 namespace ZombiePlagueLegacyCS2;
@@ -31,8 +29,8 @@ public class ZPLGameMenu
     private readonly ZPLZombieClassMenu _zombieClassMenu;
     private readonly ZPLExtraItemsMenu _extraItemsMenu;
     private readonly ZPLWeaponsMenu _weaponsMenu;
+    private readonly ZPLUserSettingsMenu _userSettingsMenu;
     private readonly ZPLAdminItemMenu _adminMenu;
-    private readonly IOptionsMonitor<ZPLMainCFG> _mainCFG;
 
     public ZPLGameMenu(
         ISwiftlyCore core,
@@ -43,8 +41,8 @@ public class ZPLGameMenu
         ZPLZombieClassMenu zombieClassMenu,
         ZPLExtraItemsMenu extraItemsMenu,
         ZPLWeaponsMenu weaponsMenu,
-        ZPLAdminItemMenu adminMenu,
-        IOptionsMonitor<ZPLMainCFG> mainCFG)
+        ZPLUserSettingsMenu userSettingsMenu,
+        ZPLAdminItemMenu adminMenu)
     {
         _core = core;
         _logger = logger;
@@ -54,8 +52,8 @@ public class ZPLGameMenu
         _zombieClassMenu = zombieClassMenu;
         _extraItemsMenu = extraItemsMenu;
         _weaponsMenu = weaponsMenu;
+        _userSettingsMenu = userSettingsMenu;
         _adminMenu = adminMenu;
-        _mainCFG = mainCFG;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -68,19 +66,10 @@ public class ZPLGameMenu
 
         IMenuAPI menu = _menuHelper.CreateMenu(_helpers.T(player, "GameMenuTitle"));
 
-        menu.AddOption(new TextMenuOption(
-            $"<span color=\"{ZPLMenuHelper.ColHint}\">{_helpers.T(player, "GameMenuHint")}</span>",
-            updateIntervalMs: 600, pauseIntervalMs: 100)
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop
-        });
+        menu.AddOption(ZPLMenuHelper.LargeText(_helpers.T(player, "GameMenuHint")));
 
         // 1 – Buy Weapons
-        var buyWeaponsBtn = new ButtonMenuOption(_helpers.T(player, "GameMenuBuyWeapons"))
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-            CloseAfterClick = true
-        };
+        var buyWeaponsBtn = ZPLMenuHelper.LargeButton(_helpers.T(player, "GameMenuBuyWeapons"));
         buyWeaponsBtn.Click += async (_, args) =>
         {
             var clicker = args.Player;
@@ -93,11 +82,7 @@ public class ZPLGameMenu
         menu.AddOption(buyWeaponsBtn);
 
         // 2 – Buy Extra Items
-        var extraItemsBtn = new ButtonMenuOption(_helpers.T(player, "GameMenuExtraItems"))
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-            CloseAfterClick = true
-        };
+        var extraItemsBtn = ZPLMenuHelper.LargeButton(_helpers.T(player, "GameMenuExtraItems"));
         extraItemsBtn.Click += async (_, args) =>
         {
             var clicker = args.Player;
@@ -110,11 +95,7 @@ public class ZPLGameMenu
         menu.AddOption(extraItemsBtn);
 
         // 3 – Choose Zombie Class
-        var zombieClassBtn = new ButtonMenuOption(_helpers.T(player, "GameMenuZombieClass"))
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-            CloseAfterClick = true
-        };
+        var zombieClassBtn = ZPLMenuHelper.LargeButton(_helpers.T(player, "GameMenuZombieClass"));
         zombieClassBtn.Click += async (_, args) =>
         {
             var clicker = args.Player;
@@ -127,11 +108,7 @@ public class ZPLGameMenu
         menu.AddOption(zombieClassBtn);
 
         // 4 – Unstuck
-        var unstuckBtn = new ButtonMenuOption(_helpers.T(player, "GameMenuUnstuck"))
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-            CloseAfterClick = true
-        };
+        var unstuckBtn = ZPLMenuHelper.LargeButton(_helpers.T(player, "GameMenuUnstuck"));
         unstuckBtn.Click += async (_, args) =>
         {
             var clicker = args.Player;
@@ -144,11 +121,7 @@ public class ZPLGameMenu
         menu.AddOption(unstuckBtn);
 
         // 5 – Join Spectator
-        var specBtn = new ButtonMenuOption(_helpers.T(player, "GameMenuJoinSpectator"))
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-            CloseAfterClick = true
-        };
+        var specBtn = ZPLMenuHelper.LargeButton(_helpers.T(player, "GameMenuJoinSpectator"));
         specBtn.Click += async (_, args) =>
         {
             var clicker = args.Player;
@@ -161,19 +134,33 @@ public class ZPLGameMenu
         menu.AddOption(specBtn);
 
         // 6 – Admin Menu (only shown to admins)
-        if (HasAdminPermission(player))
+        var settingsBtn = ZPLMenuHelper.LargeButton(_helpers.T(player, "GameMenuUserSettings"), ZPLMenuHelper.ColSelected);
+        settingsBtn.Click += async (_, args) =>
         {
-            var adminBtn = new ButtonMenuOption(_helpers.T(player, "GameMenuAdminMenu"))
+            var clicker = args.Player;
+            _core.Scheduler.NextTick(() =>
             {
-                TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-                CloseAfterClick = true
-            };
+                if (!clicker.IsValid) return;
+                _userSettingsMenu.OpenUserSettingsMenu(clicker);
+            });
+        };
+        menu.AddOption(settingsBtn);
+
+        if (_helpers.HasAdminMenuPermission(player))
+        {
+            var adminBtn = ZPLMenuHelper.LargeButton(_helpers.T(player, "GameMenuAdminMenu"), ZPLMenuHelper.ColAmber);
             adminBtn.Click += async (_, args) =>
             {
                 var clicker = args.Player;
                 _core.Scheduler.NextTick(() =>
                 {
                     if (!clicker.IsValid) return;
+                    if (!_helpers.HasAdminMenuPermission(clicker))
+                    {
+                        _helpers.SendChatT(clicker, "NoPermission");
+                        return;
+                    }
+
                     _adminMenu.OpenAdminItemMenu(clicker);
                 });
             };
@@ -181,22 +168,6 @@ public class ZPLGameMenu
         }
 
         _core.MenusAPI.OpenMenuForPlayer(player, menu);
-    }
-
-    private bool HasAdminPermission(IPlayer player)
-    {
-        if (!player.IsValid) return false;
-        ulong steamId = player.SteamID;
-        if (steamId == 0) return false;
-        var permString = _mainCFG.CurrentValue.AdminMenuPermission;
-        if (string.IsNullOrWhiteSpace(permString)) return true;
-        foreach (var perm in permString.Split(','))
-        {
-            var p = perm.Trim();
-            if (p.Length == 0) continue;
-            if (_core.Permission.PlayerHasPermission(steamId, p)) return true;
-        }
-        return false;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

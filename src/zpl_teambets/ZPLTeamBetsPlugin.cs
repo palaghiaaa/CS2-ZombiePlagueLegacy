@@ -13,6 +13,7 @@ using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
 using SwiftlyS2.Core.Menus.OptionsBase;
 using ZombiePlagueLegacyCS2;
+using ZombiePlagueLegacyCS2.SharedUi;
 
 namespace ZPLTeamBets;
 
@@ -286,14 +287,7 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
             return;
         }
 
-        var menuCfg = new MenuConfiguration
-        {
-            Title           = T(player, "MenuTitle"),
-            FreezePlayer    = false,
-            MaxVisibleItems = 6,
-            PlaySound       = false,
-            HideFooter      = false
-        };
+        var menuCfg = ZPLMenuStyle.MenuConfig(T(player, "MenuTitle"));
 
         var menu = Core.MenusAPI.CreateMenu(menuCfg, default, null, MenuOptionScrollStyle.LinearScroll);
 
@@ -306,11 +300,8 @@ public class ZPLTeamBetsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 int capturedAmount = preset;
                 BetSide capturedSide = side;
 
-                var btn = new ButtonMenuOption(T(player, "MenuBetEntry", sideLabel, capturedAmount))
-                {
-                    TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-                    CloseAfterClick = true,
-                };
+                string color = side == BetSide.Humans ? ZPLMenuStyle.ColSelected : ZPLMenuStyle.ColZombie;
+                var btn = ZPLMenuStyle.Button(T(player, "MenuBetEntry", sideLabel, capturedAmount), color);
                 btn.Click += async (_, args) =>
                 {
                     var p = args.Player;

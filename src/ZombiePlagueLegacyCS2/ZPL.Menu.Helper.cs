@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using SwiftlyS2.Core.Menus.OptionsBase;
 using SwiftlyS2.Shared;
 using SwiftlyS2.Shared.Menus;
 using SwiftlyS2.Shared.Players;
@@ -49,14 +50,53 @@ public class ZPLMenuHelper
     public static string ItemLabel(string name, int price, bool isZombie = false)
     {
         string nameColor = isZombie ? ColZombie : ColButton;
-        return $"<span color=\"{nameColor}\">{name}</span>  <span color=\"{ColCost}\">[{price} AP]</span>";
+        return $"<span color=\"{nameColor}\" class=\"fontSize-xxl fontWeight-bold\">{name}</span>  " +
+               $"<span color=\"{ColCost}\" class=\"fontSize-xxl fontWeight-bold\">[{price} AP]</span>";
     }
 
     /// <summary>Wraps a button label with a checkmark when selected.</summary>
     public static string ClassLabel(string name, bool selected)
     {
-        string check = selected ? $" <span color=\"{ColSelected}\">✓</span>" : "";
-        return $"<span color=\"{ColButton}\">{name}</span>{check}";
+        string check = selected ? $" <span color=\"{ColSelected}\" class=\"fontSize-xxl fontWeight-bold\">*</span>" : "";
+        return $"<span color=\"{ColButton}\" class=\"fontSize-xxl fontWeight-bold\">{name}</span>{check}";
+    }
+
+    public static string OptionLabel(string text, string? color = null)
+    {
+        return $"<span color=\"{color ?? ColButton}\" class=\"fontSize-xxl fontWeight-bold\">{text}</span>";
+    }
+
+    public static string HintLabel(string text)
+    {
+        return $"<span color=\"{ColHint}\" class=\"fontSize-xxl\">{text}</span>";
+    }
+
+    public static ButtonMenuOption LargeButton(string text, string color = ColButton, bool closeAfterClick = true)
+    {
+        return ApplyLargeFormat(new ButtonMenuOption(text)
+        {
+            CloseAfterClick = closeAfterClick
+        }, color, bold: true);
+    }
+
+    public static TextMenuOption LargeText(string text, string color = ColHint, bool bold = false)
+    {
+        return ApplyLargeFormat(new TextMenuOption(text), color, bold);
+    }
+
+    public static T ApplyLargeFormat<T>(T option, string color = ColButton, bool bold = true)
+        where T : MenuOptionBase
+    {
+        option.TextStyle = MenuOptionTextStyle.TruncateEnd;
+        option.TextSize = MenuOptionTextSize.ExtraLarge;
+        option.AfterFormat += (_, args) =>
+        {
+            string text = args.CustomText ?? args.Option.Text ?? string.Empty;
+            string weight = bold ? " fontWeight-bold" : "";
+            args.CustomText = $"<span color=\"{color}\" class=\"fontSize-xxl{weight}\">{text}</span>";
+        };
+
+        return option;
     }
 
     // ── Single unified menu factory ───────────────────────────────────────────
@@ -67,14 +107,14 @@ public class ZPLMenuHelper
     /// </summary>
     public IMenuAPI CreateMenu(string title)
     {
-        // Title: amber prefix dot + near-white text, larger font
+        // Title: amber marker + near-white text, larger font
         string styledTitle =
-            $"<span color=\"{ColAmber}\">◈</span> " +
-            $"<span color=\"{ColTitle}\" class='fontSize-l'><b>{title}</b></span>";
+            $"<span color=\"{ColAmber}\" class=\"fontSize-xxl fontWeight-bold\">></span> " +
+            $"<span color=\"{ColTitle}\" class=\"fontSize-xxl fontWeight-bold\">{title}</span>";
 
         var builder = _core.MenusAPI.CreateBuilder();
         builder.Design.SetMenuTitle(styledTitle);
-        builder.Design.SetMaxVisibleItems(5);
+        builder.Design.SetMaxVisibleItems(4);
         builder.Design.SetGlobalScrollStyle(MenuOptionScrollStyle.LinearScroll);
         builder.Design.SetNavigationMarkerColor(ColAmber);
         builder.Design.SetMenuFooterColor(ColHint);

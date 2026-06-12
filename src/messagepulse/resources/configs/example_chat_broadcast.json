@@ -1,0 +1,18 @@
+{
+  "DefaultIntervalSeconds": 60,
+  "Messages": [
+    {
+      "Message": "{MP_PREFIX} Visit our website: [lime] https://example.com",
+      "Interval": 60
+    },
+    {
+      "Message": "{MP_PREFIX} Join our Discord: [lime] https://discord.gg/example",
+      "Interval": 60
+    },
+    {
+      "Message": "chat.current_map_status",
+      "Interval": 180,
+      "Broadcast": true
+    }
+  ]
+}

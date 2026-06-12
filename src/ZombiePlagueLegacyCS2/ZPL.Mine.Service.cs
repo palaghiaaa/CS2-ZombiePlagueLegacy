@@ -221,7 +221,7 @@ public class ZPLMineService
             if (!player.IsFakeClient)
             {
                 const float deployTime   = 1.0f;
-                const int   totalBars    = 10;  // dashed bar segments
+                const int   totalBars    = 10;
                 float startTime = _core.Engine.GlobalVars.CurrentTime;
 
                 var hudCts = _core.Scheduler.RepeatBySeconds(0.1f, () =>
@@ -234,10 +234,14 @@ public class ZPLMineService
 
                     string mineBar = _helpers.BuildProgressBar(progress, totalBars, "#00BFFF", "#666666", player);
 
-                    player.SendCenterHTML(
-                        $"<b><span color='#00CFFF' class='fontSize-l'>PLANTING LASER</span></b><br>" +
+                    _helpers.SendStackedCenterHTML(
+                        player,
+                        "mine_plant",
+                        $"<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">PLANTING LASER</span><br>" +
                         mineBar +
-                        $"  <span color='#FFFFFF'><b>{pct}%</b></span>", 150);
+                        $" <span color=\"#FFFFFF\" class=\"fontSize-l fontWeight-bold\">{pct}%</span>",
+                        250,
+                        priority: 20);
                 });
 
                 // After deploy: reveal glow + activate beam
@@ -248,6 +252,15 @@ public class ZPLMineService
                     var ent2 = mineHandle.Value;
                     if (ent2 == null || !ent2.IsValid || !ent2.IsValidEntity) return;
                     SetGlow(ent2, mineData.GlowColor, mineData.Model, mineData.Team);
+                    if (player.IsValid && !player.IsFakeClient)
+                    {
+                        _helpers.SendStackedCenterHTML(
+                            player,
+                            "mine_plant",
+                            "<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">LASER MINE PLANTED</span>",
+                            1200,
+                            priority: 20);
+                    }
                 });
             }
 
@@ -595,11 +608,16 @@ public class ZPLMineService
         // Dynamic color: green when high HP, yellow mid, red low
         float mineHpPct = mineData.MineHealth > 0 ? (float)newHP / mineData.MineHealth : 0f;
         string mineHpColor = mineHpPct > 0.6f ? "#00FF7F" : mineHpPct > 0.3f ? "#FFD700" : "#FF3030";
-        string hpMessage = $"<b><span color='#00CFFF'>Laser Mine HP: </span><span color='{mineHpColor}'>{newHP}</span><span color='#AAAAAA'> / {mineData.MineHealth}</span></b>";
+        string mineHpBar = _helpers.BuildProgressBar(mineHpPct, 10, mineHpColor, "#666666", attacker);
+        string hpMessage =
+            "<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">LASER MINE HP</span><br>" +
+            mineHpBar +
+            $" <span color=\"{mineHpColor}\" class=\"fontSize-l fontWeight-bold\">{newHP}</span>" +
+            $"<span color=\"#AAAAAA\" class=\"fontSize-l\"> / {mineData.MineHealth}</span>";
 
         // ── HUD update to the attacking zombie ─────────────────────────────────
         if (attacker != null && attacker.IsValid && !attacker.IsFakeClient)
-            attacker.SendCenterHTML(hpMessage, 300);
+            _helpers.SendStackedCenterHTML(attacker, "mine_hp", hpMessage, 500, priority: 45);
 
         // ── HUD update to mine owner ───────────────────────────────────────────
         if (_globals.MineOwnerPlayerID.TryGetValue(mineRaw, out int ownerID))
@@ -607,7 +625,7 @@ public class ZPLMineService
             var owner = _core.PlayerManager.GetPlayer(ownerID);
             if (owner != null && owner.IsValid && !owner.IsFakeClient
                 && (attacker == null || owner.PlayerID != attacker.PlayerID))
-                owner.SendCenterHTML(hpMessage, 300);
+                _helpers.SendStackedCenterHTML(owner, "mine_hp", hpMessage, 500, priority: 45);
         }
 
         if (newHP > 0) return;

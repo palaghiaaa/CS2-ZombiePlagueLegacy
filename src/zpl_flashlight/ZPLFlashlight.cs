@@ -466,6 +466,7 @@ public sealed class ZPLFlashlightPlugin : BasePlugin
         }
 
         _zpApi.ZPL_OnPlayerInfect += OnZombiePlayerInfect;
+        _zpApi.ZPL_OnUserPreferenceChanged += OnZombieUserPreferenceChanged;
     }
 
     private void DetachZombiePlagueApi()
@@ -476,8 +477,14 @@ public sealed class ZPLFlashlightPlugin : BasePlugin
         }
 
         _zpApi.ZPL_OnPlayerInfect -= OnZombiePlayerInfect;
+        _zpApi.ZPL_OnUserPreferenceChanged -= OnZombieUserPreferenceChanged;
         _zpApi = null;
         _service?.SetZombiePlagueApi(null);
+    }
+
+    private void OnZombieUserPreferenceChanged(ulong steamId, string key, bool enabled)
+    {
+        _service?.HandleUserPreferenceChanged(steamId, key, enabled);
     }
 
     private static string GetPlayerDisplayName(IPlayer player)

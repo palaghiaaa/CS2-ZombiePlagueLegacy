@@ -228,6 +228,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         collection.AddSingleton<ZPLGameMode>();
         collection.AddSingleton<ZPLWeaponsMenu>();
         collection.AddSingleton<ZPLExtraItemsMenu>();
+        collection.AddSingleton<ZPLUserSettingsMenu>();
         collection.AddSingleton<ZPLGameMenu>();
         ServiceProvider = collection.BuildServiceProvider();
 
@@ -271,7 +272,7 @@ public partial class ZombiePlagueLegacyCS2(ISwiftlyCore core) : BasePlugin(core)
         {
             _prefsService = ServiceProvider.GetRequiredService<ZPLPlayerPrefsService>();
             _prefsService.EnsureSchema(_ZPLMainCFG.DatabaseConnection);
-            _prefsService.LoadAll(ServiceProvider.GetRequiredService<PlayerZombieState>());
+            _prefsService.LoadAll(ServiceProvider.GetRequiredService<PlayerZombieState>(), _Globals);
             _apiInstance.ZPL_OnPreferenceChanged += _prefsService.OnPreferenceChanged;
         }
 

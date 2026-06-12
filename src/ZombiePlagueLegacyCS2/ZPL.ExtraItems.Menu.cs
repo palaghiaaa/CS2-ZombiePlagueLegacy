@@ -198,13 +198,10 @@ public class ZPLExtraItemsMenu
 
         IMenuAPI menu = _menuHelper.CreateShopMenu(_helpers.T(player, "ExtraItemsMenuTitle"));
 
-        menu.AddOption(new TextMenuOption(
-            $"<span color='{ZPLMenuHelper.ColHint}'>Balance: </span>"
-            + $"<span color='{ZPLMenuHelper.ColCost}'><b>{ap} AP</b></span>",
-            updateIntervalMs: 800, pauseIntervalMs: 100)
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop
-        });
+        menu.AddOption(ZPLMenuHelper.ApplyLargeFormat(new TextMenuOption(
+            $"<span color=\"{ZPLMenuHelper.ColHint}\" class=\"fontSize-xxl\">Balance: </span>"
+            + $"<span color=\"{ZPLMenuHelper.ColCost}\" class=\"fontSize-xxl fontWeight-bold\">{ap} AP</span>")
+        , ZPLMenuHelper.ColHint, bold: false));
 
         bool anyVisible = false;
         foreach (var item in cfg.Items)
@@ -218,11 +215,7 @@ public class ZPLExtraItemsMenu
             string label = ZPLMenuHelper.ItemLabel(
                 item.Name, item.Price, isZombie: item.Team == ExtraItemTeam.Zombie);
 
-            var btn = new ButtonMenuOption(label)
-            {
-                TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-                CloseAfterClick = false
-            };
+            var btn = ZPLMenuHelper.LargeButton(label, closeAfterClick: false);
             btn.Tag = "extend";
 
             // Capture loop variables
@@ -239,7 +232,7 @@ public class ZPLExtraItemsMenu
 
         if (!anyVisible)
         {
-            menu.AddOption(new TextMenuOption(_helpers.T(player, "ExtraItemsNoneAvailable")));
+            menu.AddOption(ZPLMenuHelper.LargeText(_helpers.T(player, "ExtraItemsNoneAvailable")));
         }
 
         _core.MenusAPI.OpenMenuForPlayer(player, menu);
@@ -454,12 +447,13 @@ public class ZPLExtraItemsMenu
         _helpers.SendChatT(player, "ExtraItemsAntidoteSuccess", remainingAP);
         _helpers.SendChatToAllT("ExtraItemsAntidoteSuccessToAll", player.Name);
 
-        // Auto-open weapon selection after antidote — small delay so posshuman finishes first
+        // Restore weapons after antidote; remembered loadouts avoid opening a menu.
         _core.Scheduler.DelayBySeconds(0.3f, () =>
         {
             if (!player.IsValid) return;
             _globals.CanBuyWeaponsThisRound[player.PlayerID] = true;
-            _weaponsMenu.OpenWeaponsMenuIfAllowed(player);
+            if (!_weaponsMenu.TryGiveRememberedLoadout(player))
+                _weaponsMenu.OpenWeaponsMenuIfAllowed(player);
         });
     }
 
@@ -579,11 +573,14 @@ public class ZPLExtraItemsMenu
             float elapsed  = _core.Engine.GlobalVars.CurrentTime - startTime;
             float progress = Math.Clamp(elapsed / plantDuration, 0f, 1f);
             int   pct      = (int)(progress * 100);
-            string bar = _helpers.BuildProgressBar(progress, 12, "#00BFFF", "#666666", player);
-            player.SendCenterHTML(
-                $"<span color='#00CFFF' class='fontSize-l'><b>⚡ PLANTING LASER</b></span><br>" +
-                bar + $" <span color='#FFFFFF'><b>{pct}%</b></span>",
-                120);
+            string bar = _helpers.BuildProgressBar(progress, 10, "#00BFFF", "#777777", player);
+            _helpers.SendStackedCenterHTML(
+                player,
+                "mine_plant",
+                $"<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">PLANTING LASER</span><br>" +
+                bar + $" <span color=\"#FFFFFF\" class=\"fontSize-l fontWeight-bold\">{pct}%</span>",
+                250,
+                priority: 20);
         });
 
         // ── After planting delay: spawn mine + reopen menu ─────────────────
@@ -621,9 +618,10 @@ public class ZPLExtraItemsMenu
     private static string BuildSimpleBar(float progress, int total, string fillColor, string emptyColor)
     {
         int filled = (int)Math.Round(Math.Clamp(progress, 0f, 1f) * total);
-        string f = new string('|', filled);
-        string e = new string('-', total - filled);
-        return $"<span color='{fillColor}'>{f}</span><span color='{emptyColor}'>{e}</span>";
+        string f = new string('■', filled);
+        string e = new string('□', total - filled);
+        string barColor = filled > 0 ? fillColor : emptyColor;
+        return $"<span color=\"{barColor}\" class=\"fontSize-xl fontWeight-bold\">{f}{e}</span>";
     }
 
     private void ApplyReviveToken(IPlayer player, int remainingAP)
@@ -1012,13 +1010,16 @@ public class ZPLExtraItemsMenu
             float lastThrust = _globals.JetpackLastThrustTime.TryGetValue(id, out float lt) ? lt : 0f;
             float elapsed = _core.Engine.GlobalVars.CurrentTime - lastThrust;
             string rechargeMsg = rechargeTime > 0
-                ? $"<span color='#FF3030'><b>RECHARGING... {Math.Max(0f, rechargeTime - elapsed):F0}s</b></span>"
-                : "<span color='#FF3030'><b>0% — BUY REFUEL</b></span>";
-            player.SendCenterHTML(
-                "<b><span color='#AAAAAA' class='fontSize-m'>JETPACK FUEL</span></b><br>"
+                ? $"<span color=\"#FF3030\" class=\"fontSize-l fontWeight-bold\">RECHARGING... {Math.Max(0f, rechargeTime - elapsed):F0}s</span>"
+                : "<span color=\"#FF3030\" class=\"fontSize-l fontWeight-bold\">0% - BUY REFUEL</span>";
+            _helpers.SendStackedCenterHTML(
+                player,
+                "jetpack",
+                "<span color=\"#AAAAAA\" class=\"fontSize-l fontWeight-bold\">JETPACK FUEL</span><br>"
                 + _helpers.BuildProgressBar(0f, 10, "#666666", "#666666", player) + "<br>"
                 + rechargeMsg,
-                2000);
+                2000,
+                priority: 30);
             return;
         }
 
@@ -1030,6 +1031,22 @@ public class ZPLExtraItemsMenu
 
         var cfg = _extraItemsCFG.CurrentValue;
         float fuelUsed = cfg.JetpackFuelConsumeRate * dt;
+        if (fuelUsed > 0f && fuel < fuelUsed)
+        {
+            _globals.JetpackFuel[id] = 0f;
+            _globals.JetpackLastFuelTime[id] = now;
+
+            _helpers.SendStackedCenterHTML(
+                player,
+                "jetpack",
+                "<span color=\"#AAAAAA\" class=\"fontSize-l fontWeight-bold\">JETPACK FUEL</span><br>"
+                + _helpers.BuildProgressBar(0f, 10, "#666666", "#666666", player)
+                + " <span color=\"#FF3030\" class=\"fontSize-l fontWeight-bold\">0%</span>",
+                1000,
+                priority: 30);
+            return;
+        }
+
         _globals.JetpackFuel[id] = Math.Max(0f, fuel - fuelUsed);
         _globals.JetpackLastFuelTime[id]   = now;
         _globals.JetpackLastThrustTime[id] = now;   // reset recharge countdown
@@ -1089,11 +1106,14 @@ public class ZPLExtraItemsMenu
         string fuelBar = _helpers.BuildProgressBar(fuelPct, 10, fuelColor, "#666666", player);
 
         // Duration 2000ms — stays visible after releasing keys
-        player.SendCenterHTML(
-            $"<b><span color='#AAAAAA' class='fontSize-m'>JETPACK FUEL</span></b><br>"
+        _helpers.SendStackedCenterHTML(
+            player,
+            "jetpack",
+            $"<span color=\"#AAAAAA\" class=\"fontSize-l fontWeight-bold\">JETPACK FUEL</span><br>"
             + fuelBar
-            + $" <span color='{fuelColor}'><b>{fuelPctInt}%</b></span>",
-            2000);
+            + $" <span color=\"{fuelColor}\" class=\"fontSize-l fontWeight-bold\">{fuelPctInt}%</span>",
+            2000,
+            priority: 30);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

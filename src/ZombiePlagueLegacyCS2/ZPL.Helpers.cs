@@ -22,6 +22,18 @@ public partial class ZPLHelpers
     private readonly ISwiftlyCore _core;
     private readonly ZPLGlobals _globals;
     private readonly IOptionsMonitor<ZPLMainCFG> _mainCFG;
+    private readonly Dictionary<int, Dictionary<string, CenterHudEntry>> _centerHudEntries = new();
+    private readonly Dictionary<int, float> _centerHudLastRenderAt = new();
+    private long _centerHudSequence;
+    private const float CenterHudMinRenderInterval = 0.12f;
+
+    private sealed class CenterHudEntry
+    {
+        public required string Html { get; init; }
+        public required float ExpiresAt { get; init; }
+        public required int Priority { get; init; }
+        public required long Sequence { get; init; }
+    }
 
     public ZPLHelpers(ISwiftlyCore core, ILogger<ZPLHelpers> logger,
         ZPLGlobals globals, IOptionsMonitor<ZPLMainCFG> mainCFG)
@@ -45,6 +57,16 @@ public partial class ZPLHelpers
         if (message.StartsWith(prefix, StringComparison.Ordinal))
             return message;
         return $"{prefix} {message}";
+    }
+
+    public bool IsUserPreferenceEnabled(IPlayer player, string key, bool defaultValue = true)
+    {
+        if (player == null || !player.IsValid || player.SteamID == 0)
+            return defaultValue;
+
+        return _globals.UserPreferences.TryGetValue(player.SteamID, out var preferences)
+            ? preferences.Get(key, defaultValue)
+            : defaultValue;
     }
 
     /// <summary>Sends a localised center message to a single player.</summary>
@@ -199,6 +221,39 @@ public partial class ZPLHelpers
             sound.Recipients.AddAllPlayers();
             sound.Emit();
         }
+    }
+
+    public void EmitVoxSoundToEnabledPlayers(string soundPath, float volume, IPlayer? sourcePlayer = null)
+    {
+        if (string.IsNullOrEmpty(soundPath))
+            return;
+
+        using var sound = new SwiftlyS2.Shared.Sounds.SoundEvent(soundPath, volume, 1.0f);
+        sound.SourceEntityIndex = -1;
+
+        if (sourcePlayer != null && sourcePlayer.IsValid)
+        {
+            var sourcePawn = sourcePlayer.PlayerPawn;
+            if (sourcePawn != null && sourcePawn.IsValid)
+                sound.SourceEntityIndex = (int)sourcePawn.Index;
+        }
+
+        sound.Recipients.RemoveAllPlayers();
+        int recipients = 0;
+        foreach (var player in _core.PlayerManager.GetAllPlayers())
+        {
+            if (player == null || !player.IsValid || player.IsFakeClient)
+                continue;
+
+            if (!IsUserPreferenceEnabled(player, ZPLUserPreferenceKeys.VoxSounds, true))
+                continue;
+
+            sound.Recipients.AddRecipient(player.PlayerID);
+            recipients++;
+        }
+
+        if (recipients > 0)
+            sound.Emit();
     }
 
     public RoundVox? PickRandomActiveGroup(IEnumerable<RoundVox> groups)
@@ -1311,7 +1366,121 @@ public partial class ZPLHelpers
         }
     }
 
-    
+    /// <summary>Adds or updates one status line in the per-player center HUD stack.</summary>
+    public void SendStackedCenterHTML(IPlayer player, string key, string html, int duration = 1000, int priority = 100)
+    {
+        if (player == null || !player.IsValid || player.IsFakeClient)
+            return;
+
+        if (string.IsNullOrWhiteSpace(key))
+            return;
+
+        if (string.IsNullOrWhiteSpace(html) || duration <= 0)
+        {
+            ClearStackedCenterHTML(player, key);
+            return;
+        }
+
+        int playerId = player.PlayerID;
+        float now = _core.Engine.GlobalVars.CurrentTime;
+
+        if (!_centerHudEntries.TryGetValue(playerId, out var entries))
+        {
+            entries = new Dictionary<string, CenterHudEntry>(StringComparer.Ordinal);
+            _centerHudEntries[playerId] = entries;
+        }
+
+        CleanupCenterHudEntries(playerId, entries, now);
+        bool forceRender = !entries.ContainsKey(key);
+        entries[key] = new CenterHudEntry
+        {
+            Html = html,
+            ExpiresAt = now + Math.Max(0.05f, duration / 1000f),
+            Priority = priority,
+            Sequence = ++_centerHudSequence
+        };
+
+        RenderStackedCenterHTML(player, entries, now, forceRender);
+    }
+
+    /// <summary>Sends one stacked status entry to every real player, building localized HTML per player.</summary>
+    public void SendStackedCenterHTMLToAll(string key, Func<IPlayer, string> htmlBuilder, int duration = 1000, int priority = 100)
+    {
+        foreach (var player in _core.PlayerManager.GetAllPlayers())
+        {
+            if (!player.IsValid || player.IsFakeClient)
+                continue;
+
+            SendStackedCenterHTML(player, key, htmlBuilder(player), duration, priority);
+        }
+    }
+
+    public void ClearStackedCenterHTML(IPlayer player, string key)
+    {
+        if (player == null || !player.IsValid)
+            return;
+
+        int playerId = player.PlayerID;
+        if (!_centerHudEntries.TryGetValue(playerId, out var entries))
+            return;
+
+        entries.Remove(key);
+        if (entries.Count == 0)
+        {
+            _centerHudEntries.Remove(playerId);
+            _centerHudLastRenderAt.Remove(playerId);
+        }
+    }
+
+    public void ClearStackedCenterHTML(int playerId)
+    {
+        _centerHudEntries.Remove(playerId);
+        _centerHudLastRenderAt.Remove(playerId);
+    }
+
+    public void ClearAllStackedCenterHTML()
+    {
+        _centerHudEntries.Clear();
+        _centerHudLastRenderAt.Clear();
+    }
+
+    private void RenderStackedCenterHTML(IPlayer player, Dictionary<string, CenterHudEntry> entries, float now, bool forceRender)
+    {
+        int playerId = player.PlayerID;
+        CleanupCenterHudEntries(playerId, entries, now);
+        if (entries.Count == 0)
+            return;
+
+        if (!forceRender &&
+            _centerHudLastRenderAt.TryGetValue(playerId, out float lastRenderAt) &&
+            now - lastRenderAt < CenterHudMinRenderInterval)
+            return;
+
+        var active = entries.Values
+            .OrderBy(entry => entry.Priority)
+            .ThenBy(entry => entry.Sequence)
+            .ToList();
+
+        string combinedHtml = string.Join("<br>", active.Select(entry => entry.Html));
+        float maxExpires = active.Max(entry => entry.ExpiresAt);
+        int renderDuration = Math.Clamp((int)Math.Ceiling((maxExpires - now) * 1000f), 650, 3000);
+
+        player.SendCenterHTML(combinedHtml, renderDuration);
+        _centerHudLastRenderAt[playerId] = now;
+    }
+
+    private void CleanupCenterHudEntries(int playerId, Dictionary<string, CenterHudEntry> entries, float now)
+    {
+        foreach (var key in entries.Where(kvp => kvp.Value.ExpiresAt <= now).Select(kvp => kvp.Key).ToList())
+            entries.Remove(key);
+
+        if (entries.Count == 0)
+        {
+            _centerHudEntries.Remove(playerId);
+            _centerHudLastRenderAt.Remove(playerId);
+        }
+    }
+
 
     /// <summary>
     /// Builds a progress bar string.
@@ -1331,18 +1500,12 @@ public partial class ZPLHelpers
         int filled = Math.Clamp((int)Math.Round(totalBars * progress), 0, totalBars);
         int empty  = totalBars - filled;
 
-        // Pattern from official SwiftlyS2 docs:
-        // var bar = new string('█', filled) + new string('░', empty);
-        // $"<span color=\"green\">{bar}</span>"
-        // Note: double quotes required — Panorama does not parse single-quoted attributes
-        string barFilled = new string('█', filled);
-        string barEmpty  = new string('░', empty);
+        // Double-quoted Panorama attributes are required for CS2 center HUD HTML.
+        string barFilled = new string('■', filled);
+        string barEmpty  = new string('□', empty);
+        string barColor  = filled > 0 ? filledColor : emptyColor;
 
-        if (filled > 0 && empty > 0)
-            return $"<span color='{filledColor}'>{barFilled}</span><span color='{emptyColor}'>{barEmpty}</span>";
-        if (filled == totalBars)
-            return $"<span color='{filledColor}'>{barFilled}</span>";
-        return $"<span color='{emptyColor}'>{barEmpty}</span>";
+        return $"<span color=\"{barColor}\" class=\"fontSize-xl fontWeight-bold\">{barFilled}{barEmpty}</span>";
     }
 
     public string T(IPlayer? player, string key, params object[] args)
@@ -1372,6 +1535,28 @@ public partial class ZPLHelpers
             _logger.LogWarning("Translation key '{Key}' produced an invalid format string for player '{Player}' (args count: {Count}). Returning raw localized string.", key, player.Name, args.Length);
             return localizer[key];
         }
+    }
+
+    public bool HasAdminMenuPermission(IPlayer player)
+    {
+        if (!player.IsValid)
+            return false;
+
+        ulong steamId = player.SteamID;
+        if (steamId == 0)
+            return false;
+
+        string permString = _mainCFG.CurrentValue.AdminMenuPermission;
+        if (string.IsNullOrWhiteSpace(permString))
+            return true;
+
+        foreach (var perm in permString.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (_core.Permission.PlayerHasPermission(steamId, perm))
+                return true;
+        }
+
+        return false;
     }
 
     public void CheckGrenadeSpawned(CEntityInstance entity)
@@ -1513,8 +1698,8 @@ public partial class ZPLHelpers
             .GetAllEntitiesByDesignerName<CTonemapController2>("env_tonemap_controller2"))
         {
             if (tc == null || !tc.IsValid || !tc.IsValidEntity) continue;
-            tc.AcceptInput("SetMinExposure", 0.03f);
-            tc.AcceptInput("SetMaxExposure", 0.10f);
+            tc.AcceptInput("SetMinExposure", 0.02f);
+            tc.AcceptInput("SetMaxExposure", 0.08f);
             tc.AcceptInput("SetExposureAdaptationSpeedUp", 2.0f);
         }
 
@@ -1532,6 +1717,12 @@ public partial class ZPLHelpers
         if (!player.IsValid || player.IsFakeClient)
             return;
 
+        if (!IsUserPreferenceEnabled(player, ZPLUserPreferenceKeys.Fog, true))
+        {
+            ClearFogForPlayer(player);
+            return;
+        }
+
         if (fogController == null)
         {
             if (!_globals.GlobalFogController.IsValid) return;
@@ -1545,6 +1736,58 @@ public partial class ZPLHelpers
         pawn.AcceptInput("SetFogController", "!activator", fogController, pawn);
     }
 
+    public void ClearFogForPlayer(IPlayer player)
+    {
+        if (!player.IsValid || player.IsFakeClient)
+            return;
+
+        var pawn = player.PlayerPawn;
+        if (pawn == null || !pawn.IsValid)
+            return;
+
+        var clearFog = GetOrCreateClearFogController();
+        if (clearFog == null || !clearFog.IsValid || !clearFog.IsValidEntity)
+            return;
+
+        pawn.AcceptInput("SetFogController", "!activator", clearFog, pawn);
+    }
+
+    private CFogController? GetOrCreateClearFogController()
+    {
+        if (_globals.ClearFogController.IsValid)
+        {
+            var existing = _globals.ClearFogController.Value;
+            if (existing != null && existing.IsValid && existing.IsValidEntity)
+                return existing;
+        }
+
+        var fogController = _core.EntitySystem.CreateEntityByDesignerName<CFogController>("env_fog_controller");
+        if (fogController == null || !fogController.IsValid || !fogController.IsValidEntity)
+            return null;
+
+        var fog = fogController.Fog;
+        fog.Enable = false;
+        fog.Start = 0;
+        fog.End = 100000;
+        fog.Maxdensity = 0;
+        fog.Exponent = 1.0f;
+        fog.ColorPrimary = new Color(255, 255, 255, 0);
+        fog.ColorSecondary = new Color(255, 255, 255, 0);
+
+        fog.EnableUpdated();
+        fog.StartUpdated();
+        fog.EndUpdated();
+        fog.MaxdensityUpdated();
+        fog.ExponentUpdated();
+        fog.ColorPrimaryUpdated();
+        fog.ColorSecondaryUpdated();
+
+        fogController.DispatchSpawn();
+        fogController.FogUpdated();
+        _globals.ClearFogController = _core.EntitySystem.GetRefEHandle(fogController);
+        return fogController;
+    }
+
     // ── Skybox / Sky Darkening ───────────────────────────────────────────────
 
     /// <summary>
@@ -1556,16 +1799,16 @@ public partial class ZPLHelpers
     public void ApplySkybox(string skyName)
     {
         // Darken all env_sky entities on the map
-        // TintColor: dark purple-black (20,15,25,255) for horror atmosphere
-        // BrightnessScale: 0.05 = very dark sky
+        // TintColor: toxic green-black for infected horror atmosphere
+        // BrightnessScale: 0.035 = very dark sky
         foreach (var sky in _core.EntitySystem.GetAllEntitiesByDesignerName<CEnvSky>("env_sky"))
         {
             if (sky == null || !sky.IsValid || !sky.IsValidEntity) continue;
             try
             {
-                sky.TintColor       = new Color(20, 15, 25, 255);
+                sky.TintColor       = new Color(8, 18, 10, 255);
                 sky.TintColorUpdated();
-                sky.BrightnessScale = 0.05f;
+                sky.BrightnessScale = 0.035f;
                 sky.BrightnessScaleUpdated();
             }
             catch (Exception ex)
@@ -1578,4 +1821,3 @@ public partial class ZPLHelpers
     
 
 }
-

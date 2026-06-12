@@ -26,7 +26,8 @@ Salut tuturor! Mai jos găsiți o listă completă cu tot ce s-a adăugat, modif
 - 🧪 **SCBA Suit** — Blochează automat o singură infecție de zombie.
 - 🦘 **Multi-Jump** — Acordă +1 săritură extra. Stivuibil, cu un maxim configurabil.
 - 🗡️ **Knife Blink** — 3 încărcături. Fiecare lovitură de cuțit te teleportează înainte.
-- 🚀 **Jetpack** — Ține CTRL+SPACE pentru a zbura. Combustibilul este limitat și se resetează la fiecare rundă.
+- 🚀 **Jetpack** — Ține CTRL+SPACE pentru a zbura. Combustibilul este limitat, se consumă per tick și se reîncarcă după ce oprești thrust-ul.
+- 🪂 **Parachute** — Ține E în cădere pentru coborâre controlată; nu mai păstrează starea de zbor a jetpack-ului.
 - 💣 **Laser Mine** — Deschide meniul de plasare mine. Alege Tripwire sau Explosive.
 - ❤️ **Revive Token** — Te respawnează automat o singură dată după moarte.
 - 🏹 **Become Survivor** — Transformă-te în Survivor în mijlocul rundei.
@@ -50,7 +51,7 @@ Integrat din [H-AN/HanLaserTripmineS2](https://github.com/H-AN/HanLaserTripmineS
 - **Laser Tripwire** — Daune continue prin beam, configurabile per tick.
 - **Explosive Mine** — Explodează când cineva traversează fasciculul.
 - Limite per jucător, culori glow/laser, sunete și permisiuni sunt complet configurabile.
-- Meniu `!mine` dedicat pentru plasare.
+- Plasarea se face prin itemul Laser Mine din Extra Items shop.
 
 ### Sistem Economy (Ammo Packs — fără bază de date)
 
@@ -59,18 +60,21 @@ Integrat din [H-AN/HanLaserTripmineS2](https://github.com/H-AN/HanLaserTripmineS
 - `EconomyWalletKind` configurabil pentru compatibilitate cu alte plugin-uri Economy.
 - Balanțele persistă între schimbările de hartă și restarturile serverului.
 
-### Status HUD Permanent
+### Status HUD combinat
 
-- Un rând compact în centrul ecranului: **Mod · Clasă · Ammo Packs**.
-- Actualizat live. Poate fi dezactivat prin `EnableStatusHud`.
+- Countdown, planting laser, jetpack fuel, damage HUD, mine HP, frost și reward-uri AP sunt unite într-un singur HUD central.
+- Barele folosesc segmente vizibile (`■■■■■□□□□□`) și procent/valoare pe același rând, ca să nu se suprapună mesajele între ele.
 
 ### Sistem Fog (Ceață)
 
 - Fog aplicat automat la fiecare încărcare de hartă și pentru fiecare jucător la spawn.
 - Complet configurabil: culoare (RGB), distanță start/end, densitate maximă și exponent.
-- Poate fi dezactivat complet cu `"Enable": false` în `FogConfig`.
+- Poate fi dezactivat complet cu `"Enable": false` în secțiunea `Fog`.
 
 ### Weapons Menu
+
+- `Remember choice` pentru loadout primar/secundar; loadout-ul memorat se salveaza in MySQL (`zpl_user_preferences`) si se echipeaza automat la round start fara sa deschida meniul.
+- Auto-open-ul meniului de arme este oprit implicit prin `"GiveMenuOnRoundStart": false`; schimbarea manuala ramane disponibila o singura data pe runda.
 
 - `!buyweapons` / `sw_buyweapons` — jucătorii pot cumpăra arme înainte de începerea infecției.
 - Vizibil doar în fereastra de cumpărare (prima parte a rundei).
@@ -92,13 +96,13 @@ Integrat din [H-AN/HanLaserTripmineS2](https://github.com/H-AN/HanLaserTripmineS
 
 - `MinPlayersForInfection` *(implicit: 2)* — Numărul minim de jucători necesar pentru a declanșa infecția. Previne problemele la joc solo.
 - `NormalRoundsInterval` *(implicit: 0)* — Numărul minim de runde normale între moduri speciale. `0` = dezactivat.
-- `KnockZombieForce` *(implicit: 250)* — Forța knockback aplicată zombie-ilor la lovire.
+- `KnockZombieForce` *(implicit: 200)* — Forța knockback aplicată zombie-ilor la lovire.
 - `StunZombieTime` *(implicit: 0.1)* — Durata stun-ului după knockback.
-- `HumanKnockBackHeadMultiply` *(implicit: 2.0)* — Multiplicator knockback pentru lovitură în cap.
-- `HumanKnockBackBodyMultiply` *(implicit: 1.0)* — Multiplicator knockback pentru lovitură în corp.
-- `HumanKnockBackGroundMultiply` *(implicit: 1.0)* — Multiplicator knockback când zombie-ul e pe sol.
-- `HumanKnockBackAirMultiply` *(implicit: 0.5)* — Multiplicator knockback când zombie-ul e în aer.
-- `HumanHeroKnockBackMultiply` *(implicit: 1.0)* — Multiplicator knockback separat pentru jucătorii Hero.
+- `HumanKnockBackHeadMultiply` *(implicit: 0.8)* — Multiplicator knockback pentru lovitură în cap.
+- `HumanKnockBackBodyMultiply` *(implicit: 0.4)* — Multiplicator knockback pentru lovitură în corp.
+- `HumanKnockBackGroundMultiply` *(implicit: 0.4)* — Multiplicator knockback când zombie-ul e pe sol.
+- `HumanKnockBackAirMultiply` *(implicit: 0.2)* — Multiplicator knockback când zombie-ul e în aer.
+- `HumanHeroKnockBackMultiply` *(implicit: 0.5)* — Multiplicator knockback separat pentru jucătorii Hero.
 - `ChatPrefix` *(implicit: "[ZM]")* — Prefix afișat înaintea mesajelor de chat ale plugin-ului.
 - `EconomyWalletKind` *(implicit: "ammo")* — Tipul de portofel Economy folosit pentru Ammo Packs.
 - `EnableCommandDebugLogs` *(implicit: false)* — Loghează comenzile în consola serverului.
@@ -186,15 +190,16 @@ Plugin de pariuri pe echipe integrat cu Economy (Ammo Packs):
 ## ♻️ Modificări & Îmbunătățiri
 
 - **HP statice pentru clasele speciale** — Nemesis, Assassin, Survivor și Sniper folosesc acum valori HP fixe și echilibrate în loc de calcule dinamice.
-- **Jetpack: forță doar în sus** — Push-ul orizontal de tip rachetă a fost eliminat. Jetpack-ul aplică acum doar forță verticală.
+- **Jetpack fuel corect** — Thrust-ul este blocat când fuel-ul ajunge la 0, iar reîncărcarea pornește doar după ce jucătorul nu mai ține CTRL+SPACE.
+- **Parachute separat de jetpack** — Parașuta folosește gravitație temporară doar cât jucătorul ține E și cade; la sol, release, moarte sau deconectare gravitația se restaurează.
 - **Sistem knockback granular** — Multiplicatori separați per locație de lovire (cap/corp) și starea zombie (sol/aer) în loc de o singură valoare globală.
-- **Meniuri scrollable** — Toate meniurile folosesc `LinearScroll`. Footer-ul rămâne fixat în jos.
-- **Text marquee** — Text animat cu scroll în meniurile VIP și Top pentru un aspect mai îngrijit.
+- **Meniuri mai lizibile** — Meniurile folosesc `LinearScroll`, 4 iteme pe pagină, text `ExtraLarge` și `TruncateEnd`, cu primul item pornind sus în HUD.
 - **Cheie API redenumită** — `"HanZombiePlague"` → `"ZombiePlagueLegacy"` pentru consistență cu noul brand.
 - **Navigare meniu standardizată** — Toate plugin-urile folosesc acum keybind-urile implicite SwiftlyS2. Fără mai multe chei hard-codate.
 - **CI/CD cu GitHub Actions** — Job-uri de build separate pentru `zpl_vip` (ZPLVIP) și `zpl_rank` (ZPLRank) alături de plugin-ul principal.
 - **Glow Zombie Madness (roșu)** — Zombie Madness aplică acum un glow roșu pe durata activării. Culoarea este configurabilă via `MadnessGlowR/G/B` în `ExtraItemsCFG.jsonc`.
-- **Mine HP + HUD** — Fiecare tip de mină acceptă acum un câmp `MineHealth`. Când > 0, zombii pot distruge mina prin atac corp la corp (knife swing în raza `ZombieAttackRange`). Proprietarul minei vede live HUD-ul: `Mine HP: <current> / <max>`. Raza și daunele per atac sunt configurabile (`ZombieAttackRange`, `ZombieAttackDamage`).
+- **Mine HP + HUD** — Fiecare tip de mină acceptă acum un câmp `MineHealth`. Când > 0, zombii pot distruge mina prin atac corp la corp (knife swing în raza `ZombieAttackRange`). Proprietarul și atacatorul văd HP-ul minei în HUD-ul central combinat, cu bară segmentată și valoarea curentă. Raza și daunele per atac sunt configurabile (`ZombieAttackRange`, `ZombieAttackDamage`).
+- **Atmosferă zombie plague** — Fog-ul implicit este mai întunecat, cu ton verde-infectat și skybox de noapte (`sky_csgo_night02`).
 - **HP Mother Zombie scalat cu numărul de jucători** — HP-ul Mother Zombie se interpolează liniar între `MotherZombieHPMinMultiplier` (1 jucător) și `MotherZombieHPMultiplier` (≥ `MotherZombieHPMaxPlayers` jucători). Oprește HP-ul abuziv de mare pe servere cu 2–4 jucători. Poate fi dezactivat cu `MotherZombieHPPlayerScaleEnabled: false`.
 
 ---

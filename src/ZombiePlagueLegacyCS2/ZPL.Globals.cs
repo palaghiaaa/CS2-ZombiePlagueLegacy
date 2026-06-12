@@ -105,12 +105,17 @@ public class ZPLGlobals
 
     /// <summary>Tracks which human players currently own a parachute.</summary>
     public HashSet<int> HasParachute = new();
+    /// <summary>Original gravity scale captured while parachute slow-fall is active.</summary>
+    public Dictionary<int, float> ParachuteRestoreGravity = new();
 
     public Dictionary<int, bool> ScbaSuit = new Dictionary<int, bool>();
     public Dictionary<int, bool> GodState = new Dictionary<int, bool>();
     public Dictionary<int, bool> InfiniteAmmoState = new Dictionary<int, bool>();
 
     public Dictionary<int, bool> CanBuyWeaponsThisRound = new Dictionary<int, bool>();
+    public Dictionary<ulong, WeaponLoadoutPreference> WeaponLoadoutPreferences = new Dictionary<ulong, WeaponLoadoutPreference>();
+    public Dictionary<ulong, UserPreferenceSettings> UserPreferences = new Dictionary<ulong, UserPreferenceSettings>();
+    public HashSet<int> WeaponGrenadesGivenThisRound = new HashSet<int>();
 
     // ── Extra Items / Ammo Packs ──────────────────────────────────────────────
     /// <summary>
@@ -209,6 +214,8 @@ public class ZPLGlobals
     // ── Fog ──────────────────────────────────────────────────────────────────
     /// <summary>Handle to the global env_fog_controller entity, reused across rounds.</summary>
     public CHandle<CFogController> GlobalFogController;
+    /// <summary>Per-player clear fog controller used when a user disables fog locally.</summary>
+    public CHandle<CFogController> ClearFogController;
 
 }
 public class ZombieRegenState
@@ -217,6 +224,71 @@ public class ZombieRegenState
     public int RegenAmount;       // 每次回血量
     public float RegenInterval;   // 间隔秒数
     public float NextRegenTime;   // 下一次回血时间戳（秒）
+}
+
+public class WeaponLoadoutPreference
+{
+    public bool RememberChoice { get; set; }
+    public string PrimaryName { get; set; } = string.Empty;
+    public string PrimaryClassname { get; set; } = string.Empty;
+    public string SecondaryName { get; set; } = string.Empty;
+    public string SecondaryClassname { get; set; } = string.Empty;
+}
+
+public class UserPreferenceSettings
+{
+    public bool VoxSounds { get; set; } = true;
+    public bool Fog { get; set; } = true;
+    public bool Flashlight { get; set; } = true;
+    public bool Tags { get; set; } = true;
+    public bool Ads { get; set; } = true;
+    public bool HidePlayers { get; set; }
+    public bool VipRewardMessages { get; set; } = true;
+
+    public bool Get(string key, bool defaultValue = true)
+    {
+        return key switch
+        {
+            ZPLUserPreferenceKeys.VoxSounds => VoxSounds,
+            ZPLUserPreferenceKeys.Fog => Fog,
+            ZPLUserPreferenceKeys.Flashlight => Flashlight,
+            ZPLUserPreferenceKeys.Tags => Tags,
+            ZPLUserPreferenceKeys.Ads => Ads,
+            ZPLUserPreferenceKeys.HidePlayers => HidePlayers,
+            ZPLUserPreferenceKeys.VipRewardMessages => VipRewardMessages,
+            _ => defaultValue
+        };
+    }
+
+    public bool Set(string key, bool enabled)
+    {
+        switch (key)
+        {
+            case ZPLUserPreferenceKeys.VoxSounds:
+                VoxSounds = enabled;
+                return true;
+            case ZPLUserPreferenceKeys.Fog:
+                Fog = enabled;
+                return true;
+            case ZPLUserPreferenceKeys.Flashlight:
+                Flashlight = enabled;
+                return true;
+            case ZPLUserPreferenceKeys.Tags:
+                Tags = enabled;
+                return true;
+            case ZPLUserPreferenceKeys.Ads:
+                Ads = enabled;
+                return true;
+            case ZPLUserPreferenceKeys.HidePlayers:
+                HidePlayers = enabled;
+                return true;
+            case ZPLUserPreferenceKeys.VipRewardMessages:
+                VipRewardMessages = enabled;
+                return true;
+            default:
+                return false;
+        }
+    }
 }
 
 public class ZombieIdleState
@@ -278,4 +350,3 @@ public class MineData
     /// <summary>World position where this mine was planted (set after NextWorldUpdate teleport).</summary>
     public Vector SpawnOrigin         { get; set; }
 }
-

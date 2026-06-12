@@ -1,0 +1,9 @@
+{
+  "chat.prefix": "[red][ZM][default] ",
+
+  "chat.welcome_player": "{MP_PREFIX} Welcome [lime]{PlayerController.PlayerName} [grey]to [lightred]{HOSTNAME}!",
+  "chat.join_all": "{MP_PREFIX} Player [lime]{PlayerController.PlayerName} [grey]has joined the server! [lime] Online players: [orange]{PLAYERCOUNT}/{MAXPLAYERS} ",
+  "chat.leave_all": "{MP_PREFIX} Player [lightred]{PlayerController.PlayerName} [grey]has left the server!",
+
+  "chat.current_map_status": "{MP_PREFIX} Map: [lime]{MAPNAME} [grey]| Players online: [lime]{PLAYERCOUNT}/{MAXPLAYERS}"
+}

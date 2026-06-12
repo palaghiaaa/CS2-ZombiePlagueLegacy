@@ -15,6 +15,7 @@ using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
 using SwiftlyS2.Shared.SchemaDefinitions;
 using ZombiePlagueLegacyCS2;
+using ZombiePlagueLegacyCS2.SharedUi;
 
 namespace ZPLVIP;
 
@@ -246,7 +247,8 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         {
             _economyApi.AddPlayerBalance(player, _config.WalletKind, amount);
             int total = Math.Max(0, (int)_economyApi.GetPlayerBalance(player, _config.WalletKind));
-            SendChat(player, T(player, "VipApReward", amount, total));
+            if (ShouldShowVipRewardMessages(player))
+                SendChat(player, T(player, "VipApReward", amount, total));
         }
         catch (Exception ex)
         {
@@ -255,9 +257,13 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     }
     else
     {
-        SendChat(player, T(player, "VipApBridgeOffline", amount));
+        if (ShouldShowVipRewardMessages(player))
+            SendChat(player, T(player, "VipApBridgeOffline", amount));
     }
 }
+
+    private bool ShouldShowVipRewardMessages(IPlayer player)
+        => _zplApi?.ZPL_GetUserPreference(player, ZPLUserPreferenceKeys.VipRewardMessages, true) ?? true;
 
     // ── Event: player spawn ───────────────────────────────────────────────────
 
@@ -574,15 +580,7 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
         bool isVip    = IsVIP(player);
         bool happyNow = IsHappyHour();
 
-        var menuCfg = new MenuConfiguration
-        {
-            Title        = HtmlGradient.GenerateGradientText(_config.VipMenuTitle, Color.Gold, Color.Orange),
-            FreezePlayer = false,
-            MaxVisibleItems = 5,
-            PlaySound    = false,
-            AutoIncreaseVisibleItems = false,
-            HideFooter   = false
-        };
+        var menuCfg = ZPLMenuStyle.MenuConfig(_config.VipMenuTitle);
 
         IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default, null, MenuOptionScrollStyle.LinearScroll);
 
@@ -637,15 +635,7 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
             .Select(p => p.Controller?.PlayerName ?? p.Name ?? "?")
             .ToList();
 
-        var menuCfg = new MenuConfiguration
-        {
-            Title        = HtmlGradient.GenerateGradientText(T(caller, "VipsMenuTitle", vipNames.Count), Color.Gold, Color.Orange),
-            FreezePlayer = false,
-            MaxVisibleItems = 5,
-            PlaySound    = false,
-            AutoIncreaseVisibleItems = false,
-            HideFooter   = false
-        };
+        var menuCfg = ZPLMenuStyle.MenuConfig(T(caller, "VipsMenuTitle", vipNames.Count));
 
         IMenuAPI menu = Core.MenusAPI.CreateMenu(menuCfg, default, null, MenuOptionScrollStyle.LinearScroll);
 
@@ -665,18 +655,15 @@ public class ZPLVIPPlugin(ISwiftlyCore core) : BasePlugin(core)
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static void AddLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(text, updateIntervalMs: 600, pauseIntervalMs: 100)
-            { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
+        => menu.AddOption(ZPLMenuStyle.Text(text, ZPLMenuStyle.ColButton, bold: true));
 
-    /// <summary>Adds a benefit line with left-scrolling marquee text.</summary>
+    /// <summary>Adds a static large benefit line.</summary>
     private static void AddBenefitLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(text, updateIntervalMs: 600, pauseIntervalMs: 100)
-            { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
+        => menu.AddOption(ZPLMenuStyle.Text(text, ZPLMenuStyle.ColHint, bold: true));
 
-    /// <summary>Adds a status line with left-scrolling marquee text.</summary>
+    /// <summary>Adds a static large status line.</summary>
     private static void AddColoredLine(IMenuAPI menu, string text)
-        => menu.AddOption(new TextMenuOption(text, updateIntervalMs: 600, pauseIntervalMs: 100)
-            { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
+        => menu.AddOption(ZPLMenuStyle.Text(text, ZPLMenuStyle.ColSelected, bold: true));
 
     private bool IsHappyHour()
     {

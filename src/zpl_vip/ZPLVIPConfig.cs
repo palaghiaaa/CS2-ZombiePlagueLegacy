@@ -51,7 +51,7 @@ public class ZPLVIPConfig
     public bool JoinAnnounceEnabled { get; set; } = true;
 
     /// <summary>Prefix prepended to all ZPLVIP chat messages.</summary>
-    public string ChatPrefix { get; set; } = "[VIP]";
+    public string ChatPrefix { get; set; } = "[red][ZM][default]";
 
     // ── Economy ───────────────────────────────────────────────────────────────
 

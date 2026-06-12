@@ -10,11 +10,14 @@
 
     // Sent to the player after they pick a tag from the menu.
     // {0} = tag display name (e.g. "Tag De Admin")
-    "TagSelected": "Tag selected: [gold]{0}",
+    "TagSelected": "[green]Tag selected:[default] [gold]{0}[default]",
 
     // Sent to the player after they choose "Remove Tag" in the menu.
-    "TagRemoved": "Tag removed.",
+    "TagRemoved": "[red]Tag removed.[default]",
 
     // Sent when the player runs the command but has no eligible tags.
-    "NoTagsAvailable": "You have no tags available."
+    "NoTagsAvailable": "[red]You have no tags available.[default]",
+
+    "TagsDisabledByUser": "[red]Chat tags are disabled[default] in your Zombie Plague user settings.",
+    "TagsEnabledByUser": "[green]Chat tags are enabled[default] in your Zombie Plague user settings."
 }

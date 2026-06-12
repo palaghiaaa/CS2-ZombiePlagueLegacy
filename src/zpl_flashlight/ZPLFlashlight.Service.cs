@@ -71,6 +71,12 @@ public sealed class ZPLFlashlight_Service
             return false;
         }
 
+        if (!IsUserFlashlightEnabled(connectedPlayer))
+        {
+            message = "Flashlight.ErrorUserDisabled";
+            return false;
+        }
+
         var state = GetOrCreateState(connectedPlayer);
         var currentTime = _core.Engine.GlobalVars.CurrentTime;
         var debounceWindow = Math.Max(0.01f, _config.ToggleDebounceMs / 1000.0f);
@@ -154,6 +160,13 @@ public sealed class ZPLFlashlight_Service
             changed = true;
             message = "Flashlight.StateDisabled";
             return true;
+        }
+
+        if (!IsUserFlashlightEnabled(connectedPlayer))
+        {
+            ForceDisableState(state);
+            message = "Flashlight.ErrorUserDisabled";
+            return false;
         }
 
         if (state.Enabled)
@@ -301,6 +314,12 @@ public sealed class ZPLFlashlight_Service
             state.PlayerId = player.PlayerID;
             _sessionIdByPlayerId[player.PlayerID] = sessionId;
 
+            if (!IsUserFlashlightEnabled(player))
+            {
+                ForceDisableState(state);
+                continue;
+            }
+
             if (!_config.AllowBots && player.IsFakeClient)
             {
                 ForceDisableState(state);
@@ -371,6 +390,24 @@ public sealed class ZPLFlashlight_Service
         _staleSessions.Clear();
     }
 
+    public void HandleUserPreferenceChanged(ulong steamId, string key, bool enabled)
+    {
+        if (!string.Equals(key, ZPLUserPreferenceKeys.Flashlight, StringComparison.Ordinal) || enabled)
+            return;
+
+        foreach (var state in _statesBySessionId.Values)
+        {
+            if (!TryResolvePlayerBySession(state.SessionId, out var player))
+                continue;
+
+            if (player.SteamID == steamId)
+            {
+                ForceDisableState(state);
+                return;
+            }
+        }
+    }
+
     private void ForceDisableState(FlashlightPlayerState state)
     {
         DestroyLightEntity(state);
@@ -407,6 +444,9 @@ public sealed class ZPLFlashlight_Service
         _sessionIdByPlayerId[player.PlayerID] = sessionId;
         return state;
     }
+
+    private bool IsUserFlashlightEnabled(IPlayer player)
+        => _zpApi?.ZPL_GetUserPreference(player, ZPLUserPreferenceKeys.Flashlight, true) ?? true;
 
     private bool TryGetStateByPlayerId(int playerId, out FlashlightPlayerState state)
     {

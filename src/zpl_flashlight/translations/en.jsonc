@@ -1,6 +1,7 @@
 {
   "Flashlight.ErrorServiceUnavailable": "Flashlight service is unavailable.",
   "Flashlight.ErrorDisabledInConfig": "Flashlight is disabled in config.",
+  "Flashlight.ErrorUserDisabled": "Flashlight is disabled in your Zombie Plague user settings.",
   "Flashlight.ErrorPlayerUnavailableForControl": "The current player is unavailable for flashlight control.",
   "Flashlight.StateAlreadyEnabled": "Flashlight is already enabled.",
   "Flashlight.StateAlreadyDisabled": "Flashlight is already disabled.",

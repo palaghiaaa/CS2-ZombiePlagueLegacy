@@ -18,7 +18,7 @@ public class ZPLTeamBetsConfig
     // ── Chat ──────────────────────────────────────────────────────────────────
 
     /// <summary>Prefix prepended to all ZPLTeamBets chat messages.</summary>
-    public string ChatPrefix { get; set; } = "[TeamBets]";
+    public string ChatPrefix { get; set; } = "[red][ZM][default]";
 
     // ── Economy ───────────────────────────────────────────────────────────────
 

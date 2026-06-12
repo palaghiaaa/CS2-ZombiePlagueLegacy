@@ -1,0 +1,33 @@
+{
+  "Enabled": true,
+  "DebugLogs": false,
+  "Rules": [
+    {
+      "Event": "EventPlayerActivate",
+      "Message": "chat.welcome_player",
+      "Target": "Player"
+    },
+    {
+      "Event": "EventPlayerConnectFull",
+      "Message": "chat.join_all",
+      "Target": "all"
+    },
+    {
+      "Event": "EventPlayerDisconnect",
+      "Message": "chat.leave_all",
+      "Target": "all"
+    },
+    {
+      "Event": "EventRoundEnd",
+      "Message": "[grey]Round Winner: [lime]{Winner}",
+      "Target": "all",
+      "Broadcast": false
+    },
+    {
+      "Event": "EventPlayerDeath",
+      "Message": "[lightred]{Attacker.PlayerName} [grey]killed [lime]{PlayerController.PlayerName} [grey]with [lime]{Weapon}",
+      "Target": "all",
+      "Broadcast": true
+    }
+  ]
+}

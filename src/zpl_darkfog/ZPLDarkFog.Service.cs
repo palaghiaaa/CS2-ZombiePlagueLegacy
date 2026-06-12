@@ -25,8 +25,8 @@ public sealed class ZPLDarkFog_Service
         _core = core;
         _logger = logger;
 
-        var snapViewAnglesAddress = _core.GameData.GetSignature("SnapViewAngles");
-        if (snapViewAnglesAddress == nint.Zero)
+        if (!_core.GameData.TryGetSignature("SnapViewAngles", out var snapViewAnglesAddress) ||
+            snapViewAnglesAddress == nint.Zero)
         {
             _logger.LogWarning("SnapViewAngles signature was not found. Refresh will skip angle snapping.");
             return;

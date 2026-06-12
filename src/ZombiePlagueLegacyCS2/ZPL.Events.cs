@@ -369,6 +369,7 @@ public partial class ZPLEvents
         foreach (var player in _core.PlayerManager.GetAllPlayers())
         {
             if (!player.IsValid || player.IsFakeClient) continue;
+            _helpers.ResetTemporaryHumanExtraItems(player, removeGlow: true);
             int ap = _extraItemsMenu.GetAmmoPacks(player.PlayerID);
             _helpers.SendChatT(player, "RoundStartAnnounce", ap, playerCount);
         }
@@ -428,6 +429,7 @@ public partial class ZPLEvents
 
                 _globals.GodState[id] = false;
                 _globals.InfiniteAmmoState[id] = false;
+                _helpers.ResetTemporaryHumanExtraItems(player, removeGlow: true);
 
                 // ── Per-round resets (consumables / temporary) ──────────────────
                 // These do NOT persist between rounds (consumed on use or round-specific)
@@ -459,7 +461,12 @@ public partial class ZPLEvents
                     if (reward > 0)
                     {
                         _extraItemsMenu.AddAmmoPacks(id, reward);
-                        player.SendCenterHTML($"<b><span color='#FFD700'>{_helpers.T(player, "APRoundSurviveReward", reward, _extraItemsMenu.GetAmmoPacks(id))}</span></b>", 2500);
+                        _helpers.SendStackedCenterHTML(
+                            player,
+                            "reward",
+                            $"<span color=\"#FFD700\" class=\"fontSize-l fontWeight-bold\">{_helpers.T(player, "APRoundSurviveReward", reward, _extraItemsMenu.GetAmmoPacks(id))}</span>",
+                            2500,
+                            priority: 80);
                     }
                 }
 
@@ -781,6 +788,7 @@ public partial class ZPLEvents
 
         var Id = player.PlayerID;
         var steamId = player.SteamID;
+        _helpers.ClearStackedCenterHTML(Id);
 
         _helpers.ClearPlayerBurn(Id);
         _helpers.RemoveSHumanClass(Id);
@@ -811,8 +819,10 @@ public partial class ZPLEvents
         {
             // Restore gravity in case player dies while parachuting
             var deathPawn = player.PlayerPawn;
-            if (deathPawn != null && deathPawn.IsValid && deathPawn.ActualGravityScale == 0f)
-                deathPawn.ActualGravityScale = 1.0f;
+            if (deathPawn != null && deathPawn.IsValid)
+                RestoreParachuteGravity(Id, deathPawn);
+            else
+                _globals.ParachuteRestoreGravity.Remove(Id);
         }
         _globals.NemesisFrostCharges.Remove(Id);
         _globals.NemesisFrostCooldown.Remove(Id);
@@ -837,7 +847,12 @@ public partial class ZPLEvents
                     if (reward > 0)
                     {
                         _extraItemsMenu.AddAmmoPacks(aId, reward);
-                        attacker.SendCenterHTML($"<b><span color='#FF8C00'>{_helpers.T(attacker, "APZombieKillReward", reward, _extraItemsMenu.GetAmmoPacks(aId))}</span></b>", 2500);
+                        _helpers.SendStackedCenterHTML(
+                            attacker,
+                            "reward",
+                            $"<span color=\"#FF8C00\" class=\"fontSize-l fontWeight-bold\">{_helpers.T(attacker, "APZombieKillReward", reward, _extraItemsMenu.GetAmmoPacks(aId))}</span>",
+                            2500,
+                            priority: 80);
                     }
                 }
             }
@@ -1050,7 +1065,12 @@ public partial class ZPLEvents
                     accumulated -= packs * threshold;
                     int totalReward = packs * rewardPerThreshold;
                     _extraItemsMenu.AddAmmoPacks(aId, totalReward);
-                    attacker.SendCenterHTML($"<b><span color='#FF8C00'>{_helpers.T(attacker, "APHumanDamageReward", totalReward, _extraItemsMenu.GetAmmoPacks(aId))}</span></b>", 2500);
+                    _helpers.SendStackedCenterHTML(
+                        attacker,
+                        "reward",
+                        $"<span color=\"#FF8C00\" class=\"fontSize-l fontWeight-bold\">{_helpers.T(attacker, "APHumanDamageReward", totalReward, _extraItemsMenu.GetAmmoPacks(aId))}</span>",
+                        2500,
+                        priority: 80);
                 }
                 _globals.DamageAccumulator[aId] = accumulated;
             }
@@ -1148,6 +1168,7 @@ public partial class ZPLEvents
     private void Event_OnMapLoad(IOnMapLoadEvent @event)
     {
         _commands.ServerCvar();
+        _helpers.ClearAllStackedCenterHTML();
         var VoxCFG = _voxCFG.CurrentValue;
         var VoxList = VoxCFG.VoxList;
         if (_globals.RoundVoxGroup == null && VoxList != null)
@@ -1187,6 +1208,8 @@ public partial class ZPLEvents
 
     private void Event_OnMapUnload(IOnMapUnloadEvent @event)
     {
+        _helpers.ClearAllStackedCenterHTML();
+
         // ── Cleanup all map-level timers and state ────────────────────────────────
         // Map changes do not trigger per-entity unload, so we must explicitly
         // clean up all timers, handles, and dictionaries keyed by per-map data.
@@ -1261,9 +1284,11 @@ public partial class ZPLEvents
         _globals.GodState.Clear();
         _globals.InfiniteAmmoState.Clear();
         _globals.CanBuyWeaponsThisRound.Clear();
+        _globals.WeaponGrenadesGivenThisRound.Clear();
         _globals.DamageAccumulator.Clear();
         _globals.ExtraJumps.Clear();
         _globals.HasParachute.Clear();
+        _globals.ParachuteRestoreGravity.Clear();
         _globals.NemesisFrostCharges.Clear();
         _globals.NemesisFrostCooldown.Clear();
         _classAbilities.ClearAll();
@@ -1536,6 +1561,7 @@ public partial class ZPLEvents
     private void Event_OnClientDisconnected(SwiftlyS2.Shared.Events.IOnClientDisconnectedEvent @event)
     {
         var id = @event.PlayerId;
+        _helpers.ClearStackedCenterHTML(id);
 
         // Close any open menu FIRST – while the native player controller is still
         // guaranteed alive – so SwiftlyS2's per-player render timer cannot fire on
@@ -1566,6 +1592,7 @@ public partial class ZPLEvents
         _globals.GodState.Remove(id);
         _globals.InfiniteAmmoState.Remove(id);
         _globals.CanBuyWeaponsThisRound.Remove(id);
+        _globals.WeaponGrenadesGivenThisRound.Remove(id);
 
         // Clean up Economy tracking
         _ammoPacks.RemovePlayer(id);
@@ -1588,6 +1615,8 @@ public partial class ZPLEvents
         _globals.ExtraNoRecoilState.Remove(id);
         _globals.TryderState.Remove(id);
         _globals.ItemPurchaseCount.Remove(id);
+        _globals.HasParachute.Remove(id);
+        _globals.ParachuteRestoreGravity.Remove(id);
         // Jetpack / Revive Token
         _extraItemsMenu.CleanupJetpack(id);
         // Cleanup mines for disconnecting player
@@ -1825,6 +1854,11 @@ public partial class ZPLEvents
             float maxFuel = jetpackCFG.JetpackMaxFuel;
             if (fuel >= maxFuel) continue;
 
+            bool wantsJetpackThrust =
+                (player.PressedButtons & GameButtonFlags.Ctrl) != 0 &&
+                (player.PressedButtons & GameButtonFlags.Space) != 0;
+            if (wantsJetpackThrust) continue;
+
             float now        = _core.Engine.GlobalVars.CurrentTime;
             float lastThrust = _globals.JetpackLastThrustTime.TryGetValue(id, out float lt) ? lt : 0f;
 
@@ -1847,12 +1881,15 @@ public partial class ZPLEvents
                 float remaining = rechargeTime * (1f - fuelPct);
                 string fuelColor = "#FFD700"; // gold during recharge
                 string bar = _helpers.BuildProgressBar(fuelPct, 10, fuelColor, "#666666", player);
-                player.SendCenterHTML(
-                    $"<b><span color='#AAAAAA' class='fontSize-m'>JETPACK FUEL</span></b><br>"
+                _helpers.SendStackedCenterHTML(
+                    player,
+                    "jetpack",
+                    $"<span color=\"#AAAAAA\" class=\"fontSize-l fontWeight-bold\">JETPACK FUEL</span><br>"
                     + bar
-                    + $" <span color='{fuelColor}'><b>{(int)(fuelPct * 100)}%</b></span><br>"
-                    + $"<span color='#FF3030'><b>RECHARGING... {remaining:F0}s</b></span>",
-                    600);
+                    + $" <span color=\"{fuelColor}\" class=\"fontSize-l fontWeight-bold\">{(int)(fuelPct * 100)}%</span><br>"
+                    + $"<span color=\"#FF3030\" class=\"fontSize-l fontWeight-bold\">RECHARGING... {remaining:F0}s</span>",
+                    600,
+                    priority: 30);
             }
         }
     }
@@ -1893,8 +1930,9 @@ public partial class ZPLEvents
         if (!_globals.GameStart) return;
         if (_globals.HasParachute.Count == 0) return;
 
+        const float parachuteGravityScale = 0.25f;
         var extraCfg = _extraItemsCFG.CurrentValue;
-        float maxFallSpeed = extraCfg.ParachuteFallSpeed; // max downward speed (positive u/s)
+        float maxFallSpeed = Math.Max(1f, extraCfg.ParachuteFallSpeed); // max downward speed (positive u/s)
 
         foreach (var player in _core.PlayerManager.GetAlive())
         {
@@ -1911,30 +1949,44 @@ public partial class ZPLEvents
 
             bool onGround = pawn.GroundEntity.IsValid;
             bool eHeld    = (player.PressedButtons & GameButtonFlags.E) != 0;
+            bool jetpackThrustHeld =
+                (player.PressedButtons & GameButtonFlags.Ctrl) != 0 &&
+                (player.PressedButtons & GameButtonFlags.Space) != 0;
+            var vel = pawn.AbsVelocity;
+            bool isFalling = vel.Z < 0f;
 
-            // Restore gravity when on ground or E released
-            if (onGround || !eHeld)
+            // Restore gravity unless the player is actively falling with parachute held.
+            if (onGround || !eHeld || jetpackThrustHeld || !isFalling)
             {
-                if (pawn.ActualGravityScale == 0f)
-                {
-                    pawn.ActualGravityScale = 1.0f;
-                }
+                RestoreParachuteGravity(id, pawn);
                 continue;
             }
 
-            // E held while airborne — parachute active
-            // Kill gravity so engine stops accelerating downward
-            if (pawn.ActualGravityScale != 0f)
-            {
-                pawn.ActualGravityScale = 0f;
-            }
+            // E held while falling - use light gravity and clamp descent speed.
+            if (!_globals.ParachuteRestoreGravity.ContainsKey(id))
+                _globals.ParachuteRestoreGravity[id] = pawn.ActualGravityScale;
+
+            if (Math.Abs(pawn.ActualGravityScale - parachuteGravityScale) > 0.001f)
+                pawn.ActualGravityScale = parachuteGravityScale;
 
             // Clamp downward velocity to maxFallSpeed
-            var vel = pawn.AbsVelocity;
             if (vel.Z < -maxFallSpeed)
                 pawn.Teleport(null, null,
                     new SwiftlyS2.Shared.Natives.Vector(vel.X, vel.Y, -maxFallSpeed));
         }
+    }
+
+    private void RestoreParachuteGravity(int playerId, CCSPlayerPawn pawn)
+    {
+        if (_globals.ParachuteRestoreGravity.TryGetValue(playerId, out float gravity))
+        {
+            pawn.ActualGravityScale = gravity;
+            _globals.ParachuteRestoreGravity.Remove(playerId);
+            return;
+        }
+
+        if (pawn.ActualGravityScale == 0f)
+            pawn.ActualGravityScale = 1.0f;
     }
 
     private void Event_OnTickNemesisFrost()
@@ -1962,10 +2014,14 @@ public partial class ZPLEvents
             _globals.NemesisFrostCharges.TryGetValue(id, out int charges);
             if (charges <= 0)
             {
-                player.SendCenterHTML(
-                    "<span color='#00CFFF' class='fontSize-l'><b>❄ FROST</b></span><br>" +
+                _helpers.SendStackedCenterHTML(
+                    player,
+                    "frost",
+                    "<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">FROST</span><br>" +
                     _helpers.BuildProgressBar(0f, 10, "#666666", "#666666", player) +
-                    " <span color='#FF3030'><b>NO CHARGES</b></span>", 2000);
+                    " <span color=\"#FF3030\" class=\"fontSize-l fontWeight-bold\">NO CHARGES</span>",
+                    2000,
+                    priority: 35);
                 continue;
             }
 
@@ -1976,10 +2032,14 @@ public partial class ZPLEvents
             {
                 float wait = nextUse - now;
                 float cdPct = 1f - Math.Clamp(wait / nemCfg.FrostCooldown, 0f, 1f);
-                player.SendCenterHTML(
-                    "<span color='#00CFFF' class='fontSize-l'><b>❄ FROST</b></span><br>" +
+                _helpers.SendStackedCenterHTML(
+                    player,
+                    "frost",
+                    "<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">FROST</span><br>" +
                     _helpers.BuildProgressBar(cdPct, 10, "#00CFFF", "#666666", player) +
-                    $" <span color='#FFD700'><b>COOLDOWN {wait:F1}s</b></span>", 500);
+                    $" <span color=\"#FFD700\" class=\"fontSize-l fontWeight-bold\">COOLDOWN {wait:F1}s</span>",
+                    500,
+                    priority: 35);
                 continue;
             }
 
@@ -1996,8 +2056,18 @@ public partial class ZPLEvents
             {
                 if (!other.IsValid || other.IsFakeClient) continue;
                 int oid = other.PlayerID;
+                if (oid == id) continue;
+
+                var otherController = other.Controller;
+                if (otherController == null || !otherController.IsValid || otherController.Team != Team.CT)
+                    continue;
+
                 _globals.IsZombie.TryGetValue(oid, out bool otherIsZombie);
-                if (otherIsZombie) continue; // skip zombies
+                _globals.IsMother.TryGetValue(oid, out bool otherIsMother);
+                _globals.IsNemesis.TryGetValue(oid, out bool otherIsNemesis);
+                _globals.IsAssassin.TryGetValue(oid, out bool otherIsAssassin);
+                if (otherIsZombie || otherIsMother || otherIsNemesis || otherIsAssassin)
+                    continue;
 
                 var oPawn = other.PlayerPawn;
                 if (oPawn == null || !oPawn.IsValid) continue;
@@ -2031,12 +2101,15 @@ public partial class ZPLEvents
                 : 0f;
             string chargesBar = _helpers.BuildProgressBar(chargesPct, 10, "#00CFFF", "#666666", player);
             string frozenName  = target.Name;
-            player.SendCenterHTML(
-                $"<span color='#00CFFF' class='fontSize-l'><b>❄ FROST</b></span>" +
-                $" <span color='#AAAAAA'>→</span> <span color='#FFFFFF'>{frozenName}</span><br>" +
+            _helpers.SendStackedCenterHTML(
+                player,
+                "frost",
+                $"<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">FROST</span>" +
+                $" <span color=\"#AAAAAA\" class=\"fontSize-l\">-></span> <span color=\"#FFFFFF\" class=\"fontSize-l\">{frozenName}</span><br>" +
                 chargesBar +
-                $" <span color='#00CFFF'><b>{chargesLeft}/{nemCfg.FrostMaxCharges}</b></span>",
-                2500);
+                $" <span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">{chargesLeft}/{nemCfg.FrostMaxCharges}</span>",
+                2500,
+                priority: 35);
 
             // Chat notifications
             player.SendMessage(MessageType.Chat,
@@ -2753,4 +2826,3 @@ public partial class ZPLEvents
     }
 
 }
-

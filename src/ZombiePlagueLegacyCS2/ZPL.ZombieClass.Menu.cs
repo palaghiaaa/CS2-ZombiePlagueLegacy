@@ -1,4 +1,3 @@
-using System.Drawing;
 using System.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -45,20 +44,11 @@ public class ZPLZombieClassMenu
         var steamId = player.SteamID;
         var currentPreference = _zombieState.GetPlayerPreference(Id, steamId);
 
-        menu.AddOption(new TextMenuOption(
-            $"<span color=\"{ZPLMenuHelper.ColHint}\">{_helpers.T(player, "ZClassMenuSelect")}</span>",
-            updateIntervalMs: 500, pauseIntervalMs: 100)
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop
-        });
+        menu.AddOption(ZPLMenuHelper.LargeText(_helpers.T(player, "ZClassMenuSelect")));
 
         bool randomSelected = currentPreference?.Preference == ZombiePreference.Random;
         string randomButtonText = ZPLMenuHelper.ClassLabel(_helpers.T(player, "ZClassMenuRandomSelect"), randomSelected);
-        var RandomButton = new ButtonMenuOption(randomButtonText)
-        {
-            TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-            CloseAfterClick = true
-        };
+        var RandomButton = ZPLMenuHelper.LargeButton(randomButtonText);
         RandomButton.Tag = "extend";
 
         RandomButton.Click += async (_, args) =>
@@ -92,11 +82,7 @@ public class ZPLZombieClassMenu
                     && currentPreference.FixedZombieName == Cfg.Name;
                 string buttonText = ZPLMenuHelper.ClassLabel(Cfg.Name, classSelected);
 
-                var Button = new ButtonMenuOption(buttonText)
-                {
-                    TextStyle = MenuOptionTextStyle.ScrollLeftLoop,
-                    CloseAfterClick = true
-                };
+                var Button = ZPLMenuHelper.LargeButton(buttonText);
                 Button.Tag = "extend";
 
                 Button.Click += async (_, args) =>

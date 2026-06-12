@@ -27,6 +27,7 @@
          and prevents the "No keyed service for type IZombiePlagueLegacyAPI" error
          that occurs when SwiftlyS2 loads the same assembly from two different paths. -->
     <ProjectReference Include="../IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj" Private="false" />
+    <Compile Include="../ZPLShared/ZPLMenuStyle.cs" Link="ZPLMenuStyle.cs" />
     <!-- Economy plugin contract (AP wallet management) -->
     <Reference Include="Economy.Contract">
       <HintPath>../ZombiePlagueLegacyCS2/lib/Economy.Contract.dll</HintPath>

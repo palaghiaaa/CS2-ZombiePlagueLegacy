@@ -96,10 +96,15 @@
     "WeaponMenuPrimarySelect": "Choose your primary weapon for this round",
     "WeaponMenuSecondaryTitle": "Secondary Weapon Selection",
     "WeaponMenuSecondarySelect": "Choose your secondary weapon for this round",
+    "WeaponMenuRememberChoice": "Remember choice: {0}",
+    "WeaponMenuRememberEnabled": "Weapon choice remember is now [green]ON[default].",
+    "WeaponMenuRememberDisabled": "Weapon choice remember is now [red]OFF[default].",
     "WeaponsMenuNotEligible": "You are not eligible to use the weapon menu.",
     "WeaponsMenuAlreadyUsed": "You have already used the weapon selection menu this round!",
     "WeaponsMenuDisabledInMode": "The buy weapons menu is not available [red]in this game mode.",
     "WeaponsMenuInfectionStarted": "Weapon selection is not available [red]in this mode/situation.",
+    "CommonOn": "ON",
+    "CommonOff": "OFF",
 
     // ── Main Game Menu ─────────────────────────────────────────────────────
     "GameMenuTitle": "CS2 ZP Game Menu",
@@ -109,7 +114,20 @@
     "GameMenuZombieClass": "Choose Zombie Class",
     "GameMenuUnstuck": "Unstuck",
     "GameMenuJoinSpectator": "Join Spectator",
+    "GameMenuUserSettings": "User Settings",
     "GameMenuAdminMenu": "Admin Menu",
+
+    "UserSettingsMenuTitle": "User Settings",
+    "UserSettingsMenuHint": "Personal display and notification preferences",
+    "UserSettingsVoxSounds": "VOX Sounds",
+    "UserSettingsFog": "Dark Fog",
+    "UserSettingsFlashlight": "Flashlight",
+    "UserSettingsTags": "Chat Tags",
+    "UserSettingsAds": "Server Ads",
+    "UserSettingsHidePlayers": "Hide Players",
+    "UserSettingsVipRewards": "VIP Reward Messages",
+    "UserSettingsToggleSaved": "[gold]{0}[default] is now [gold]{1}[default].",
+    "UserSettingsHidePlayersHint": "[gold]Hide Players[default] preference was saved. Use [green]!hide[default] if the external HidePlayers plugin is installed.",
 
     // ── Unstuck ────────────────────────────────────────────────────────────
     "UnstuckMustBeAlive": "You must be alive to use Unstuck.",
@@ -205,12 +223,7 @@
     // ── Round start announcement ───────────────────────────────────────────
     "RoundStartAnnounce": "New round [green]begins[default]! | Your credits: [green]{0}[default] | Players connected: [green]{1}[default]",
 
-    // ── Mine Menu ─────────────────────────────────────────────────────────
-    "MineMenuTitle": "Laser Mine",
-    "MineMenuSelectPrompt": "Place a Laser Mine (6 AP | Limit: 2)",
-    "MineMenuEmpty": "No mines configured.",
-    "FreeText": "Free",
-    "LimitText": "∞",
+    // ── Laser Mine ────────────────────────────────────────────────────────
     "MineLimit": "You have reached the limit of [green]{0}[default] mine(s) of this type.",
     "NoMoney": "You do not have enough money to place this mine.",
 

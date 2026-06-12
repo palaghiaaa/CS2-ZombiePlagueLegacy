@@ -26,6 +26,7 @@
          reused at runtime, which keeps the type identity consistent across plugins
          and prevents the "No keyed service for type IZombiePlagueLegacyAPI" error. -->
     <ProjectReference Include="../IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj" Private="false" />
+    <Compile Include="../ZPLShared/ZPLMenuStyle.cs" Link="ZPLMenuStyle.cs" />
     <!-- Economy plugin contract (AP wallet management) -->
     <Reference Include="Economy.Contract">
       <HintPath>../ZombiePlagueLegacyCS2/lib/Economy.Contract.dll</HintPath>

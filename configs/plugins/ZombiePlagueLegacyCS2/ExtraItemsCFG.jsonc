@@ -30,7 +30,7 @@
     "Items": [
       {
         "Key": "armor",
-        "Name": "Armor (100 AP)",
+        "Name": "Armor (+100 armor)",
         "Price": 2,
         "Enable": true,
         "Team": "Human"
@@ -79,7 +79,7 @@
       },
       {
         "Key": "laser_mine",
-        "Name": "Laser Mine (places mine instantly)",
+        "Name": "Laser Mine (plant on aimed surface)",
         "Price": 5,
         "Enable": true,
         "Team": "Human"
@@ -116,7 +116,7 @@
         "Key": "parachute",
         "Enable": true,
         "Name": "Parachute",
-        "Description": "Slow your fall — hold SPACE while airborne",
+        "Description": "Slow your fall - hold E while falling",
         "Team": "Human",
         "Price": 3,
         "Limit": 1,

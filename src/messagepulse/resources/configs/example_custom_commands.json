@@ -1,0 +1,19 @@
+{
+  "Commands": [
+    {
+      "Triggers": ["discord", "dc", "disc"],
+      "Target": "all",
+      "Message": "{MP_PREFIX} Join our Discord: [lime] https://discord.gg/example"
+    },
+    {
+      "Triggers": ["rules"],
+      "Target": "player",
+      "Message": "{MP_PREFIX} Check out our rules: [lime] https://example.com/rules"
+    },
+    {
+      "Triggers": ["website", "site"],
+      "Target": "player",
+      "Message": "{MP_PREFIX} Visit our website: [lime] https://example.com"
+    }
+  ]
+}

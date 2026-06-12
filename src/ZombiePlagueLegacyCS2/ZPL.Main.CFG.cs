@@ -198,19 +198,19 @@ public class FogConfig
     /// <summary>Set to true to enable server-wide fog on every map load.</summary>
     public bool Enable { get; set; } = true;
     /// <summary>Primary fog colour – red component (0-255). Dark grey-green for zombie horror.</summary>
-    public int ColorR { get; set; } = 100;
+    public int ColorR { get; set; } = 24;
     /// <summary>Primary fog colour – green component (0-255).</summary>
-    public int ColorG { get; set; } = 110;
+    public int ColorG { get; set; } = 58;
     /// <summary>Primary fog colour – blue component (0-255).</summary>
-    public int ColorB { get; set; } = 100;
+    public int ColorB { get; set; } = 30;
     /// <summary>Distance at which the fog begins (game units).</summary>
-    public float StartDist { get; set; } = 128f;
+    public float StartDist { get; set; } = 60f;
     /// <summary>Distance at which the fog reaches maximum density (game units).</summary>
-    public float EndDist { get; set; } = 2048f;
+    public float EndDist { get; set; } = 750f;
     /// <summary>Maximum fog opacity (0.0 = invisible, 1.0 = fully opaque).</summary>
-    public float MaxDensity { get; set; } = 0.9f;
+    public float MaxDensity { get; set; } = 0.94f;
     /// <summary>Fog density fall-off exponent.</summary>
-    public float Exponent { get; set; } = 1.0f;
+    public float Exponent { get; set; } = 2.0f;
 }
 
 public class ZPLMainCFG
@@ -240,7 +240,7 @@ public class ZPLMainCFG
     public float HumanKnockBackAirMultiply { get; set; } = 0.5f;
     public float HumanHeroKnockBackMultiply { get; set; } = 1.0f;
     public bool EnableInfiniteReserveAmmo { get; set; } = true;
-    public bool EnableWeaponNoRecoil { get; set; } = true;
+    public bool EnableWeaponNoRecoil { get; set; } = false;
     public string HumanSpawnPoints { get; set; } = string.Empty;
     public string ZombieSpawnPoints { get; set; } = string.Empty;
     public float KnockZombieForce { get; set; } = 250f;
@@ -278,8 +278,8 @@ public class ZPLMainCFG
     public string MainMenuCommand { get; set; } = "sw_zmenu";
     public string ExtraItemsCommand { get; set; } = "sw_zextra";
     public string BuyWeaponsCommand { get; set; } = "sw_buyweapons";
-    public string MineMenuCommand { get; set; } = "sw_mine";
-    public string AdminMenuPermission { get; set; } = "";
+    public string UserSettingsCommand { get; set; } = "sw_zsettings";
+    public string AdminMenuPermission { get; set; } = "admin.hzpmenu";
     public string AmbSound { get; set; } = string.Empty;
     public float AmbSoundLoopTime { get; set; } = 60.0f;
     public float AmbSoundVolume { get; set; } = 0.6f;

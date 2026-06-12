@@ -33,7 +33,7 @@ public class ZPLTagsCFG
     /// Prefix prepended to every chat message sent by this plugin.
     /// Supports colour codes: [red], [green], [gold], [default], etc.
     /// </summary>
-    public string ChatPrefix { get; set; } = "[green][ZPLTags][default]";
+    public string ChatPrefix { get; set; } = "[red][ZM][default]";
 
     // ── Tag entries ───────────────────────────────────────────────────────────
 

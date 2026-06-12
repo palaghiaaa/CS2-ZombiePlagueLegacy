@@ -14,6 +14,7 @@ using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
 using SwiftlyS2.Shared.SchemaDefinitions;
 using ZombiePlagueLegacyCS2;
+using ZombiePlagueLegacyCS2.SharedUi;
 
 namespace ZPLRank;
 
@@ -393,7 +394,7 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
             myStat.Kills, myStat.Deaths,
             myStat.Infections, myStat.Assists, myStat.Damage,
             FormatScore(score));
-        p.SendMessage(MessageType.Chat, $" \x04{cfg.ChatTag}\x01 {body}");
+        p.SendMessage(MessageType.Chat, $" {cfg.ChatTag} {body}");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -414,23 +415,13 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
         var cfg    = _cfg!.CurrentValue;
         var sorted = BuildSortedList().Take(limit).ToList();
 
-        var menuConfig = new MenuConfiguration
-        {
-            Title           = HtmlGradient.GenerateGradientText(T(p, "TopMenuTitle", limit), Color.Gold),
-            FreezePlayer    = false,
-            MaxVisibleItems = Math.Clamp(cfg.TopMenuVisibleRows, 1, 5),
-            PlaySound       = true,
-            AutoIncreaseVisibleItems = false,
-            HideFooter      = false
-        };
+        var menuConfig = ZPLMenuStyle.MenuConfig(T(p, "TopMenuTitle", limit), playSound: true);
 
         IMenuAPI menu = Core.MenusAPI.CreateMenu(menuConfig, default, null, MenuOptionScrollStyle.LinearScroll);
 
         if (sorted.Count == 0)
         {
-            menu.AddOption(new TextMenuOption(T(p, "TopMenuNoStats"),
-                updateIntervalMs: 600, pauseIntervalMs: 100)
-                { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
+            menu.AddOption(ZPLMenuStyle.Text(T(p, "TopMenuNoStats")));
         }
         else
         {
@@ -444,13 +435,10 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
                     s.Kills, s.Deaths,
                     s.Infections, s.Assists, s.Damage);
 
-                menu.AddOption(new TextMenuOption(lbl,
-                    updateIntervalMs: 600, pauseIntervalMs: 100)
-                    { TextStyle = MenuOptionTextStyle.ScrollLeftLoop });
+                menu.AddOption(ZPLMenuStyle.Text(lbl, ZPLMenuStyle.ColButton, bold: true));
             }
         }
 
         Core.MenusAPI.OpenMenuForPlayer(p, menu);
     }
 }
-

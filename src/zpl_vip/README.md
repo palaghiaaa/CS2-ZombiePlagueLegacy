@@ -18,8 +18,8 @@ Integrates directly with `IZombiePlagueLegacyAPI` for accurate zombie-state dete
 | **Kill reward** (AP per zombie kill) | `KillRewardAmount` | `zp_vip_killammo` |
 | **Happy Hour** (bonus AP + frags) | `HappyHour*` | `zp_vip_happyhour_*` |
 | **Infect reward** (VIP-as-zombie) | `InfectRewardsEnabled` | `zp_vip_infectammo/health` |
-| **`!vip` menu** – configurable benefit lines | `BenefitLines` | — |
-| **`!vips` menu** – online VIP list | `VipsListCommand` | — |
+| **`!vip` menu** – top-anchored large configurable benefit lines | `BenefitLines` | — |
+| **`!vips` menu** – top-anchored large online VIP list | `VipsListCommand` | — |
 | **Join announce** | `JoinAnnounceEnabled` | — |
 
 All user-facing strings are in **`translations/en.jsonc`** — easy to localise.
