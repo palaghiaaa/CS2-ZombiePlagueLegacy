@@ -7,16 +7,16 @@
     "VipMenuCommand": "vmenu",
     "VipsListCommand": "vips",
 
-    "VipMenuTitle": "VIP Benefits",
+    "VipMenuTitle": "VIP",
 
     "BenefitLines": [
-      "Armor on spawn (+100)",
-      "Double Jump (1 extra mid-air jump)",
+      "Armor +100",
+      "Double Jump",
       "No Fall Damage",
-      "×1.5 Damage dealt to Zombies",
-      "+1 AP per 500 damage dealt to Zombies",
-      "+2 AP per Zombie Kill",
-      "Happy Hour: extra AP & frags (19:00–08:00)"
+      "x1.5 Zombie Damage",
+      "+1 AP / 500 dmg",
+      "+2 AP / kill",
+      "Happy Hour bonus"
     ],
 
     "JoinAnnounceEnabled": true,
@@ -53,7 +53,7 @@
 
     "HappyHourBonusFrags": 1,
 
-    "InfectRewardsEnabled": false,
+    "InfectRewardsEnabled": true,
     "InfectRewardAP": 1,
     "InfectRewardHealth": 500
   }

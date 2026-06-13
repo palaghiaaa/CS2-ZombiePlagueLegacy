@@ -62,6 +62,9 @@ public partial class ZPLServices
         // only ever ended via the natural round timer.
         _globals.MotherZombieWasSelected = true;
         var mode = _gameMode.CurrentMode;
+        if (ShouldResetExtraItemsForMode(mode))
+            ResetExtraItemsForSpecialRound();
+
         switch (mode)
         {
             case GameModeType.Normal:
@@ -100,6 +103,29 @@ public partial class ZPLServices
                 break;
         }
 
+    }
+
+    private static bool ShouldResetExtraItemsForMode(GameModeType mode)
+    {
+        return mode is GameModeType.Nemesis
+            or GameModeType.Survivor
+            or GameModeType.Swarm
+            or GameModeType.Plague
+            or GameModeType.Assassin
+            or GameModeType.Sniper
+            or GameModeType.AVS
+            or GameModeType.Hero;
+    }
+
+    private void ResetExtraItemsForSpecialRound()
+    {
+        foreach (var player in _core.PlayerManager.GetAllPlayers())
+        {
+            if (player == null || !player.IsValid || player.IsFakeClient)
+                continue;
+
+            _helpers.ResetTemporaryHumanExtraItems(player, removeGlow: true);
+        }
     }
 
     public void HeroMode()

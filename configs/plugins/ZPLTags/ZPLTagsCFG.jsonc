@@ -22,8 +22,8 @@
     "DatabaseConnection": "mysql",
 
     "MenuCommand": "sw_tags",
-    "MenuTitle":   "TAGS Menu",
-    "NoTagLabel":  "Remove TAG",
+    "MenuTitle":   "Tags",
+    "NoTagLabel":  "Remove",
     "ChatPrefix":  "[red][ZM][default]",
 
     
@@ -31,7 +31,7 @@
       {
         "GroupName":   "ROOT",
         "Permission":  "tags.root",
-        "DisplayName": "ROOT Tag",
+        "DisplayName": "ROOT",
         "Priority":    100,
         "ScoreTag":    "[ROOT]",
         "ChatTag":     "[red][ROOT][default] ",
@@ -42,7 +42,7 @@
       {
         "GroupName":   "TRUST",
         "Permission":  "tags.trust",
-        "DisplayName": "TRUST Tag",
+        "DisplayName": "TRUST",
         "Priority":    90,
         "ScoreTag":    "[TRUST]",
         "ChatTag":     "[red][TRUST][default] ",
@@ -53,7 +53,7 @@
       {
         "GroupName":   "MOD",
         "Permission":  "tags.mod",
-        "DisplayName": "MOD Tag",
+        "DisplayName": "MOD",
         "Priority":    70,
         "ScoreTag":    "[MOD]",
         "ChatTag":     "[red][MOD][default] ",
@@ -64,7 +64,7 @@
       {
         "GroupName":   "ADMIN",
         "Permission":  "tags.admin",
-        "DisplayName": "ADMIN Tag",
+        "DisplayName": "ADMIN",
         "Priority":    60,
         "ScoreTag":    "[MOD]",
         "ChatTag":     "[red][MOD][default] ",
@@ -75,7 +75,7 @@
       {
         "GroupName":   "VIP",
         "Permission":  "tags.vip",
-        "DisplayName": "VIP Tag",
+        "DisplayName": "VIP",
         "Priority":    30,
         "ScoreTag":    "[VIP]",
         "ChatTag":     "[gold][VIP][default] ",

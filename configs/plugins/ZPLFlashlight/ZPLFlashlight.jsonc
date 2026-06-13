@@ -3,13 +3,16 @@
     "Enable": true,
     "AllowBots": false,
     "ToggleDebounceMs": 150,
+    "FlashlightKey": "F",
+    "NightVisionKey": "N",
+    "NightVisionButtonComboEnable": true,
     "AdminCommandPermission": "admin.flashlight",
     "Human": {
       "Enable": true,
-      "Brightness": 6,
-      "Distance": 900,
+      "Brightness": 7,
+      "Distance": 950,
       "AttachmentDistance": 54,
-      "FovOrConeAngle": 55,
+      "FovOrConeAngle": 50,
       "Shadows": true,
       "Attachment": "clip_limit",
       "ColorR": 255,
@@ -20,35 +23,69 @@
     },
     "Zombie": {
       "Enable": true,
-        "FlashlightEnable": true,
-        "Brightness": 10,
-        "Distance": 3000.0,
-        "AttachmentDistance": 64.0,
-        "FovOrConeAngle": 360.0,
-        "Shadows": true,
+      "Brightness": 5,
+      "Distance": 850,
+      "AttachmentDistance": 54,
+      "FovOrConeAngle": 55,
+      "Shadows": true,
+      "Attachment": "clip_limit",
+      "ColorR": 255,
+      "ColorG": 255,
+      "ColorB": 255,
+      "ColorA": 255,
+      "VisibleToTeammates": true
+    },
+    "NightVision": {
+      "Enable": true,
+      "RedClassNames": [
+        "Nemesis",
+        "Assassin"
+      ],
+      "NormalZombie": {
+        "Enable": true,
+        "Brightness": 9,
+        "Distance": 2600,
+        "AttachmentDistance": 8,
+        "FovOrConeAngle": 360,
+        "Shadows": false,
         "Attachment": "clip_limit",
         "ColorR": 0,
         "ColorG": 255,
-        "ColorB": 0,
+        "ColorB": 80,
         "ColorA": 255,
         "VisibleToTeammates": false
+      },
+      "SpecialZombie": {
+        "Enable": true,
+        "Brightness": 10,
+        "Distance": 2800,
+        "AttachmentDistance": 8,
+        "FovOrConeAngle": 360,
+        "Shadows": false,
+        "Attachment": "clip_limit",
+        "ColorR": 255,
+        "ColorG": 40,
+        "ColorB": 32,
+        "ColorA": 255,
+        "VisibleToTeammates": false
+      }
     },
     "SpecialZombies": [
       {
         "Enable": true,
         "Name": "Light Zombie",
         "FlashlightEnable": true,
-        "Brightness": 10,
-        "Distance": 3000.0,
-        "AttachmentDistance": 64.0,
-        "FovOrConeAngle": 360.0,
+        "Brightness": 5,
+        "Distance": 850,
+        "AttachmentDistance": 54,
+        "FovOrConeAngle": 55,
         "Shadows": true,
         "Attachment": "clip_limit",
-        "ColorR": 0,
+        "ColorR": 255,
         "ColorG": 255,
-        "ColorB": 0,
+        "ColorB": 255,
         "ColorA": 255,
-        "VisibleToTeammates": false
+        "VisibleToTeammates": true
       }
     ]
   }

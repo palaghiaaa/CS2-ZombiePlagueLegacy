@@ -1394,13 +1394,26 @@ public partial class ZPLHelpers
         bool forceRender = !entries.ContainsKey(key);
         entries[key] = new CenterHudEntry
         {
-            Html = html,
+            Html = CompactCenterHudHtml(html),
             ExpiresAt = now + Math.Max(0.05f, duration / 1000f),
             Priority = priority,
             Sequence = ++_centerHudSequence
         };
 
         RenderStackedCenterHTML(player, entries, now, forceRender);
+    }
+
+    private static string CompactCenterHudHtml(string html)
+    {
+        const string xxl = "__ZPL_HUD_XXL__";
+        const string xl = "__ZPL_HUD_XL__";
+
+        return html
+            .Replace("fontSize-xxl", xxl, StringComparison.OrdinalIgnoreCase)
+            .Replace("fontSize-xl", xl, StringComparison.OrdinalIgnoreCase)
+            .Replace("fontSize-l", "fontSize-m", StringComparison.OrdinalIgnoreCase)
+            .Replace(xl, "fontSize-l", StringComparison.Ordinal)
+            .Replace(xxl, "fontSize-xl", StringComparison.Ordinal);
     }
 
     /// <summary>Sends one stacked status entry to every real player, building localized HTML per player.</summary>

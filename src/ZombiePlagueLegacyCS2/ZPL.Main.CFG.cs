@@ -51,6 +51,8 @@ public class NemesisModeConfig : GameModeConfig
     public int FrostMaxCharges { get; set; } = 35;
     /// <summary>Max distance to freeze a human (units). CS 1.6 default: 650.</summary>
     public float FrostRange { get; set; } = 650f;
+    /// <summary>Maximum humans frozen per use. 0 = freeze every human in range.</summary>
+    public int FrostMaxTargets { get; set; } = 0;
     /// <summary>Freeze duration in seconds. CS 1.6 default: 3.0.</summary>
     public float FrostDuration { get; set; } = 3.0f;
     /// <summary>Cooldown between frost uses in seconds. CS 1.6 default: 5.0.</summary>
@@ -232,6 +234,11 @@ public class ZPLMainCFG
     public string HumandefaultModel { get; set; } = string.Empty;
     public int HumanMaxHealth { get; set; } = 225;
     public bool EnableDamageHud { get; set; } = true;
+    public bool EnableInfectionKillFeed { get; set; } = true;
+    public bool EnableZombieKillFeedOverride { get; set; } = true;
+    public string InfectionKillFeedWeapon { get; set; } = "knife";
+    public string GrenadeInfectionKillFeedWeapon { get; set; } = "hegrenade";
+    public string ZombieKillFeedWeapon { get; set; } = "knife";
     public float HumanInitialSpeed { get; set; } = 1.0f;
     public float HumanInitialGravity { get; set; } = 0.8f;
     public float HumanKnockBackHeadMultiply { get; set; } = 2.0f;

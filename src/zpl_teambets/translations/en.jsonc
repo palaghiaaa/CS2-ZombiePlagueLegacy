@@ -4,58 +4,58 @@
 
     // ── Round announcements ───────────────────────────────────────────────────
     // Broadcast when bets open. {0} = primary bet command (e.g. "bet").
-    "BetsOpenAnnounce": "[gold]🎲 Bets are OPEN! Type [green]!{0}[gold] to bet on Humans or Zombies!",
+    "BetsOpenAnnounce": "Bets are [green]open[default]. Type [gold]!{0}[default].",
 
     // Broadcast when freeze time ends and bets lock. {0} = number of active bets.
-    "BetsLocked": "[gold]🔒 Bets are now LOCKED. [{0}] bets placed.",
+    "BetsLocked": "Bets [red]locked[default]. Total: [gold]{0}[default].",
 
     // Broadcast at round end with payout summary. {0} = winning team, {1} = winners count, {2} = total AP paid.
-    "RoundEndSummary": "[gold]🏆 [green]{0}[gold] win! [green]{1}[gold] bettor(s) received [green]{2} AP[gold] total.",
+    "RoundEndSummary": "[green]{0}[default] won. [gold]{1}[default] bettors paid [green]{2} AP[default].",
 
     // ── Per-player messages ───────────────────────────────────────────────────
     // Sent when player's bet wins. {0} = stake, {1} = payout.
-    "BetWon": "[gold]✓ You bet [green]{0} AP[gold] and WON [green]{1} AP[gold]! Congratulations!",
+    "BetWon": "Bet [green]{0} AP[default] won [green]{1} AP[default].",
 
     // Sent when player's bet loses. {0} = stake.
-    "BetLost": "[red]✗ You bet [green]{0} AP[red] and lost. Better luck next round!",
+    "BetLost": "Bet [gold]{0} AP[default] [red]lost[default].",
 
     // Sent when player places a bet. {0} = amount, {1} = team name.
-    "BetPlaced": "[gold]✓ Bet of [green]{0} AP[gold] placed on [green]{1}[gold]!",
+    "BetPlaced": "Bet [green]{0} AP[default] on [gold]{1}[default].",
 
     // Shown in menu / command when player already has a bet this round. {0} = team, {1} = amount.
-    "AlreadyBet": "[yellow]You already bet [green]{1} AP[yellow] on [green]{0}[yellow] this round.",
+    "AlreadyBet": "Already bet [green]{1} AP[default] on [gold]{0}[default].",
 
     // Short version used in direct command form.
-    "AlreadyBetShort": "[yellow]You already have an active bet this round.",
+    "AlreadyBetShort": "You already have an [gold]active bet[default].",
 
     // ── Error messages ────────────────────────────────────────────────────────
     // Bets are closed (outside freeze time).
-    "BetsClosed": "[red]Bets are closed. Wait for the next round!",
+    "BetsClosed": "Bets are [red]closed[default].",
 
     // Economy plugin offline.
-    "EconomyOffline": "[red]Economy service is offline. Bets are unavailable.",
+    "EconomyOffline": "Economy is [red]offline[default].",
 
     // Invalid team argument. 
-    "InvalidSide": "[red]Invalid team. Use: [green]humans[red] or [green]zombies[red].",
+    "InvalidSide": "Invalid team. Use [green]humans[default] or [red]zombies[default].",
 
     // Invalid amount argument.
-    "InvalidAmount": "[red]Invalid amount. Usage: [green]!bet <amount> <humans|zombies>",
+    "InvalidAmount": "Invalid amount. Use [gold]!bet <amount> <team>[default].",
 
     // Bet below minimum. {0} = MinBet.
-    "BetTooSmall": "[red]Minimum bet is [green]{0} AP[red].",
+    "BetTooSmall": "Minimum bet: [gold]{0} AP[default].",
 
     // Bet above maximum. {0} = MaxBet.
-    "BetTooBig": "[red]Maximum bet is [green]{0} AP[red].",
+    "BetTooBig": "Maximum bet: [gold]{0} AP[default].",
 
     // Not enough balance. {0} = current balance, {1} = required.
-    "NotEnoughAP": "[red]Not enough AP. You have [green]{0}[red], need [green]{1}[red].",
+    "NotEnoughAP": "Not enough AP. Have [green]{0}[default], need [gold]{1}[default].",
 
     // ── Menu strings ──────────────────────────────────────────────────────────
     // Menu title.
-    "MenuTitle": "🎲 Team Bets",
+    "MenuTitle": "Bets",
 
     // One bet entry line. {0} = team, {1} = AP amount.
-    "MenuBetEntry": "Bet [green]{1} AP[default] on [gold]{0}",
+    "MenuBetEntry": "[gold]{0}[default] - [green]{1} AP",
 
     // ── Team names ────────────────────────────────────────────────────────────
     "TeamHumans": "Humans",

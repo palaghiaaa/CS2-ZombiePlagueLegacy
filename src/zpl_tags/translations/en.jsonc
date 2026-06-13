@@ -18,6 +18,6 @@
     // Sent when the player runs the command but has no eligible tags.
     "NoTagsAvailable": "[red]You have no tags available.[default]",
 
-    "TagsDisabledByUser": "[red]Chat tags are disabled[default] in your Zombie Plague user settings.",
-    "TagsEnabledByUser": "[green]Chat tags are enabled[default] in your Zombie Plague user settings."
+    "TagsDisabledByUser": "[red]Tags hidden[default].",
+    "TagsEnabledByUser": "[green]Tags shown[default]."
 }

@@ -15,7 +15,7 @@
 	  <None Remove="ZPLEvents.cs~RF10898a2.TMP" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="SwiftlyS2.CS2" Version="1.4.0-beta.38" />
+		<PackageReference Include="SwiftlyS2.CS2" Version="1.4.0-beta.53" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
 		<ProjectReference Include="../IZombiePlagueLegacyAPI/IZombiePlagueLegacyAPI.csproj" />
 		<!-- Contract DLLs from Economy and Cookies plugins (must match the assemblies loaded at runtime) -->
@@ -43,6 +43,8 @@
 	     "No keyed service for type IZombiePlagueLegacyAPI" error. -->
 	<Target Name="MoveApiToExports" AfterTargets="Publish" BeforeTargets="CreateZip">
 		<MakeDir Directories="$(PublishDir)resources/exports" />
+		<Delete Files="$(PublishDir)resources/exports/ZombiePlagueLegacyCS2.dll"
+		        Condition="Exists('$(PublishDir)resources/exports/ZombiePlagueLegacyCS2.dll')" />
 		<Move SourceFiles="$(PublishDir)ZombiePlagueLegacyAPI.dll"
 		      DestinationFolder="$(PublishDir)resources/exports"
 		      Condition="Exists('$(PublishDir)ZombiePlagueLegacyAPI.dll')" />

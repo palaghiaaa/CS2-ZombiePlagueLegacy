@@ -90,13 +90,20 @@ public sealed class ZPLFlashlight_Service
 
         state.LastToggleTime = currentTime;
 
-        if (state.Enabled)
+        if (state.Enabled && state.Mode == FlashlightMode.Flashlight)
         {
             state.Enabled = false;
+            state.Mode = FlashlightMode.None;
             DestroyLightEntity(state);
             enabled = false;
             message = "Flashlight.StateDisabled";
             return true;
+        }
+
+        if (state.Enabled)
+        {
+            DestroyLightEntity(state);
+            state.Enabled = false;
         }
 
         var resolvedProfile = ResolveEffectiveProfile(connectedPlayer);
@@ -118,9 +125,103 @@ public sealed class ZPLFlashlight_Service
             return false;
         }
 
+        state.Mode = FlashlightMode.Flashlight;
         state.Enabled = true;
         enabled = true;
         message = "Flashlight.StateEnabled";
+        return true;
+    }
+
+    public bool TryToggleNightVisionForPlayer(IPlayer? player, out bool enabled, out string message)
+    {
+        enabled = false;
+        message = "Flashlight.ErrorServiceUnavailable";
+
+        if (!_config.Enable)
+        {
+            message = "Flashlight.ErrorDisabledInConfig";
+            return false;
+        }
+
+        if (!_config.NightVision.Enable)
+        {
+            message = "Flashlight.NightVisionErrorDisabledInConfig";
+            return false;
+        }
+
+        if (!TryGetConnectedPlayer(player, out var connectedPlayer))
+        {
+            message = "Flashlight.ErrorPlayerUnavailableForControl";
+            return false;
+        }
+
+        if (!IsUserFlashlightEnabled(connectedPlayer))
+        {
+            message = "Flashlight.ErrorUserDisabled";
+            return false;
+        }
+
+        var faction = ResolvePlayerFaction(connectedPlayer);
+        if (faction != FlashlightFaction.Zombie)
+        {
+            message = "Flashlight.NightVisionErrorZombieOnly";
+            return false;
+        }
+
+        var state = GetOrCreateState(connectedPlayer);
+        var currentTime = _core.Engine.GlobalVars.CurrentTime;
+        var debounceWindow = Math.Max(0.01f, _config.ToggleDebounceMs / 1000.0f);
+
+        if (state.LastToggleTime > 0.0f && currentTime - state.LastToggleTime < debounceWindow)
+        {
+            enabled = state.Enabled && state.Mode == FlashlightMode.NightVision;
+            message = enabled ? "Flashlight.NightVisionStateAlreadyEnabled" : "Flashlight.NightVisionStateAlreadyDisabled";
+            return false;
+        }
+
+        state.LastToggleTime = currentTime;
+
+        if (state.Enabled && state.Mode == FlashlightMode.NightVision)
+        {
+            state.Enabled = false;
+            state.Mode = FlashlightMode.None;
+            DestroyLightEntity(state);
+            enabled = false;
+            message = "Flashlight.NightVisionStateDisabled";
+            return true;
+        }
+
+        if (state.Enabled)
+        {
+            DestroyLightEntity(state);
+            state.Enabled = false;
+        }
+
+        var resolvedProfile = ResolveNightVisionProfile(connectedPlayer);
+        if (!resolvedProfile.Profile.Enable)
+        {
+            message = "Flashlight.NightVisionErrorProfileDisabled";
+            return false;
+        }
+
+        if (!TryGetUsablePawn(connectedPlayer, requireAlive: true, out var pawn))
+        {
+            message = "Flashlight.ErrorPawnUnavailable";
+            return false;
+        }
+
+        if (!TryCreateFlashlightEntity(connectedPlayer, pawn, state, resolvedProfile, out message))
+        {
+            enabled = false;
+            return false;
+        }
+
+        state.Mode = FlashlightMode.NightVision;
+        state.Enabled = true;
+        enabled = true;
+        message = IsSpecialNightVisionZombie(connectedPlayer, resolvedProfile.ZombieClassName)
+            ? "Flashlight.NightVisionStateEnabledRed"
+            : "Flashlight.NightVisionStateEnabledGreen";
         return true;
     }
 
@@ -157,6 +258,7 @@ public sealed class ZPLFlashlight_Service
             state.Enabled = false;
             state.LastToggleTime = currentTime;
             state.NextRetryTime = 0.0f;
+            state.Mode = FlashlightMode.None;
             changed = true;
             message = "Flashlight.StateDisabled";
             return true;
@@ -169,10 +271,16 @@ public sealed class ZPLFlashlight_Service
             return false;
         }
 
-        if (state.Enabled)
+        if (state.Enabled && state.Mode == FlashlightMode.Flashlight)
         {
             message = "Flashlight.StateAlreadyEnabled";
             return true;
+        }
+
+        if (state.Enabled)
+        {
+            DestroyLightEntity(state);
+            state.Enabled = false;
         }
 
         var resolvedProfile = ResolveEffectiveProfile(connectedPlayer);
@@ -193,6 +301,7 @@ public sealed class ZPLFlashlight_Service
             return false;
         }
 
+        state.Mode = FlashlightMode.Flashlight;
         state.Enabled = true;
         state.LastToggleTime = currentTime;
         state.NextRetryTime = 0.0f;
@@ -208,13 +317,19 @@ public sealed class ZPLFlashlight_Service
             return;
         }
 
-        if (!string.Equals(@event.Key.ToString(), "F", StringComparison.OrdinalIgnoreCase))
+        var keyName = @event.Key.ToString();
+        var player = _core.PlayerManager.GetPlayer(@event.PlayerId);
+
+        if (IsConfiguredKey(keyName, _config.FlashlightKey))
         {
+            _ = TryToggleForPlayer(player, out _, out _);
             return;
         }
 
-        var player = _core.PlayerManager.GetPlayer(@event.PlayerId);
-        _ = TryToggleForPlayer(player, out _, out _);
+        if (IsConfiguredKey(keyName, _config.NightVisionKey))
+        {
+            _ = TryToggleNightVisionForPlayer(player, out _, out _);
+        }
     }
 
     public void HandlePlayerSpawn(int playerId)
@@ -285,12 +400,14 @@ public sealed class ZPLFlashlight_Service
 
     public void OnTick()
     {
+        var currentTime = _core.Engine.GlobalVars.CurrentTime;
+        HandleNightVisionButtonCombo();
+
         if (_statesBySessionId.Count == 0)
         {
             return;
         }
 
-        var currentTime = _core.Engine.GlobalVars.CurrentTime;
         _staleSessions.Clear();
 
         foreach (var pair in _statesBySessionId)
@@ -313,6 +430,7 @@ public sealed class ZPLFlashlight_Service
 
             state.PlayerId = player.PlayerID;
             _sessionIdByPlayerId[player.PlayerID] = sessionId;
+            UpdateNightVisionComboState(player, state);
 
             if (!IsUserFlashlightEnabled(player))
             {
@@ -326,7 +444,7 @@ public sealed class ZPLFlashlight_Service
                 continue;
             }
 
-            var resolvedProfile = ResolveEffectiveProfile(player);
+            var resolvedProfile = ResolveActiveProfile(player, state);
             if (!resolvedProfile.Profile.Enable)
             {
                 ForceDisableState(state);
@@ -339,7 +457,7 @@ public sealed class ZPLFlashlight_Service
                 continue;
             }
 
-            var profileHash = GetProfileHash(resolvedProfile.Profile);
+            var profileHash = GetProfileHash(resolvedProfile);
 
             if (TryGetTrackedLightEntity(state, out var trackedLight))
             {
@@ -371,6 +489,48 @@ public sealed class ZPLFlashlight_Service
                 _sessionIdByPlayerId.Remove(state.PlayerId);
             }
         }
+    }
+
+    private void HandleNightVisionButtonCombo()
+    {
+        if (!_config.Enable || !_config.NightVision.Enable || !_config.NightVisionButtonComboEnable)
+        {
+            return;
+        }
+
+        foreach (var player in _core.PlayerManager.GetAllValidPlayers())
+        {
+            if (player is null || !player.IsValid || (!_config.AllowBots && player.IsFakeClient))
+            {
+                continue;
+            }
+
+            var comboHeld = IsNightVisionComboHeld(player);
+            if (!TryGetStateByPlayerId(player.PlayerID, out var state) && !comboHeld)
+            {
+                continue;
+            }
+
+            state = comboHeld ? GetOrCreateState(player) : state;
+            UpdateNightVisionComboState(player, state);
+        }
+    }
+
+    private void UpdateNightVisionComboState(IPlayer player, FlashlightPlayerState state)
+    {
+        var comboHeld = IsNightVisionComboHeld(player);
+        if (comboHeld && !state.NightVisionComboHeld)
+        {
+            _ = TryToggleNightVisionForPlayer(player, out _, out _);
+        }
+
+        state.NightVisionComboHeld = comboHeld;
+    }
+
+    private static bool IsNightVisionComboHeld(IPlayer player)
+    {
+        return (player.PressedButtons & GameButtonFlags.Ctrl) != 0
+            && (player.PressedButtons & GameButtonFlags.E) != 0;
     }
 
     public void ClearAll(bool clearState)
@@ -413,6 +573,7 @@ public sealed class ZPLFlashlight_Service
         DestroyLightEntity(state);
         state.Enabled = false;
         state.NextRetryTime = 0.0f;
+        state.Mode = FlashlightMode.None;
     }
 
     private FlashlightPlayerState GetOrCreateState(IPlayer player)
@@ -508,7 +669,7 @@ public sealed class ZPLFlashlight_Service
             state.LightEntityIndex = light.Index;
             state.LightDesignerName = FlashlightDesignerName;
             state.NextRetryTime = 0.0f;
-            state.ActiveProfileHash = GetProfileHash(resolvedProfile.Profile);
+            state.ActiveProfileHash = GetProfileHash(resolvedProfile);
 
             return true;
         }
@@ -545,7 +706,25 @@ public sealed class ZPLFlashlight_Service
             }
         }
 
-        return new ResolvedFlashlightProfile(profile, faction, zombieClassName);
+        return new ResolvedFlashlightProfile(profile, faction, zombieClassName, FlashlightMode.Flashlight);
+    }
+
+    private ResolvedFlashlightProfile ResolveNightVisionProfile(IPlayer player)
+    {
+        var faction = ResolvePlayerFaction(player);
+        var zombieClassName = faction == FlashlightFaction.Zombie ? TryGetZombieClassName(player) : null;
+        var profile = IsSpecialNightVisionZombie(player, zombieClassName)
+            ? _config.NightVision.SpecialZombie.Clone()
+            : _config.NightVision.NormalZombie.Clone();
+
+        return new ResolvedFlashlightProfile(profile, faction, zombieClassName, FlashlightMode.NightVision);
+    }
+
+    private ResolvedFlashlightProfile ResolveActiveProfile(IPlayer player, FlashlightPlayerState state)
+    {
+        return state.Mode == FlashlightMode.NightVision
+            ? ResolveNightVisionProfile(player)
+            : ResolveEffectiveProfile(player);
     }
 
     private FlashlightFaction ResolvePlayerFaction(IPlayer player)
@@ -607,11 +786,71 @@ public sealed class ZPLFlashlight_Service
         }
     }
 
+    private bool IsSpecialNightVisionZombie(IPlayer player, string? zombieClassName)
+    {
+        var zpApi = _zpApi;
+        if (zpApi is not null)
+        {
+            try
+            {
+                var id = player.PlayerID;
+                if (zpApi.ZPL_IsNemesis(id) || zpApi.ZPL_IsAssassin(id))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        return IsConfiguredRedNightVisionClass(zombieClassName);
+    }
+
+    private bool IsConfiguredRedNightVisionClass(string? zombieClassName)
+    {
+        if (string.IsNullOrWhiteSpace(zombieClassName))
+        {
+            return false;
+        }
+
+        var normalizedClassName = zombieClassName.Trim();
+        return _config.NightVision.RedClassNames.Any(redClassName =>
+            string.Equals(redClassName, normalizedClassName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsConfiguredKey(string actualKey, string? configuredKey)
+    {
+        if (string.IsNullOrWhiteSpace(actualKey) || string.IsNullOrWhiteSpace(configuredKey))
+        {
+            return false;
+        }
+
+        var actual = actualKey.Trim();
+        var configured = configuredKey.Trim();
+        if (string.Equals(actual, configured, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return configured.Length == 1
+            && string.Equals(actual, $"Key{configured}", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string GetProfileDisabledMessage(FlashlightFaction faction)
     {
         return faction == FlashlightFaction.Zombie
             ? "Flashlight.ErrorProfileDisabledZombie"
             : "Flashlight.ErrorProfileDisabledHuman";
+    }
+
+    private int GetProfileHash(ResolvedFlashlightProfile resolvedProfile)
+    {
+        var hash = new HashCode();
+        hash.Add(resolvedProfile.Mode);
+        hash.Add(resolvedProfile.ZombieClassName ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        hash.Add(GetProfileHash(resolvedProfile.Profile));
+        return hash.ToHashCode();
     }
 
     private static int GetProfileHash(ZPLFlashlight_ProfileConfig profile)
@@ -985,7 +1224,8 @@ public sealed class ZPLFlashlight_Service
     private readonly record struct ResolvedFlashlightProfile(
         ZPLFlashlight_ProfileConfig Profile,
         FlashlightFaction Faction,
-        string? ZombieClassName);
+        string? ZombieClassName,
+        FlashlightMode Mode);
 
     private enum FlashlightFaction
     {
@@ -994,11 +1234,20 @@ public sealed class ZPLFlashlight_Service
         Zombie = 2
     }
 
+    private enum FlashlightMode
+    {
+        None = 0,
+        Flashlight = 1,
+        NightVision = 2
+    }
+
     private sealed class FlashlightPlayerState
     {
         public required ulong SessionId { get; init; }
         public int PlayerId { get; set; }
         public bool Enabled { get; set; }
+        public FlashlightMode Mode { get; set; }
+        public bool NightVisionComboHeld { get; set; }
         public float LastToggleTime { get; set; }
         public float NextRetryTime { get; set; }
         public uint? LightEntityIndex { get; set; }

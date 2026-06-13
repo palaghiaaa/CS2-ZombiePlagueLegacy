@@ -544,12 +544,20 @@ public partial class ZPLServices
         if (victim == null || !victim.IsValid)
             return;
 
-        string weapon = grenade ? "hegrenade" : "knife";
+        var cfg = _mainCFG.CurrentValue;
+        if (!cfg.EnableInfectionKillFeed)
+            return;
+
+        string weapon = grenade ? cfg.GrenadeInfectionKillFeedWeapon : cfg.InfectionKillFeedWeapon;
+        if (string.IsNullOrWhiteSpace(weapon))
+            weapon = grenade ? "hegrenade" : "knife";
+
         _core.GameEvent.Fire<EventPlayerDeath>(@event =>
         {
             @event.Attacker = attacker.PlayerID;
             @event.UserId = victim.PlayerID;
             @event.Weapon = weapon;
+            @event.Headshot = false;
         });
     }
 
@@ -792,8 +800,7 @@ public partial class ZPLServices
             {
                 if (!player.IsValid || player.IsFakeClient) continue;
                 _extraItemsMenu.AddAmmoPacks(player.PlayerID, amount);
-                player.SendMessage(MessageType.Chat,
-                    _core.Translation.GetPlayerLocalizer(player)["ActivePlayerReward", amount]);
+                _helpers.SendChatT(player, "ActivePlayerReward", amount);
             }
         });
 
@@ -877,10 +884,11 @@ public partial class ZPLServices
         // Compact damage HUD — all on separate lines via <br>
         // Using @ verbatim strings to avoid quote escaping issues
         string classLine  = $"<span color=\"#888888\" class=\"fontSize-l\">[</span><span color=\"#FFAA00\" class=\"fontSize-l fontWeight-bold\">{ZombieClassName}</span><span color=\"#888888\" class=\"fontSize-l\">]</span> <span color=\"#FFFFFF\" class=\"fontSize-l\">{victim.Name}</span>";
-        string hpLine     = hpBar + $" <span color=\"{hpColor}\" class=\"fontSize-l fontWeight-bold\">{health}</span><span color=\"#666666\" class=\"fontSize-l\">/</span><span color=\"#888888\" class=\"fontSize-l\">{Maxhealth}</span>";
+        string barLine    = hpBar;
+        string hpLine     = $"<span color=\"{hpColor}\" class=\"fontSize-l fontWeight-bold\">{health}</span><span color=\"#666666\" class=\"fontSize-l\">/</span><span color=\"#888888\" class=\"fontSize-l\">{Maxhealth}</span>";
         string dmgLine    = $"<span color=\"#FF3030\" class=\"fontSize-xl fontWeight-bold\">-{damage}</span>";
 
-        string message = $"{classLine}<br>{hpLine}<br>{dmgLine}";
+        string message = $"{classLine}<br>{barLine}<br>{hpLine}<br>{dmgLine}";
 
         _helpers.SendStackedCenterHTML(attacker, "damage", message, 2000, priority: 50);
 

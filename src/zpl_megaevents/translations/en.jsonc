@@ -8,132 +8,132 @@
 
   // Shown as a separate line before the event-start message on Happy Hour rounds.
   // {0} = multiplier, e.g. "2.0"
-  "HappyHourActive": "⭐ [gold]HAPPY ROUND ×{0}![default] All AP rewards are multiplied this round!",
+  "HappyHourActive": "Happy Round [gold]x{0}[default]. AP rewards multiplied.",
 
   // {0} = minimum players, {1} = online players
-  "SkipRoundMinimumPlayers": "[grey]Mega Event skipped: need at least [gold]{0}[grey] players, only [gold]{1}[grey] online.",
+  "SkipRoundMinimumPlayers": "Mega Event skipped. Need [gold]{0}[default] players, online [green]{1}[default].",
 
   // {0} = minimum players, {1} = online players
-  "SkipMapGiveAwayMinimumPlayers": "[grey]Map Giveaway skipped: need at least [gold]{0}[grey] players, only [gold]{1}[grey] online.",
+  "SkipMapGiveAwayMinimumPlayers": "Map Giveaway skipped. Need [gold]{0}[default] players, online [green]{1}[default].",
 
   // ── Event start announcements ─────────────────────────────────────────────
   // Broadcast at freeze-end when an event is selected.
 
   // {0} = TargetInfections,  {1} = WinnerRewardAP
-  "StartInfectionRush":   "⚡ [red]INFECTION RUSH[default]: First zombie to infect [gold]{0}[default] humans wins [gold]{1} AP[default]!",
+  "StartInfectionRush":   "Event [red]Infection Rush[default]: infect [gold]{0}[default] humans for [green]{1} AP[default].",
 
   // {0} = TargetKills,  {1} = WinnerRewardAP
-  "StartKillFrenzy":      "⚡ [green]KILL FRENZY[default]: First human to kill [gold]{0}[default] zombies wins [gold]{1} AP[default]!",
+  "StartKillFrenzy":      "Event [green]Kill Frenzy[default]: kill [gold]{0}[default] zombies for [green]{1} AP[default].",
 
   // {0} = RewardAP
-  "StartFortressDefense": "⚡ [blue]FORTRESS DEFENSE[default]: Every human who survives to round end wins [gold]{0} AP[default]!",
+  "StartFortressDefense": "Event [green]Fortress Defense[default]: surviving humans get [green]{0} AP[default].",
 
   // {0} = RewardAP
-  "StartZombieArmada":    "⚡ [red]ZOMBIE ARMADA[default]: If zombies wipe all humans the whole zombie team wins [gold]{0} AP[default]!",
+  "StartZombieArmada":    "Event [red]Zombie Armada[default]: wipe humans for [green]{0} AP[default].",
 
   // {0} = TargetDamage (formatted with commas),  {1} = WinnerRewardAP
-  "StartDamageMarathon":  "⚡ [orange]DAMAGE MARATHON[default]: First player to deal [gold]{0}[default] damage wins [gold]{1} AP[default]!",
+  "StartDamageMarathon":  "Event [gold]Damage Marathon[default]: deal [gold]{0}[default] dmg for [green]{1} AP[default].",
 
   // (no arguments)
-  "StartSpecialClass":    "⚡ [gold]SPECIAL CLASS BONUS[default]: Special-class players earn bonus AP by achieving their mode's win condition!",
+  "StartSpecialClass":    "Event [gold]Special Class[default]: win your mode for bonus AP.",
 
   // {0} = WinnerRewardAP,  {1} = ConsolationAP
-  "StartGiveAway":        "⚡ [gold]GIVEAWAY[default]: A random player wins [gold]{0} AP[default] — everyone else gets [gold]{1} AP[default]!",
+  "StartGiveAway":        "Event [gold]Giveaway[default]: winner gets [green]{0} AP[default], others [green]{1} AP[default].",
 
   // {0} = TargetHeadshots,  {1} = WinnerRewardAP
-  "StartHeadshotKing":    "⚡ [cyan]HEADSHOT KING[default]: First human to land [gold]{0}[default] headshot kills on zombies wins [gold]{1} AP[default]!",
+  "StartHeadshotKing":    "Event [gold]Headshot King[default]: get [gold]{0}[default] headshot kills for [green]{1} AP[default].",
 
   // {0} = WinnerRewardAP
-  "StartKnifeKill":       "⚡ [default]KNIFE KILL[default]: First human to knife-kill a zombie wins [gold]{0} AP[default]!",
+  "StartKnifeKill":       "Event [gold]Knife Kill[default]: knife a zombie for [green]{0} AP[default].",
 
   // {0} = TargetGrenadeKills,  {1} = WinnerRewardAP
-  "StartGrenadeKing":     "⚡ [orange]GRENADE KING[default]: First human with [gold]{0}[default] grenade kills wins [gold]{1} AP[default]!",
+  "StartGrenadeKing":     "Event [gold]Grenade King[default]: get [gold]{0}[default] nade kills for [green]{1} AP[default].",
 
   // {0} = WinnerRewardAP
-  "StartMVPRound":        "⚡ [lime]ROUND MVP[default]: Player with the most kills at round end wins [gold]{0} AP[default]!",
+  "StartMVPRound":        "Event [gold]Round MVP[default]: most kills wins [green]{0} AP[default].",
 
   // {0} = WinnerRewardAP
-  "StartZombieKingpin":   "⚡ [red]ZOMBIE KINGPIN[default]: Zombie who deals the most damage to humans wins [gold]{0} AP[default]!",
+  "StartZombieKingpin":   "Event [red]Zombie Kingpin[default]: top zombie damage wins [green]{0} AP[default].",
 
   // {0} = RewardAP
-  "StartDoubleDown":      "⚡ [gold]DOUBLE DOWN BONUS[default]: Every player earns a free [gold]{0} AP[default] this round!",
+  "StartDoubleDown":      "Event [gold]Double Down[default]: everyone gets [green]{0} AP[default].",
 
   // ── Event win announcements ───────────────────────────────────────────────
   // Broadcast the moment a player wins or an event resolves at round end.
 
   // {0}=name, {1}=count, {2}=target, {3}=ap
-  "WinInfectionRush":   "🏆 [gold]{0}[default] won [gold]Infection Rush[default]! ({1}/{2} infections) → [gold]+{3} AP",
+  "WinInfectionRush":   "[green]{0}[default] won [red]Infection Rush[default] ({1}/{2}) and got [green]+{3} AP[default].",
 
   // {0}=name, {1}=count, {2}=target, {3}=ap
-  "WinKillFrenzy":      "🏆 [gold]{0}[default] won [gold]Kill Frenzy[default]! ({1}/{2} kills) → [gold]+{3} AP",
+  "WinKillFrenzy":      "[green]{0}[default] won [gold]Kill Frenzy[default] ({1}/{2}) and got [green]+{3} AP[default].",
 
   // {0}=survivors count, {1}=ap
-  "WinFortressDefense": "🛡 [green]Fortress Defense[default]: {0} humans survived! Each earned [gold]+{1} AP",
+  "WinFortressDefense": "[gold]Fortress Defense[default]: [green]{0}[default] humans survived, each got [green]+{1} AP[default].",
 
   // {0}=zombie count, {1}=ap
-  "WinZombieArmada":    "🧟 [red]Zombie Armada[default]: All humans wiped! {0} zombies each earned [gold]+{1} AP",
+  "WinZombieArmada":    "[red]Zombie Armada[default]: [green]{0}[default] zombies got [green]+{1} AP[default].",
 
   // {0}=name, {1}=damage (formatted), {2}=target (formatted), {3}=ap
-  "WinDamageMarathon":  "🏆 [gold]{0}[default] won [gold]Damage Marathon[default]! ({1}/{2} dmg) → [gold]+{3} AP",
+  "WinDamageMarathon":  "[green]{0}[default] won [gold]Damage Marathon[default] ({1}/{2}) and got [green]+{3} AP[default].",
 
   // {0}=name, {1}=class name, {2}=ap
-  "WinSpecialClass":    "🏆 [gold]{0}[default] ([gold]{1}[default]) won the [gold]Special Class Bonus[default]! → [gold]+{2} AP",
+  "WinSpecialClass":    "[green]{0}[default] won as [gold]{1}[default] and got [green]+{2} AP[default].",
 
   // {0}=winner name, {1}=winner ap, {2}=consolation ap
-  "WinGiveAway":        "🎁 [gold]Giveaway[default]: [gold]{0}[default] won [gold]+{1} AP[default]! Everyone else received [gold]+{2} AP",
+  "WinGiveAway":        "[green]{0}[default] won [green]+{1} AP[default]. Others got [green]+{2} AP[default].",
 
   // {0}=name, {1}=count, {2}=target, {3}=ap
-  "WinHeadshotKing":    "🎯 [gold]{0}[default] is the [gold]Headshot King[default]! ({1}/{2} headshots) → [gold]+{3} AP",
+  "WinHeadshotKing":    "[green]{0}[default] won [gold]Headshot King[default] ({1}/{2}) and got [green]+{3} AP[default].",
 
   // {0}=name, {1}=ap
-  "WinKnifeKill":       "🔪 [gold]{0}[default] won [gold]Knife Kill[default]! → [gold]+{1} AP",
+  "WinKnifeKill":       "[green]{0}[default] won [gold]Knife Kill[default] and got [green]+{1} AP[default].",
 
   // {0}=name, {1}=count, {2}=target, {3}=ap
-  "WinGrenadeKing":     "💥 [gold]{0}[default] is the [gold]Grenade King[default]! ({1}/{2} grenade kills) → [gold]+{3} AP",
+  "WinGrenadeKing":     "[green]{0}[default] won [gold]Grenade King[default] ({1}/{2}) and got [green]+{3} AP[default].",
 
   // {0}=name, {1}=kills, {2}=ap
-  "WinMVPRound":        "🏆 [gold]{0}[default] was the [gold]Round MVP[default] with {1} kills! → [gold]+{2} AP",
+  "WinMVPRound":        "[green]{0}[default] was [gold]MVP[default] with [gold]{1}[default] kills and got [green]+{2} AP[default].",
 
   // {0}=name, {1}=damage (formatted), {2}=ap
-  "WinZombieKingpin":   "💀 [gold]{0}[default] was the [gold]Zombie Kingpin[default] with {1} damage dealt! → [gold]+{2} AP",
+  "WinZombieKingpin":   "[green]{0}[default] was [red]Zombie Kingpin[default] with [gold]{1}[default] dmg and got [green]+{2} AP[default].",
 
   // {0}=player count, {1}=ap
-  "WinDoubleDown":      "💰 [gold]Double Down[default]: All {0} players earned [gold]+{1} AP",
+  "WinDoubleDown":      "[gold]Double Down[default]: [green]{0}[default] players got [green]+{1} AP[default].",
 
   // {0}=winner name, {1}=winner ap, {2}=consolation ap
-  "WinMapGiveAway":     "🗺 [gold]Map Giveaway[default]: [gold]{0}[default] won [gold]+{1} AP[default]! Everyone else received [gold]+{2} AP",
+  "WinMapGiveAway":     "[green]{0}[default] won [gold]Map Giveaway[default]: [green]+{1} AP[default]. Others got [green]+{2} AP[default].",
 
   // ── No-winner announcements ───────────────────────────────────────────────
   // Broadcast at round end when a competitive event goes without a winner.
 
-  "NoWinnerInfectionRush":   "[grey]No winner for [gold]Infection Rush[grey] this round.",
-  "NoWinnerKillFrenzy":      "[grey]No winner for [gold]Kill Frenzy[grey] this round.",
-  "NoWinnerDamageMarathon":  "[grey]No winner for [gold]Damage Marathon[grey] this round.",
-  "NoWinnerHeadshotKing":    "[grey]No winner for [gold]Headshot King[grey] this round.",
-  "NoWinnerGrenadeKing":     "[grey]No winner for [gold]Grenade King[grey] this round.",
-  "NoWinnerKnifeKill":       "[grey]No winner for [gold]Knife Kill[grey] this round.",
+  "NoWinnerInfectionRush":   "No winner for [red]Infection Rush[default].",
+  "NoWinnerKillFrenzy":      "No winner for [gold]Kill Frenzy[default].",
+  "NoWinnerDamageMarathon":  "No winner for [gold]Damage Marathon[default].",
+  "NoWinnerHeadshotKing":    "No winner for [gold]Headshot King[default].",
+  "NoWinnerGrenadeKing":     "No winner for [gold]Grenade King[default].",
+  "NoWinnerKnifeKill":       "No winner for [gold]Knife Kill[default].",
 
   // ── Mid-round progress reminders ──────────────────────────────────────────
   // Shown once mid-round to keep players updated on who's in the lead.
 
   // {0}=leader name, {1}=count, {2}=target
-  "ProgressInfectionRush":   "[gold]Infection Rush[default] leader: [gold]{0}[default] ({1}/{2} infections)",
+  "ProgressInfectionRush":   "[red]Infection Rush[default] leader: [green]{0}[default] ({1}/{2}).",
 
   // {0}=leader name, {1}=count, {2}=target
-  "ProgressKillFrenzy":      "[gold]Kill Frenzy[default] leader: [gold]{0}[default] ({1}/{2} kills)",
+  "ProgressKillFrenzy":      "[gold]Kill Frenzy[default] leader: [green]{0}[default] ({1}/{2}).",
 
   // {0}=leader name, {1}=damage (formatted), {2}=target (formatted)
-  "ProgressDamageMarathon":  "[gold]Damage Marathon[default] leader: [gold]{0}[default] ({1}/{2} dmg)",
+  "ProgressDamageMarathon":  "[gold]Damage Marathon[default] leader: [green]{0}[default] ({1}/{2}).",
 
   // {0}=leader name, {1}=count, {2}=target
-  "ProgressHeadshotKing":    "[gold]Headshot King[default] leader: [gold]{0}[default] ({1}/{2} headshots)",
+  "ProgressHeadshotKing":    "[gold]Headshot King[default] leader: [green]{0}[default] ({1}/{2}).",
 
   // {0}=leader name, {1}=count, {2}=target
-  "ProgressGrenadeKing":     "[gold]Grenade King[default] leader: [gold]{0}[default] ({1}/{2} grenade kills)",
+  "ProgressGrenadeKing":     "[gold]Grenade King[default] leader: [green]{0}[default] ({1}/{2}).",
 
   // {0}=leader name, {1}=kills
-  "ProgressMVPRound":        "[gold]Round MVP[default] leader: [gold]{0}[default] ({1} kills so far)",
+  "ProgressMVPRound":        "[gold]MVP[default] leader: [green]{0}[default] ({1} kills).",
 
   // {0}=leader name, {1}=damage (formatted)
-  "ProgressZombieKingpin":   "[gold]Zombie Kingpin[default] leader: [gold]{0}[default] ({1} damage dealt)"
+  "ProgressZombieKingpin":   "[red]Zombie Kingpin[default] leader: [green]{0}[default] ({1} dmg)."
 }

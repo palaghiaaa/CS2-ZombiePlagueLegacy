@@ -184,7 +184,7 @@ public sealed class ZPLFlashlightPlugin : BasePlugin
             return;
         }
 
-        context.Reply(T(context, "Flashlight.ReplyPlayerState", GetPlayerDisplayName(sender), T(context, message)));
+        context.Reply(T(context, "Flashlight.ReplyPlayerState", GetPlayerDisplayName(sender), StripZmPrefix(T(context, message))));
     }
 
     private void HandleAdminFlashlightCommand(ICommandContext context)
@@ -215,7 +215,7 @@ public sealed class ZPLFlashlightPlugin : BasePlugin
                 return;
             }
 
-            context.Reply(T(context, "Flashlight.ReplyPlayerState", GetPlayerDisplayName(targetPlayer), T(context, message)));
+            context.Reply(T(context, "Flashlight.ReplyPlayerState", GetPlayerDisplayName(targetPlayer), StripZmPrefix(T(context, message))));
             return;
         }
 
@@ -226,7 +226,7 @@ public sealed class ZPLFlashlightPlugin : BasePlugin
             return;
         }
 
-        context.Reply(T(context, "Flashlight.ReplyPlayerState", GetPlayerDisplayName(targetPlayer), T(context, setMessage)));
+        context.Reply(T(context, "Flashlight.ReplyPlayerState", GetPlayerDisplayName(targetPlayer), StripZmPrefix(T(context, setMessage))));
     }
 
     private bool HasAdminCommandPermission(ICommandContext context, out string errorMessage)
@@ -509,6 +509,14 @@ public sealed class ZPLFlashlightPlugin : BasePlugin
         return args.Length > 0
             ? string.Format(System.Globalization.CultureInfo.InvariantCulture, key, args)
             : key;
+    }
+
+    private static string StripZmPrefix(string message)
+    {
+        const string prefix = "[red][ZM][default] ";
+        return message.StartsWith(prefix, StringComparison.Ordinal)
+            ? message[prefix.Length..]
+            : message;
     }
 
     private string T(IPlayer? player, string key, params object[] args)

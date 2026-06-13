@@ -15,9 +15,11 @@ using SwiftlyS2.Shared.NetMessages;
 using SwiftlyS2.Shared.Players;
 using SwiftlyS2.Shared.Plugins;
 using SwiftlyS2.Shared.ProtobufDefinitions;
+using System.Net;
 using System.Data;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using TagsApi;
 using ZombiePlagueLegacyCS2;
 using ZombiePlagueLegacyCS2.SharedUi;
@@ -88,6 +90,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
     private const string ConfigFile              = "ZPLTagsCFG.jsonc";
     private const string CookieKey               = "zpltags.selected";
     private const string NullTagSentinel         = "__none__";
+    private static readonly Regex HtmlTagRegex   = new("<[^>]+>", RegexOptions.Compiled);
 
      // Extended retry delays (seconds) used in OnClientConnected to catch permissions
     // that are granted asynchronously after the initial 2 s window.
@@ -252,7 +255,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
             var api = interfaceManager.GetSharedInterface<ITagApi>("Tags.Api");
             if (api != null)
             {
-                _tagsBridge = new TagsBridge(api, _activeTag);
+                _tagsBridge = new TagsBridge(api, _activeTag, AreTagsEnabled);
                 _tagsBridge.Subscribe();
                 _logger?.LogInformation("[ZPLTags] Connected to Tags API (cs2-tags).");
             }
@@ -626,6 +629,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                 foreach (var player in Core.PlayerManager.GetAllPlayers())
                 {
                     if (!IsValidRealPlayer(player)) continue;
+                    if (!AreTagsEnabled(player!)) continue;
                     if (!_activeTag.TryGetValue(player!.SteamID, out var entry)) continue;
                     if (entry != null && !string.IsNullOrEmpty(entry.ScoreTag))
                         ApplyScoreTag(player, entry);
@@ -665,8 +669,6 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         ulong sid      = player.SteamID;
         if (!AreTagsEnabled(player))
         {
-            _eligibleTags.Remove(sid);
-            _activeTag[sid] = null;
             ApplyFullTag(player, null);
             return;
         }
@@ -745,13 +747,15 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
             if (!enabled)
             {
-                _activeTag[player.SteamID] = null;
                 ApplyFullTag(player, null);
                 Chat(player, "TagsDisabledByUser");
                 return;
             }
 
-            InitPlayer(player);
+            if (_activeTag.TryGetValue(player.SteamID, out var entry) && entry != null)
+                ApplyFullTag(player, entry);
+            else
+                InitPlayer(player);
             Chat(player, "TagsEnabledByUser");
         });
     }
@@ -846,6 +850,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         var player = Core.PlayerManager.GetPlayer(msg.Entityindex - 1);
         if (!IsValidRealPlayer(player)) return HookResult.Continue;
+        if (!AreTagsEnabled(player!)) return HookResult.Continue;
         if (!_activeTag.TryGetValue(player!.SteamID, out var entry) || entry == null) return HookResult.Continue;
 
         var format = ResolveFallbackChatFormat(msg.Messagename);
@@ -1018,7 +1023,6 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
         ulong sid = player!.SteamID;
         if (!AreTagsEnabled(player))
         {
-            _activeTag[sid] = null;
             ApplyFullTag(player, null);
             Chat(player, "TagsDisabledByUser");
             return;
@@ -1058,7 +1062,8 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                             string.Equals(current.GroupName, entry.GroupName, StringComparison.Ordinal) &&
                             string.Equals(current.Permission, entry.Permission, StringComparison.Ordinal);
 
-            string label = isActive ? $"* {entry.GetMenuLabel()}" : entry.GetMenuLabel();
+            string cleanLabel = CleanMenuLabel(entry.GetMenuLabel());
+            string label = isActive ? $"* {cleanLabel}" : cleanLabel;
 
             var btn = ZPLMenuStyle.Button(label, isActive ? ZPLMenuStyle.ColSelected : ZPLMenuStyle.ColButton);
             btn.Tag = capturedEntry;
@@ -1077,7 +1082,7 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
                         SetScoreTagDirect(clicker, capturedEntry.ScoreTag);
 
                     SaveTagCookie(clicker, MakeCookieValue(capturedEntry));
-                    Chat(clicker, "TagSelected", capturedEntry.GetMenuLabel());
+                    Chat(clicker, "TagSelected", CleanMenuLabel(capturedEntry.GetMenuLabel()));
                 });
             };
 
@@ -1086,9 +1091,10 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         // ── "Remove tag" button ───────────────────────────────────────────────
         // Shows ✓ when no tag is currently active.
+        string cleanRemoveLabel = CleanMenuLabel(_config.NoTagLabel);
         string removeLabel = (current == null)
-            ? $"* {_config.NoTagLabel}"
-            : _config.NoTagLabel;
+            ? $"* {cleanRemoveLabel}"
+            : cleanRemoveLabel;
 
         var removeBtn = ZPLMenuStyle.Button(removeLabel, current == null ? ZPLMenuStyle.ColSelected : ZPLMenuStyle.ColButton);
 
@@ -1114,6 +1120,15 @@ public class ZPLTagsPlugin(ISwiftlyCore core) : BasePlugin(core)
 
         Core.MenusAPI.OpenMenuForPlayer(player, menu);
     }
+
+    private static string CleanMenuLabel(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        string cleaned = HtmlTagRegex.Replace(text, string.Empty);
+        return WebUtility.HtmlDecode(cleaned).Trim();
+    }
 }
 
 /// <summary>
@@ -1133,12 +1148,14 @@ internal sealed class TagsBridge
 {
     private readonly ITagApi _api;
     private readonly Dictionary<ulong, GroupTagEntry?> _activeTag;
+    private readonly Func<IPlayer, bool> _areTagsEnabled;
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public TagsBridge(ITagApi api, Dictionary<ulong, GroupTagEntry?> activeTag)
+    public TagsBridge(ITagApi api, Dictionary<ulong, GroupTagEntry?> activeTag, Func<IPlayer, bool> areTagsEnabled)
     {
-        _api       = api;
-        _activeTag = activeTag;
+        _api            = api;
+        _activeTag      = activeTag;
+        _areTagsEnabled = areTagsEnabled;
     }
 
     /// <summary>Subscribes the chat-interception hook to the Tags API event.</summary>
@@ -1186,6 +1203,7 @@ internal sealed class TagsBridge
     {
         if (mp?.Player == null) return HookResult.Continue;
         if (!IsValidPlayer(mp.Player)) return HookResult.Continue;
+        if (!_areTagsEnabled(mp.Player)) return HookResult.Continue;
 
         // key absent  → no tags
         // key present, null → player chose "no tag"

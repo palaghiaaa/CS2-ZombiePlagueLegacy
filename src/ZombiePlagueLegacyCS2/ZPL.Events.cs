@@ -106,6 +106,7 @@ public partial class ZPLEvents
 
         _core.Event.OnClientDisconnected += Event_OnClientDisconnected;
         _core.Event.OnClientConnected += Event_OnClientConnected;
+        _core.Event.OnClientKeyStateChanged += Event_OnClientKeyStateChangedNemesisFrost;
 #pragma warning disable CS0618 // IOnEntityTakeDamageEvent / IOnWeaponServicesCanUseHookEvent: deprecated by SwiftlyS2 1.4, migration pending
         _core.Event.OnEntityTakeDamage += Event_OnEntityTakeDamage;
         _core.Event.OnMapLoad += Event_OnMapLoad;
@@ -175,6 +176,7 @@ public partial class ZPLEvents
         // Remove C# multicast delegate subscriptions from HookEvents.
         _core.Event.OnClientDisconnected         -= Event_OnClientDisconnected;
         _core.Event.OnClientConnected            -= Event_OnClientConnected;
+        _core.Event.OnClientKeyStateChanged      -= Event_OnClientKeyStateChangedNemesisFrost;
 #pragma warning disable CS0618
         _core.Event.OnEntityTakeDamage           -= Event_OnEntityTakeDamage;
         _core.Event.OnMapLoad                    -= Event_OnMapLoad;
@@ -369,7 +371,6 @@ public partial class ZPLEvents
         foreach (var player in _core.PlayerManager.GetAllPlayers())
         {
             if (!player.IsValid || player.IsFakeClient) continue;
-            _helpers.ResetTemporaryHumanExtraItems(player, removeGlow: true);
             int ap = _extraItemsMenu.GetAmmoPacks(player.PlayerID);
             _helpers.SendChatT(player, "RoundStartAnnounce", ap, playerCount);
         }
@@ -428,8 +429,6 @@ public partial class ZPLEvents
                 _globals.IsHero[id] = false;
 
                 _globals.GodState[id] = false;
-                _globals.InfiniteAmmoState[id] = false;
-                _helpers.ResetTemporaryHumanExtraItems(player, removeGlow: true);
 
                 // ── Per-round resets (consumables / temporary) ──────────────────
                 // These do NOT persist between rounds (consumed on use or round-specific)
@@ -843,6 +842,15 @@ public partial class ZPLEvents
                 _globals.IsZombie.TryGetValue(aId, out bool attackerIsZombie);
                 if (attackerIsZombie)
                 {
+                    var mainCfg = _mainCFG.CurrentValue;
+                    if (mainCfg.EnableZombieKillFeedOverride)
+                    {
+                        @event.Weapon = string.IsNullOrWhiteSpace(mainCfg.ZombieKillFeedWeapon)
+                            ? "knife"
+                            : mainCfg.ZombieKillFeedWeapon.Trim();
+                        @event.Headshot = false;
+                    }
+
                     int reward = _extraItemsCFG.CurrentValue.ZombieKillReward;
                     if (reward > 0)
                     {
@@ -2001,14 +2009,16 @@ public partial class ZPLEvents
             if (!player.IsValid || player.IsFakeClient) continue;
 
             int id = player.PlayerID;
-            _globals.IsNemesis.TryGetValue(id, out bool isNemesis);
-            if (!isNemesis) continue;
+            if (!IsNemesisFrostUser(player)) continue;
 
             // E key triggers frost
             bool ePressed  = (player.PressedButtons & GameButtonFlags.E) != 0;
             _globals.PrevJumpPressed.TryGetValue(id + 10000, out bool prevE);
             _globals.PrevJumpPressed[id + 10000] = ePressed;
             if (!ePressed || prevE) continue; // rising edge only
+
+            if (TryUseNemesisFrost(player, nemCfg))
+                continue;
 
             // Check charges
             _globals.NemesisFrostCharges.TryGetValue(id, out int charges);
@@ -2112,11 +2122,195 @@ public partial class ZPLEvents
                 priority: 35);
 
             // Chat notifications
-            player.SendMessage(MessageType.Chat,
-                _core.Translation.GetPlayerLocalizer(player)["NemesisFrostUsed", chargesLeft]);
-            target.SendMessage(MessageType.Chat,
-                _core.Translation.GetPlayerLocalizer(target)["NemesisFrozenByNemesis"]);
+            _helpers.SendChatT(player, "NemesisFrostUsed", chargesLeft);
+            _helpers.SendChatT(target, "NemesisFrozenByNemesis");
         }
+    }
+
+    private void Event_OnClientKeyStateChangedNemesisFrost(IOnClientKeyStateChangedEvent @event)
+    {
+        if (!_globals.GameStart || !@event.Pressed || !IsNemesisFrostKey(@event.Key.ToString()))
+            return;
+
+        var nemCfg = _mainCFG.CurrentValue.Nemesis;
+        if (!nemCfg.FrostAbilityEnabled)
+            return;
+
+        var player = _core.PlayerManager.GetPlayer(@event.PlayerId);
+        if (player == null || !player.IsValid || player.IsFakeClient || !IsNemesisFrostUser(player))
+            return;
+
+        _globals.PrevJumpPressed[player.PlayerID + 10000] = true;
+        TryUseNemesisFrost(player, nemCfg);
+    }
+
+    private bool TryUseNemesisFrost(IPlayer player, NemesisModeConfig nemCfg)
+    {
+        int id = player.PlayerID;
+
+        _globals.NemesisFrostCharges.TryGetValue(id, out int charges);
+        if (charges <= 0)
+        {
+            _helpers.SendStackedCenterHTML(
+                player,
+                "frost",
+                "<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">FROST</span><br>" +
+                _helpers.BuildProgressBar(0f, 10, "#666666", "#666666", player) +
+                " <span color=\"#FF3030\" class=\"fontSize-l fontWeight-bold\">NO CHARGES</span>",
+                2000,
+                priority: 35);
+            return false;
+        }
+
+        float now = _core.Engine.GlobalVars.CurrentTime;
+        _globals.NemesisFrostCooldown.TryGetValue(id, out float nextUse);
+        if (now < nextUse)
+        {
+            float wait = nextUse - now;
+            float cdPct = nemCfg.FrostCooldown > 0f
+                ? 1f - Math.Clamp(wait / nemCfg.FrostCooldown, 0f, 1f)
+                : 1f;
+            _helpers.SendStackedCenterHTML(
+                player,
+                "frost",
+                "<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">FROST</span><br>" +
+                _helpers.BuildProgressBar(cdPct, 10, "#00CFFF", "#666666", player) +
+                $" <span color=\"#FFD700\" class=\"fontSize-l fontWeight-bold\">COOLDOWN {wait:F1}s</span>",
+                500,
+                priority: 35);
+            return false;
+        }
+
+        var targets = FindNemesisFrostTargets(player, nemCfg);
+        if (targets.Count == 0)
+        {
+            _helpers.SendStackedCenterHTML(
+                player,
+                "frost",
+                "<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">FROST</span><br>" +
+                _helpers.BuildProgressBar(0f, 10, "#666666", "#666666", player) +
+                " <span color=\"#FF3030\" class=\"fontSize-l fontWeight-bold\">NO TARGET</span>",
+                900,
+                priority: 35);
+            return false;
+        }
+
+        int chargesLeft = charges - 1;
+        _globals.NemesisFrostCharges[id] = chargesLeft;
+        _globals.NemesisFrostCooldown[id] = now + Math.Max(0f, nemCfg.FrostCooldown);
+
+        foreach (var target in targets)
+        {
+            _helpers.SetZombieFreezeOrStun(target, nemCfg.FrostDuration);
+            _helpers.SendChatT(target, "NemesisFrozenByNemesis");
+        }
+
+        float chargesPct = nemCfg.FrostMaxCharges > 0
+            ? Math.Clamp((float)chargesLeft / nemCfg.FrostMaxCharges, 0f, 1f)
+            : 0f;
+        string chargesBar = _helpers.BuildProgressBar(chargesPct, 10, "#00CFFF", "#666666", player);
+        string targetText = targets.Count == 1 ? targets[0].Name : $"{targets.Count} TARGETS";
+        _helpers.SendStackedCenterHTML(
+            player,
+            "frost",
+            $"<span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">FROST</span>" +
+            $" <span color=\"#AAAAAA\" class=\"fontSize-l\">-></span> <span color=\"#FFFFFF\" class=\"fontSize-l\">{targetText}</span><br>" +
+            chargesBar +
+            $" <span color=\"#00CFFF\" class=\"fontSize-l fontWeight-bold\">{chargesLeft}/{nemCfg.FrostMaxCharges}</span>",
+            2500,
+            priority: 35);
+
+        _helpers.SendChatT(player, "NemesisFrostUsed", chargesLeft);
+        return true;
+    }
+
+    private List<IPlayer> FindNemesisFrostTargets(IPlayer nemesis, NemesisModeConfig nemCfg)
+    {
+        var result = new List<(IPlayer Player, float DistanceSquared)>();
+        var pawn = nemesis.PlayerPawn;
+        if (pawn == null || !pawn.IsValid || pawn.AbsOrigin == null)
+            return [];
+
+        var origin = pawn.AbsOrigin.Value;
+        float range = Math.Max(1f, nemCfg.FrostRange);
+        float rangeSquared = range * range;
+
+        foreach (var other in _core.PlayerManager.GetAlive())
+        {
+            if (!other.IsValid || other.IsFakeClient || other.PlayerID == nemesis.PlayerID)
+                continue;
+
+            if (!IsNemesisFrostTarget(other))
+                continue;
+
+            var otherPawn = other.PlayerPawn;
+            if (otherPawn == null || !otherPawn.IsValid || otherPawn.AbsOrigin == null)
+                continue;
+
+            float distanceSquared = _helpers.DistanceSquared(origin, otherPawn.AbsOrigin.Value);
+            if (distanceSquared <= rangeSquared)
+                result.Add((other, distanceSquared));
+        }
+
+        int maxTargets = nemCfg.FrostMaxTargets <= 0
+            ? result.Count
+            : Math.Min(nemCfg.FrostMaxTargets, result.Count);
+
+        return result
+            .OrderBy(static item => item.DistanceSquared)
+            .Take(maxTargets)
+            .Select(static item => item.Player)
+            .ToList();
+    }
+
+    private bool IsNemesisFrostUser(IPlayer player)
+    {
+        int id = player.PlayerID;
+        if (_globals.IsNemesis.TryGetValue(id, out bool isNemesis) && isNemesis)
+            return true;
+
+        var className = _zombieState.GetPlayerZombieClass(id);
+        if (string.IsNullOrWhiteSpace(className))
+            return false;
+
+        var nemCfg = _mainCFG.CurrentValue.Nemesis;
+        bool classMatches = className.Equals("Nemesis", StringComparison.OrdinalIgnoreCase)
+            || nemCfg.NemesisNames
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Any(name => name.Equals(className, StringComparison.OrdinalIgnoreCase));
+
+        if (!classMatches)
+            return false;
+
+        _globals.IsNemesis[id] = true;
+        if (!_globals.NemesisFrostCharges.ContainsKey(id))
+            _globals.NemesisFrostCharges[id] = nemCfg.FrostMaxCharges;
+        if (!_globals.NemesisFrostCooldown.ContainsKey(id))
+            _globals.NemesisFrostCooldown[id] = 0f;
+
+        return true;
+    }
+
+    private bool IsNemesisFrostTarget(IPlayer player)
+    {
+        var controller = player.Controller;
+        if (controller == null || !controller.IsValid || controller.Team != Team.CT)
+            return false;
+
+        int id = player.PlayerID;
+        _globals.IsZombie.TryGetValue(id, out bool isZombie);
+        _globals.IsMother.TryGetValue(id, out bool isMother);
+        _globals.IsNemesis.TryGetValue(id, out bool isNemesis);
+        _globals.IsAssassin.TryGetValue(id, out bool isAssassin);
+
+        return !isZombie && !isMother && !isNemesis && !isAssassin;
+    }
+
+    private static bool IsNemesisFrostKey(string keyName)
+    {
+        return keyName.Equals("E", StringComparison.OrdinalIgnoreCase)
+            || keyName.Equals("KeyE", StringComparison.OrdinalIgnoreCase)
+            || keyName.Equals("Use", StringComparison.OrdinalIgnoreCase);
     }
 
     private void Event_OnTickLeap()

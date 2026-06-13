@@ -24,6 +24,7 @@ public class ZPLMineService
 
     /// <summary>Units to advance past a hit entity so the next penetration trace doesn't re-hit it.</summary>
     private const float TraceAdvanceDistance = 8f;
+    private readonly Dictionary<int, (float OriginalModifier, CancellationTokenSource Timer)> _laserSlowTimers = new();
     private readonly IOptionsMonitor<ZPLMineCFG> _mineCFG;
     private readonly ZPLHelpers _helpers;
 
@@ -101,7 +102,7 @@ public class ZPLMineService
         {
             result = MineCreateResult.LimitReached;
             player.SendMessage(MessageType.Chat,
-                _core.Translation.GetPlayerLocalizer(player)["MineLimit", mineConfig.Limit]);
+                _helpers.ChatMsg(_core.Translation.GetPlayerLocalizer(player)["MineLimit", mineConfig.Limit]));
             return null;
         }
 
@@ -114,7 +115,7 @@ public class ZPLMineService
                 if (moneyServices.Account < mineConfig.Price)
                 {
                     player.SendMessage(MessageType.Chat,
-                        _core.Translation.GetPlayerLocalizer(player)["NoMoney"]);
+                        _helpers.ChatMsg(_core.Translation.GetPlayerLocalizer(player)["NoMoney"]));
                     return null;
                 }
                 moneyServices.Account -= mineConfig.Price;
@@ -149,6 +150,8 @@ public class ZPLMineService
                 LaserRate           = mineConfig.LaserRate,
                 LaserDamage         = mineConfig.LaserDamage,
                 LaserKnockBack      = mineConfig.LaserKnockBack,
+                LaserSlowModifier   = mineConfig.LaserSlowModifier,
+                LaserSlowDuration   = mineConfig.LaserSlowDuration,
                 ExplorerRadius      = mineConfig.ExplorerRadius,
                 ExplorerDamage      = mineConfig.ExplorerDamage,
                 Team                = mineConfig.Team,
@@ -425,6 +428,7 @@ public class ZPLMineService
                             ApplyDamage(player, target, mineHandle, mineData.LaserDamage, mineData.LaserTouchSound);
                         if (mineData.LaserKnockBack != 0)
                             ApplyKnockBack(mineHandle, player, target, mineData.LaserKnockBack);
+                        ApplyLaserSlow(target, mineData);
                     }
                 }
 
@@ -540,6 +544,9 @@ public class ZPLMineService
         _globals.PlayerMineCounts.Clear();
         _globals.MineCurrentHP.Clear();
         _globals.MineOwnerPlayerID.Clear();
+        foreach (var slow in _laserSlowTimers.Values)
+            slow.Timer.Cancel();
+        _laserSlowTimers.Clear();
     }
 
     /// <summary>Kills all mines owned by <paramref name="steamId"/> and updates tracking.</summary>
@@ -910,6 +917,61 @@ public class ZPLMineService
             dir.X / len * force,
             dir.Y / len * force,
             50f);
+    }
+
+    private void ApplyLaserSlow(IPlayer target, MineData mineData)
+    {
+        if (mineData.LaserSlowModifier <= 0f || mineData.LaserSlowDuration <= 0f)
+            return;
+
+        if (target == null || !target.IsValid)
+            return;
+
+        var pawn = target.PlayerPawn;
+        if (pawn == null || !pawn.IsValid)
+            return;
+
+        int id = target.PlayerID;
+        float slow = Math.Clamp(mineData.LaserSlowModifier, 0.05f, 1.0f);
+
+        if (_laserSlowTimers.TryGetValue(id, out var active))
+        {
+            active.Timer.Cancel();
+            pawn.VelocityModifier = Math.Min(pawn.VelocityModifier, slow);
+            pawn.VelocityModifierUpdated();
+            ScheduleLaserSlowRestore(target, active.OriginalModifier, mineData.LaserSlowDuration);
+            return;
+        }
+
+        float original = pawn.VelocityModifier > 0f ? pawn.VelocityModifier : 1.0f;
+        pawn.VelocityModifier = Math.Min(original, slow);
+        pawn.VelocityModifierUpdated();
+        ScheduleLaserSlowRestore(target, original, mineData.LaserSlowDuration);
+    }
+
+    private void ScheduleLaserSlowRestore(IPlayer target, float originalModifier, float duration)
+    {
+        int id = target.PlayerID;
+        var cts = new CancellationTokenSource();
+        _laserSlowTimers[id] = (originalModifier, cts);
+
+        _core.Scheduler.DelayBySeconds(duration, () =>
+        {
+            if (cts.IsCancellationRequested)
+                return;
+
+            _laserSlowTimers.Remove(id);
+
+            if (!target.IsValid)
+                return;
+
+            var pawn = target.PlayerPawn;
+            if (pawn == null || !pawn.IsValid)
+                return;
+
+            pawn.VelocityModifier = originalModifier;
+            pawn.VelocityModifierUpdated();
+        });
     }
 
     private void SetGlow(CBaseEntity entity, string glowColorStr, string modelName, string team)

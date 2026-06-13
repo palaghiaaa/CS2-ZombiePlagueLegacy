@@ -38,6 +38,10 @@ public class ZPLMineCFG
         public float LaserDamage { get; set; } = 10f;
         /// <summary>Beam-trap only: knockback impulse applied to players inside the beam.</summary>
         public float LaserKnockBack { get; set; } = 100f;
+        /// <summary>Beam-trap only: temporary movement modifier applied to targets hit by the beam.</summary>
+        public float LaserSlowModifier { get; set; } = 0.45f;
+        /// <summary>Beam-trap only: seconds before the temporary movement modifier is restored.</summary>
+        public float LaserSlowDuration { get; set; } = 0.35f;
         /// <summary>Explosive mine only: explosion radius (engine units).</summary>
         public int ExplorerRadius { get; set; } = 360;
         /// <summary>Explosive mine only: maximum explosion damage at the mine centre.</summary>

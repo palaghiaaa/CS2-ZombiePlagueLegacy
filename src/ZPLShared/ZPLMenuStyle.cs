@@ -63,7 +63,8 @@ public static class ZPLMenuStyle
 
     public static string WrapText(string text, string color = ColButton, bool bold = true)
     {
-        if (text.Contains("<span", StringComparison.OrdinalIgnoreCase))
+        if (text.Contains("<span", StringComparison.OrdinalIgnoreCase) ||
+            text.Contains("<font", StringComparison.OrdinalIgnoreCase))
             return text;
 
         string weight = bold ? " fontWeight-bold" : string.Empty;

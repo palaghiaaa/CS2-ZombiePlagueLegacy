@@ -9,13 +9,13 @@
     "RankMessage": "[gold]{0}[default] rank: [green]{1}[default]/{2} | Score: [gold]{8}[default] | K:[green]{3}[default] D:[red]{4}[default] I:[lime]{5}[default] A:[blue]{6}[default] DMG:[orange]{7}",
 
     // Top menu title. {0} = number of entries shown (10, 15 …)
-    "TopMenuTitle": "TOP {0}",
+    "TopMenuTitle": "Top {0}",
 
     // Shown inside the menu when no stats exist yet.
-    "TopMenuNoStats": "No stats available yet.",
+    "TopMenuNoStats": "No stats yet.",
 
     // One row inside the top menu.
     // {0} = rank number,  {1} = player name,  {2} = KDA score (2 decimal places),
     // {3} = kills,  {4} = deaths,  {5} = infections,  {6} = assists,  {7} = damage dealt
-    "TopMenuEntry": "#{0}  {1}  Score:{2}  [K:{3} D:{4} I:{5} A:{6} DMG:{7}]"
+    "TopMenuEntry": "#{0} {1} S:{2} K:{3} D:{4} I:{5}"
 }

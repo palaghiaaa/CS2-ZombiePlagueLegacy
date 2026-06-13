@@ -8,11 +8,19 @@ public sealed class ZPLFlashlight_Config
 
     public int ToggleDebounceMs { get; set; } = 150;
 
+    public string FlashlightKey { get; set; } = "F";
+
+    public string NightVisionKey { get; set; } = "N";
+
+    public bool NightVisionButtonComboEnable { get; set; } = true;
+
     public string AdminCommandPermission { get; set; } = "admin.dex";
 
     public ZPLFlashlight_ProfileConfig Human { get; set; } = ZPLFlashlight_ProfileConfig.CreateHumanDefaults();
 
     public ZPLFlashlight_ProfileConfig Zombie { get; set; } = ZPLFlashlight_ProfileConfig.CreateZombieDefaults();
+
+    public ZPLNightVision_Config NightVision { get; set; } = new();
 
     public List<ZPLFlashlight_SpecialZombieConfig> SpecialZombies { get; set; } = [];
 
@@ -23,9 +31,13 @@ public sealed class ZPLFlashlight_Config
             Enable = Enable,
             AllowBots = AllowBots,
             ToggleDebounceMs = ToggleDebounceMs,
+            FlashlightKey = FlashlightKey,
+            NightVisionKey = NightVisionKey,
+            NightVisionButtonComboEnable = NightVisionButtonComboEnable,
             AdminCommandPermission = AdminCommandPermission,
             Human = (Human ?? ZPLFlashlight_ProfileConfig.CreateHumanDefaults()).Clone(),
             Zombie = (Zombie ?? ZPLFlashlight_ProfileConfig.CreateZombieDefaults()).Clone(),
+            NightVision = (NightVision ?? new ZPLNightVision_Config()).Clone(),
             SpecialZombies = SpecialZombies?.Select(group => group.Clone()).ToList() ?? []
         };
     }
@@ -85,10 +97,77 @@ public sealed class ZPLFlashlight_ProfileConfig
     {
         return new ZPLFlashlight_ProfileConfig
         {
+            Brightness = 5.0f,
+            Distance = 850.0f,
+            AttachmentDistance = 54.0f,
+            FovOrConeAngle = 55.0f,
             ColorR = 255,
-            ColorG = 32,
+            ColorG = 255,
+            ColorB = 255,
+            ColorA = 255,
+            VisibleToTeammates = true
+        };
+    }
+
+    public static ZPLFlashlight_ProfileConfig CreateNormalNightVisionDefaults()
+    {
+        return new ZPLFlashlight_ProfileConfig
+        {
+            Brightness = 9.0f,
+            Distance = 2600.0f,
+            AttachmentDistance = 8.0f,
+            FovOrConeAngle = 360.0f,
+            Shadows = false,
+            Attachment = "clip_limit",
+            ColorR = 0,
+            ColorG = 255,
+            ColorB = 80,
+            ColorA = 255,
+            VisibleToTeammates = false
+        };
+    }
+
+    public static ZPLFlashlight_ProfileConfig CreateSpecialNightVisionDefaults()
+    {
+        return new ZPLFlashlight_ProfileConfig
+        {
+            Brightness = 10.0f,
+            Distance = 2800.0f,
+            AttachmentDistance = 8.0f,
+            FovOrConeAngle = 360.0f,
+            Shadows = false,
+            Attachment = "clip_limit",
+            ColorR = 255,
+            ColorG = 40,
             ColorB = 32,
-            ColorA = 255
+            ColorA = 255,
+            VisibleToTeammates = false
+        };
+    }
+}
+
+public sealed class ZPLNightVision_Config
+{
+    public bool Enable { get; set; } = true;
+
+    public List<string> RedClassNames { get; set; } = ["Nemesis", "Assassin"];
+
+    public ZPLFlashlight_ProfileConfig NormalZombie { get; set; } = ZPLFlashlight_ProfileConfig.CreateNormalNightVisionDefaults();
+
+    public ZPLFlashlight_ProfileConfig SpecialZombie { get; set; } = ZPLFlashlight_ProfileConfig.CreateSpecialNightVisionDefaults();
+
+    public ZPLNightVision_Config Clone()
+    {
+        return new ZPLNightVision_Config
+        {
+            Enable = Enable,
+            RedClassNames = RedClassNames?
+                .Where(static name => !string.IsNullOrWhiteSpace(name))
+                .Select(static name => name.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList() ?? ["Nemesis", "Assassin"],
+            NormalZombie = (NormalZombie ?? ZPLFlashlight_ProfileConfig.CreateNormalNightVisionDefaults()).Clone(),
+            SpecialZombie = (SpecialZombie ?? ZPLFlashlight_ProfileConfig.CreateSpecialNightVisionDefaults()).Clone()
         };
     }
 }

@@ -430,7 +430,7 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
                 var s      = sorted[i].Value;
                 double sc  = ComputeScore(s, cfg);
                 string lbl = T(p, "TopMenuEntry",
-                    i + 1, s.Name,
+                    i + 1, ShortMenuName(s.Name),
                     FormatScore(sc),
                     s.Kills, s.Deaths,
                     s.Infections, s.Assists, s.Damage);
@@ -440,5 +440,14 @@ public class ZPLRankPlugin(ISwiftlyCore core) : BasePlugin(core)
         }
 
         Core.MenusAPI.OpenMenuForPlayer(p, menu);
+    }
+
+    private static string ShortMenuName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return "-";
+
+        name = name.Trim();
+        return name.Length <= 14 ? name : name[..14];
     }
 }

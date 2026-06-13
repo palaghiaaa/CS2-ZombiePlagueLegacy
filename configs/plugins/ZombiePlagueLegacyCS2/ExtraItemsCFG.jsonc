@@ -30,7 +30,7 @@
     "Items": [
       {
         "Key": "armor",
-        "Name": "Armor (+100 armor)",
+        "Name": "Armor +100",
         "Price": 2,
         "Enable": true,
         "Team": "Human"
@@ -58,56 +58,56 @@
       },
       {
         "Key": "multijump",
-        "Name": "Multi-Jump (+1 jump per purchase)",
+        "Name": "Multi-Jump +1",
         "Price": 8,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "knife_blink",
-        "Name": "Knife Blink (3 charges -- swing knife to teleport)",
+        "Name": "Knife Blink",
         "Price": 12,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "jetpack",
-        "Name": "Jetpack (CTRL+SPACE to fly)",
+        "Name": "Jetpack",
         "Price": 50,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "laser_mine",
-        "Name": "Laser Mine (plant on aimed surface)",
+        "Name": "Laser Mine",
         "Price": 5,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "revive_token",
-        "Name": "Revive Token (respawn once on death)",
+        "Name": "Revive Token",
         "Price": 7,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "inc_grenade",
-        "Name": "Incendiary Bomb (CT-only fire grenade)",
+        "Name": "Fire Bomb",
         "Price": 3,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "teleport_grenade",
-        "Name": "Teleport Grenade (decoy teleporter)",
+        "Name": "Teleport Nade",
         "Price": 2,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "scba_suit",
-        "Name": "SCBA Suit (absorb one zombie attack)",
+        "Name": "SCBA Suit",
         "Price": 4,
         "Enable": true,
         "Team": "Human"
@@ -116,7 +116,6 @@
         "Key": "parachute",
         "Enable": true,
         "Name": "Parachute",
-        "Description": "Slow your fall - hold E while falling",
         "Team": "Human",
         "Price": 3,
         "Limit": 1,
@@ -124,21 +123,21 @@
       },
       {
         "Key": "tryder",
-        "Name": "Tryder (bonus HP + armor + infinite clip)",
+        "Name": "Tryder",
         "Price": 60,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "unlimited_clip",
-        "Name": "Unlimited Clip (infinite magazine)",
+        "Name": "Unlimited Clip",
         "Price": 6,
         "Enable": true,
         "Team": "Human"
       },
       {
         "Key": "no_recoil",
-        "Name": "No Recoil (zero weapon spread)",
+        "Name": "No Recoil",
         "Price": 5,
         "Enable": true,
         "Team": "Human"
@@ -159,7 +158,7 @@
       },
       {
         "Key": "antidote",
-        "Name": "Antidote (cure yourself back to human)",
+        "Name": "Antidote",
         "Price": 6,
         "Enable": true,
         "Team": "Zombie",
@@ -167,7 +166,7 @@
       },
       {
         "Key": "zombie_madness",
-        "Name": "Zombie Madness (10s invulnerability)",
+        "Name": "Madness 10s",
         "Price": 5,
         "Enable": true,
         "Team": "Zombie",
@@ -175,7 +174,7 @@
       },
       {
         "Key": "t_virus_grenade",
-        "Name": "T-Virus Grenade (infects humans in range)",
+        "Name": "T-Virus Nade",
         "Price": 5,
         "Enable": true,
         "Team": "Zombie",

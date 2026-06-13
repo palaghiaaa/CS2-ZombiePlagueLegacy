@@ -330,6 +330,8 @@ public class MineData
     public float  LaserRate           { get; set; }
     public float  LaserDamage         { get; set; }
     public float  LaserKnockBack      { get; set; }
+    public float  LaserSlowModifier   { get; set; }
+    public float  LaserSlowDuration   { get; set; }
     public int    ExplorerRadius      { get; set; }
     public int    ExplorerDamage      { get; set; }
     public string Team                { get; set; } = string.Empty;

@@ -10,7 +10,7 @@
 	  <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="SwiftlyS2.CS2" Version="1.4.0-beta.38" />
+		<PackageReference Include="SwiftlyS2.CS2" Version="1.4.0-beta.53" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
 	</ItemGroup>
 </Project>
